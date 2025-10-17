@@ -20,9 +20,6 @@ export class Comment extends Document {
   @Prop({ type: Types.ObjectId, ref: 'Comment', index: true })
   parentId?: Types.ObjectId;
 
-  @Prop({ type: String, enum: ReactionType })
-  reactionType?: ReactionType;
-
   @Prop({ type: Types.ObjectId, ref: 'User' })
   mentionedUser?: Types.ObjectId;
 

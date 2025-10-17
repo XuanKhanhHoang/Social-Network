@@ -17,38 +17,49 @@ import { ParseMongoIdPipe } from 'src/share/pipe/parse-mongo-id-pipe';
 import { GetUserId } from 'src/share/decorators/user.decorator';
 
 @UseGuards(JwtAuthGuard)
-@Controller('comment')
+@Controller('comments')
 export class CommentController {
-  constructor(private commentService: CommentService) {}
-  @Post('create')
+  constructor(private readonly commentService: CommentService) {}
+
+  @Post()
   async createComment(
     @Body() data: CreateCommentDto,
     @GetUserId() userId: string,
   ) {
     return this.commentService.createComment(userId, data);
   }
-  @Patch('update/:id')
+
+  @Patch(':id')
   async updateComment(
     @Body() data: UpdateCommentDto,
-    @Param('id', new ParseMongoIdPipe()) id: string,
+    @Param('id', ParseMongoIdPipe) id: string,
     @GetUserId() userId: string,
   ) {
     return this.commentService.updateComment(userId, id, data);
   }
-  @Get('gets/:post_id')
-  async getComments(
-    @Param('post_id', new ParseMongoIdPipe()) postId: string,
+
+  @Get()
+  async getPostComments(
+    @Query('postId', ParseMongoIdPipe) postId: string,
     @GetUserId() userId: string,
     @Query('cursor') cursor?: string,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit?: number,
   ) {
     return this.commentService.getPostComments(postId, userId, limit, cursor);
   }
-  @Get('get-replies/:comment_id')
+
+  @Get(':commentId/replies')
   async getReplyComments(
+    @Param('commentId', ParseMongoIdPipe) commentId: string,
     @GetUserId() userId: string,
-    @Param('comment_id', new ParseMongoIdPipe()) comment_id: string,
+    @Query('cursor') cursor?: string,
+    @Query('limit', new DefaultValuePipe(5), ParseIntPipe) limit?: number,
   ) {
-    return this.commentService.getCommentReplies(comment_id, userId);
+    return this.commentService.getCommentReplies(
+      commentId,
+      userId,
+      limit,
+      cursor,
+    );
   }
 }

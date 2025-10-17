@@ -1,48 +1,30 @@
 'use client';
 
-import Image from 'next/image';
 import React from 'react';
 
 type SvgIconProps = {
-  src: string;
+  IconComponent: React.ElementType;
   width?: number;
   height?: number;
-  fill?: string;
-  stroke?: string;
   className?: string;
-  style?: React.CSSProperties;
-  alt?: string;
+  [key: string]: unknown;
 };
+
 function SvgIcon({
-  src,
+  IconComponent,
   width = 24,
   height = 24,
-  fill,
-  stroke,
   className,
-  style,
-  alt,
+  ...rest
 }: SvgIconProps) {
   return (
-    <Image
-      src={src}
+    <IconComponent
       width={width}
       height={height}
       className={className}
-      style={{
-        display: 'inline-block',
-        objectFit: 'contain',
-        backgroundColor: fill,
-        WebkitMaskImage: `url(${src})`,
-        WebkitMaskRepeat: 'no-repeat',
-        WebkitMaskSize: 'contain',
-        maskImage: `url(${src})`,
-        maskRepeat: 'no-repeat',
-        maskSize: 'contain',
-        ...style,
-      }}
-      alt="svg-icon"
+      {...rest}
     />
   );
 }
+
 export default React.memo(SvgIcon);

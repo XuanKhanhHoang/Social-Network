@@ -87,7 +87,7 @@ export class PostService {
       },
       {
         $addFields: {
-          userReactionType: {
+          myReaction: {
             $cond: {
               if: { $gt: [{ $size: '$userReaction' }, 0] },
               then: { $arrayElemAt: ['$userReaction.reactionType', 0] },

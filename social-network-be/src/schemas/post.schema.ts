@@ -54,7 +54,6 @@ export class Post extends Document {
     type: Map,
     of: Number,
     default: { like: 0, love: 0, haha: 0, wow: 0, sad: 0, angry: 0 },
-    ref: 'Reaction',
   })
   reactionsBreakdown: Record<ReactionType, number>;
 

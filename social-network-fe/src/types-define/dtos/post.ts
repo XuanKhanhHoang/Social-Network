@@ -26,7 +26,7 @@ export type Post = {
   sharesCount: number;
   tags: string[];
   hashtags: string[];
-  userReactionType?: ReactionType;
+  myReaction?: ReactionType;
   status: 'active' | 'inactive' | 'deleted';
   reactionsBreakdown: ReactionsBreakdown;
   createdAt: string; // ISO date
@@ -43,10 +43,7 @@ export interface ReactionsBreakdown {
 export type PostWithTopComment = Post & {
   topComment?: Comment;
 };
-export type PostFullDetail = Post & {
-  previewComments?: Comment[];
-  userComments?: Comment[];
-};
+
 export type PostAuthor = {
   _id: string;
   firstName: string;

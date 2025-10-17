@@ -1,7 +1,6 @@
 import { MessageCircle, MoreHorizontal, Send } from 'lucide-react';
 import { memo } from 'react';
 import PostMedia from './PostMedia';
-import ReactionButton from '@/components/ui/reaction-button';
 import CommentEditor from '../../comment/CommentEditor';
 import { formatDisplayTime } from '@/lib/utils/time';
 import CommentItem from '../../comment/CommentItem';
@@ -14,13 +13,10 @@ import TextAlign from '@tiptap/extension-text-align';
 import { Emoji } from '@/lib/editor/emoji-node';
 import { generateHTML } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { useStore } from '@/store';
-import { ReactionTargetType } from '@/lib/constants/enums';
 import { PostWithTopComment } from '@/types-define/dtos';
+import { PostReactionButton } from '@/components/wrappers/PostReaction';
 
 function PostItem({ post }: { post: PostWithTopComment }) {
-  const user = useStore((s) => s.user);
-
   const contentHtml = generateHTML(post.content, [
     StarterKit,
     TextStyle,
@@ -28,6 +24,7 @@ function PostItem({ post }: { post: PostWithTopComment }) {
     TextAlign.configure({ types: ['heading', 'paragraph'] }),
     Emoji,
   ]);
+
   return (
     <div className="bg-white rounded-sm shadow-sm p-0 mb-4 border border-gray-100">
       <div className="flex items-start justify-between mb-3 p-3">
@@ -70,13 +67,12 @@ function PostItem({ post }: { post: PostWithTopComment }) {
       )}
 
       <div className="flex items-center space-x-6 text-gray-500 mt-0 py-1 border-t border-b border-gray-100">
-        <ReactionButton
-          entityId={post._id}
+        <PostReactionButton
+          postId={post._id}
           showLabel={false}
           showCount={true}
-          entityType={ReactionTargetType.POST}
           initialCount={post.reactionsCount}
-          initialReaction={post.userReactionType}
+          initialReaction={post.myReaction}
           btnClassName="px-2 py-1"
         />
         <Link
@@ -94,7 +90,7 @@ function PostItem({ post }: { post: PostWithTopComment }) {
 
       {post.topComment && (
         <div className="my-2 p-3 ">
-          {<CommentItem comment={post.topComment} />}
+          {<CommentItem comment={post.topComment} postId={post._id} />}
         </div>
       )}
 

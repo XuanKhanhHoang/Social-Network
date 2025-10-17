@@ -1,6 +1,6 @@
 'use client';
 import PostDetail from '@/components/features/Post/detail/PostDetail';
-import { usePost } from '@/hooks/queries/usePost';
+import { usePost } from '@/hooks/post/usePost';
 import { useParams, useSearchParams } from 'next/navigation';
 
 export default function PostDetailPage() {

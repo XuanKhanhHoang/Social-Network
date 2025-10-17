@@ -1,9 +1,9 @@
 'use client';
 import PostItem from './PostItem';
-import { useInfinitePosts } from '@/hooks/queries/usePost';
 import { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 import PostItemSkeleton from './PostItemSkeleton';
+import { useInfinitePosts } from '@/hooks/post/usePost';
 
 function PostList() {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } =

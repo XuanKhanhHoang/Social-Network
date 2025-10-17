@@ -21,6 +21,7 @@ import {
   encodeCursor,
 } from 'src/share/utils/cursor-encode-handling';
 import { CommentCursorData } from './comment.type';
+import { ReactionTargetType } from 'src/share/enums';
 
 @Injectable()
 export class CommentService {
@@ -269,14 +270,15 @@ export class CommentService {
       {
         $lookup: {
           from: 'reactions',
-          let: { commentId: '$_id' },
+          let: { cId: '$_id' },
           pipeline: [
             {
               $match: {
                 $expr: {
                   $and: [
-                    { $eq: ['$commentId', '$$commentId'] },
-                    { $eq: ['$userId', userIdObj] },
+                    { $eq: ['$targetId', '$$cId'] },
+                    { $eq: ['$user', userIdObj] },
+                    { $eq: ['$targetType', ReactionTargetType.COMMENT] },
                   ],
                 },
               },
@@ -314,7 +316,9 @@ export class CommentService {
             },
           },
           repliesCount: 1,
-          myReaction: { $ifNull: [{ $first: '$userReaction.type' }, null] },
+          myReaction: {
+            $ifNull: [{ $first: '$userReaction.reactionType' }, null],
+          },
         },
       },
     ];
@@ -363,6 +367,27 @@ export class CommentService {
           as: 'authorInfo',
         },
       },
+      {
+        $lookup: {
+          from: 'reactions',
+          let: { cId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$targetId', '$$cId'] },
+                    { $eq: ['$user', userIdObj] },
+                    { $eq: ['$targetType', ReactionTargetType.COMMENT] },
+                  ],
+                },
+              },
+            },
+            { $limit: 1 },
+          ],
+          as: 'userReaction',
+        },
+      },
       { $unwind: { path: '$authorInfo', preserveNullAndEmptyArrays: true } },
       {
         $project: {
@@ -376,6 +401,9 @@ export class CommentService {
             firstName: '$authorInfo.firstName',
             lastName: '$authorInfo.lastName',
             avatar: '$authorInfo.avatar',
+          },
+          myReaction: {
+            $ifNull: [{ $first: '$userReaction.reactionType' }, null],
           },
         },
       },
@@ -513,14 +541,15 @@ export class CommentService {
       {
         $lookup: {
           from: 'reactions',
-          let: { commentId: '$_id' },
+          let: { pId: '$_id' },
           pipeline: [
             {
               $match: {
                 $expr: {
                   $and: [
-                    { $eq: ['$commentId', '$$commentId'] },
-                    { $eq: ['$userId', userId] },
+                    { $eq: ['$targetId', '$$pId'] },
+                    { $eq: ['$user', userId] },
+                    { $eq: ['$targetType', ReactionTargetType.COMMENT] },
                   ],
                 },
               },
@@ -546,7 +575,9 @@ export class CommentService {
             avatar: '$authorInfo.avatar',
           },
           media: { $ifNull: ['$media', null] },
-          myReaction: { $ifNull: [{ $first: '$userReaction.type' }, null] },
+          myReaction: {
+            $ifNull: [{ $first: '$userReaction.reactionType' }, null],
+          },
         },
       },
     ];

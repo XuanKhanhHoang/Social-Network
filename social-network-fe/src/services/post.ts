@@ -1,8 +1,4 @@
-import {
-  CreatePostDto,
-  PostFullDetail,
-  PostListResponse,
-} from '@/types-define/dtos';
+import { CreatePostDto, Post, PostListResponse } from '@/types-define/dtos';
 import { ApiClient } from './api';
 import { RequestOptions } from '@/types-define/types';
 
@@ -12,12 +8,6 @@ export const postService = {
   },
   async updatePost(id: string, data: CreatePostDto): Promise<unknown> {
     return ApiClient.patch<unknown>(`/post/update/${id}`, data);
-  },
-  async getPostsByPage(
-    page = 1,
-    options?: RequestOptions
-  ): Promise<PostListResponse> {
-    return ApiClient.get('/post/gets?page=' + page, options);
   },
   async getPostsByCursor({
     cursor,
@@ -33,10 +23,7 @@ export const postService = {
     if (limit) queries.set('limit', limit.toString());
     return ApiClient.get(`/post/gets?${queries.toString()}`, options);
   },
-  async getPost(
-    postId: string,
-    options?: RequestOptions
-  ): Promise<PostFullDetail> {
+  async getPost(postId: string, options?: RequestOptions): Promise<Post> {
     return ApiClient.get('/post/' + postId, options);
   },
 };

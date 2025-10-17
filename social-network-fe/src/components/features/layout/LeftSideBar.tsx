@@ -16,9 +16,9 @@ import {
   LogOut,
   Plus,
 } from 'lucide-react';
-import { useLogout } from '@/hooks/queries/useAuth';
 import { useStore } from '@/store';
 import { useFeedContext } from '../feed/FeedContext';
+import { useLogout } from '@/hooks/auth/useAuth';
 
 const NAV_ITEMS = [
   { id: 'home', label: 'Trang chủ', icon: Home, href: '#' },

@@ -32,8 +32,8 @@ import PostEditorMedia from './PostEditorMedia';
 import _ from 'lodash';
 import { PostEditorProps } from './type';
 import { useQueryClient } from '@tanstack/react-query';
-import { postKeys } from '@/hooks/queries/usePost';
-import { useMediaUpload } from '@/hooks/useMediaUpload';
+import { useMediaUpload } from '@/hooks/media/useMediaUpload';
+import { postKeys } from '@/hooks/post/usePost';
 
 const bgPresets = [
   { bg: 'bg-white', name: 'Trắng' },

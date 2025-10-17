@@ -4,7 +4,13 @@ import { Editor } from '@tiptap/react';
 import { EmojiClickData } from 'emoji-picker-react';
 import { useEmojiPicker } from '../provider/EmojiPickerProvider';
 
-export default function EmojiButton({ editor }: { editor: Editor | null }) {
+export default function EmojiButton({
+  editor,
+  iconClassName,
+}: {
+  editor: Editor | null;
+  iconClassName?: string;
+}) {
   const { openPicker } = useEmojiPicker();
 
   const handleEmojiClick = (emoji: EmojiClickData) => {
@@ -31,7 +37,7 @@ export default function EmojiButton({ editor }: { editor: Editor | null }) {
         openPicker({ anchorEl: e.currentTarget, onSelect: handleEmojiClick })
       }
     >
-      <Smile className="h-4 w-4" />
+      <Smile className={iconClassName || 'h-4 w-4 '} />
     </Button>
   );
 }

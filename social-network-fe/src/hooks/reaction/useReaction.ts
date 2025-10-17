@@ -10,8 +10,8 @@ interface UseReactionOptions {
   initialReaction?: ReactionType;
   initialCount?: number;
   onReactionChange?: (
-    reaction: ReactionType | undefined,
-    count: number
+    newReaction: ReactionType | null,
+    oldReaction: ReactionType | null
   ) => void;
   reactionFn: (
     id: string,
@@ -121,8 +121,7 @@ export function useReaction({
       debouncedSync.cancel();
       debouncedSync(reaction);
 
-      // Notify parent
-      onReactionChange?.(reaction, newCount);
+      onReactionChange?.(reaction || null, state.currentReaction || null);
     },
     [state, debouncedSync, onReactionChange]
   );
@@ -166,21 +165,17 @@ export function useReaction({
       reactionCount: initialCount,
     });
     pendingReactionRef.current = initialReaction;
-    lastSyncedReactionRef.current = initialReaction;
   }, [initialReaction, initialCount]);
 
   return {
-    // State
     currentReaction: state.currentReaction,
     reactionCount: state.reactionCount,
     isLoading: syncMutation.isPending,
 
-    // Actions
     handleReaction,
     toggleReaction,
     quickLike,
 
-    // Utils
     hasReacted: state.currentReaction !== undefined,
     isReaction: (type: ReactionType) => state.currentReaction === type,
   };

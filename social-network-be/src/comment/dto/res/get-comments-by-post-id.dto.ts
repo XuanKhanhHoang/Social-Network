@@ -19,4 +19,5 @@ export interface Comment {
   media: MediaResponse[];
   mentionedUser: Author | null;
   myReaction: ReactionType | null;
+  repliesCount: number;
 }
