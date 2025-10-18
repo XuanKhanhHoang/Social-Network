@@ -17,11 +17,11 @@ import {
   Plus,
 } from 'lucide-react';
 import { useStore } from '@/store';
-import { useFeedContext } from '../feed/FeedContext';
 import { useLogout } from '@/hooks/auth/useAuth';
+import { useCreatePostContext } from '../feed/FeedContext';
 
 const NAV_ITEMS = [
-  { id: 'home', label: 'Trang chủ', icon: Home, href: '#' },
+  { id: 'home', label: 'Trang chủ', icon: Home, href: '/' },
   { id: 'search', label: 'Tìm kiếm', icon: Search, href: '#' },
   { id: 'explore', label: 'Khám phá', icon: Compass, href: '#' },
   {
@@ -33,7 +33,7 @@ const NAV_ITEMS = [
   },
   { id: 'notifications', label: 'Thông báo', icon: Bell, href: '#', badge: 5 },
   { id: 'friends', label: 'Bạn bè', icon: Users, href: '#' },
-  { id: 'profile', label: 'Trang cá nhân', icon: User, href: '#' },
+  { id: 'profile', label: 'Trang cá nhân', icon: User, href: '/me' },
 ];
 
 const VibeLogo = () => (
@@ -73,7 +73,7 @@ const LeftSidebar = () => {
   const [activeItem, setActiveItem] = useState('home');
   const user = useStore((s) => s.user);
   const userName = `${user?.firstName} ${user?.lastName}`;
-  const { openCreate } = useFeedContext();
+  const { openCreate } = useCreatePostContext();
 
   const userHandle = '@johndoe';
 

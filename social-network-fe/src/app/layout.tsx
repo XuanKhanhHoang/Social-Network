@@ -9,6 +9,8 @@ import { User } from '@/types-define/dtos';
 import { UserProvider } from '@/components/provider/UserProvider';
 import { redirect } from 'next/navigation';
 import { AppInitializer } from '@/components/features/layout/AppInitializer';
+import LeftSidebar from '@/components/features/layout/LeftSideBar';
+import { CreatePostProvider } from '@/components/features/feed/FeedContext';
 
 export const metadata: Metadata = {
   title: 'Vibe',
@@ -47,8 +49,15 @@ export default async function RootLayout({
           <UserProvider initialUser={user}>
             <QueryProvider>
               <EmojiPickerProvider>
-                {children}
-                {modal}
+                <CreatePostProvider>
+                  <div className="min-h-screen bg-white">
+                    <div className="max-w-screen mx-auto flex">
+                      <LeftSidebar />
+                      {children}
+                      {modal}
+                    </div>
+                  </div>
+                </CreatePostProvider>
               </EmojiPickerProvider>
               <Toaster position="top-right" expand />
             </QueryProvider>

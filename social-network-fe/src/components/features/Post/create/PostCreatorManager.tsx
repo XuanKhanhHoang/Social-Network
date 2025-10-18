@@ -3,10 +3,10 @@ import { Image, Smile, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
 import PostEditor from '../editor/PostEditor';
-import { useFeedContext } from '../../feed/FeedContext';
+import { useCreatePostContext } from '../../feed/FeedContext';
 
 export default (function PostCreator() {
-  const { closeCreate, isOpen, openCreate } = useFeedContext();
+  const { closeCreate, isOpen, openCreate } = useCreatePostContext();
 
   return (
     <>

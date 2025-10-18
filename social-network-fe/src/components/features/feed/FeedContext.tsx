@@ -1,17 +1,21 @@
 'use client';
 import { createContext, useContext, useState } from 'react';
 
-const FeedContext = createContext<{
+const CreatePostContext = createContext<{
   openCreate: () => void;
   closeCreate: () => void;
   isOpen: boolean;
 } | null>(null);
 
-export function FeedProvider({ children }: { children: React.ReactNode }) {
+export function CreatePostProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <FeedContext.Provider
+    <CreatePostContext.Provider
       value={{
         isOpen,
         openCreate: () => setIsOpen(true),
@@ -19,12 +23,12 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
       }}
     >
       {children}
-    </FeedContext.Provider>
+    </CreatePostContext.Provider>
   );
 }
 
-export function useFeedContext() {
-  const ctx = useContext(FeedContext);
+export function useCreatePostContext() {
+  const ctx = useContext(CreatePostContext);
   if (!ctx) throw new Error('useFeedContext must be inside FeedProvider');
   return ctx;
 }
