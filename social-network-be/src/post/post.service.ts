@@ -8,7 +8,7 @@ import {
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Model, Types, PipelineStage, Connection } from 'mongoose';
 import { MediaUpload, Post } from 'src/schemas';
-import { MediaType, PostStatus, PostVisibility } from 'src/share/enums';
+import { MediaType, PostStatus, UserPrivacy } from 'src/share/enums';
 import { MediaUploadService } from 'src/media-upload/media-upload.service';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { PostEvents, ReactionEvents } from 'src/share/emitter-events';
@@ -454,7 +454,7 @@ export class PostService {
         throw new NotFoundException('Post not found');
       }
 
-      if (post.visibility === PostVisibility.PRIVATE) {
+      if (post.visibility === UserPrivacy.PRIVATE) {
         if (post.author._id.toString() !== userId) {
           throw new ForbiddenException('You are not allowed to view this post');
         }

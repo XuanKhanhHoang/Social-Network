@@ -1,5 +1,5 @@
 import { postService } from '@/services/post';
-import { CreatePostDto, PostListResponse, Post } from '@/types-define/dtos';
+import { CreatePostDto, PostListResponse, Post } from '@/lib/dtos';
 import {
   useQuery,
   useMutation,

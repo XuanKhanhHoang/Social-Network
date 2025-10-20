@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 export default async function page({
   searchParams,
 }: {
-  searchParams: { email?: string };
+  searchParams: Promise<{ email?: string }>;
 }) {
   const email = (await searchParams).email ?? 'yourmail@mail.com';
   return (

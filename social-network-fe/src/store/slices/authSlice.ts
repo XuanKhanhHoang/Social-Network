@@ -1,4 +1,4 @@
-import { User } from '@/types-define/dtos';
+import { User } from '@/lib/dtos';
 import { StateCreator } from 'zustand';
 
 export interface AuthSlice {

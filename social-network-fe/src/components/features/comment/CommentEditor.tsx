@@ -1,10 +1,9 @@
 'use client';
 import Placeholder from '@tiptap/extension-placeholder';
-import { EditorContent, JSONContent, useEditor } from '@tiptap/react';
+import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Emoji } from '@/lib/editor/emoji-node';
-import { mediaService } from '@/services/media';
 import { Button } from '@/components/ui/button';
 import { ImagePlus, Loader2, SendHorizontal } from 'lucide-react';
 import EmojiButton from '@/components/ui/emoji-button';
@@ -12,26 +11,10 @@ import { Input } from '@/components/ui/input';
 import MediaComponent from '../common/MediaComponent/MediaComponent';
 import { commentService } from '@/services/comment';
 import { toast } from 'sonner';
-import { MediaItemWithHandlingStatus } from '@/types-define/types';
 import { cn } from '@/lib/utils';
 import _ from 'lodash';
-
-type CommentEditorProps = {
-  postId: string;
-  parentId?: string;
-  data?: {
-    content?: JSONContent;
-    media?: MediaItemWithHandlingStatus;
-    _id: string;
-  };
-  className?: string;
-  mode?: 'create' | 'edit';
-  onSuccess?: () => void;
-  placeholder?: string;
-  autoFocus?: boolean;
-  allowMedia?: boolean;
-  variant?: 'minimal' | 'boxed';
-};
+import { CommentEditorProps } from './type';
+import { useMediaUpload } from '@/hooks/media/useMediaUpload';
 
 export default function CommentEditor({
   postId,
@@ -46,9 +29,21 @@ export default function CommentEditor({
   variant = 'minimal',
 }: CommentEditorProps) {
   const isUpdate = mode === 'edit';
-  const [media, setMedia] = useState<MediaItemWithHandlingStatus | undefined>(
-    data?.media
-  );
+
+  const {
+    media,
+    handleMediaUpload: onHookMediaUpload,
+    handleMediaChange,
+    confirmAllUnconfirmed,
+    hasUploadingFiles,
+    hasUploadErrors,
+    hasConfirmErrors,
+  } = useMediaUpload({
+    initialMedia: data?.media ? [data.media] : [],
+    maxFiles: 1,
+  });
+  const singleMediaItem = media[0];
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editorReady, setEditorReady] = useState(false);
   const [isPendingDebounce, setIsPendingDebounce] = useState(false);
@@ -84,53 +79,9 @@ export default function CommentEditor({
     },
   });
 
-  const uploadFileToTemp = async (file: File) => {
-    try {
-      setMedia((current) => current && { ...current, isUploading: true });
-      const response = await mediaService.uploadTempMedia(file);
-      setMedia((current) =>
-        current
-          ? {
-              ...current,
-              id: response.id,
-              url: response.url,
-              isUploading: false,
-            }
-          : undefined
-      );
-    } catch (error) {
-      console.error('Upload temp failed:', error);
-      setMedia(
-        (current) =>
-          current && {
-            ...current,
-            isUploading: false,
-            uploadError: 'Upload thất bại',
-          }
-      );
-    }
-  };
-
-  const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const newMediaItem: MediaItemWithHandlingStatus = {
-      url: URL.createObjectURL(file),
-      mediaType: file.type.startsWith('image/') ? 'image' : 'video',
-      file,
-      isUploading: true,
-    };
-    setMedia(newMediaItem);
-    uploadFileToTemp(file);
-    e.target.value = '';
-  };
-
   const handleRemoveMedia = useCallback(() => {
-    if (!media) return;
-    if (media.url.startsWith('blob:')) URL.revokeObjectURL(media.url);
-    if (media.id) mediaService.cancelTempMedia(media.id).catch(console.warn);
-    setMedia(undefined);
-  }, [media]);
+    handleMediaChange([], {});
+  }, [handleMediaChange]);
 
   const hasChanges = useMemo(() => {
     if (!isUpdate || !initialData.current || !editorReady || !editor)
@@ -140,22 +91,28 @@ export default function CommentEditor({
     const contentChanged =
       JSON.stringify(editor.getJSON()) !==
       JSON.stringify(originalData.content || '');
-    const mediaChanged = media?.id !== originalData.media?.id;
+    const mediaChanged = singleMediaItem?.id !== originalData.media?.id;
     return contentChanged || mediaChanged;
-  }, [isUpdate, media, editorReady, editor]);
+  }, [isUpdate, singleMediaItem, editorReady, editor]);
 
   const handleSubmit = async () => {
     if (!editor || isSubmitting) return;
 
     const content = editor.isEmpty ? undefined : editor.getJSON();
-    if (!media && editor.isEmpty) return;
+    if (!singleMediaItem && editor.isEmpty) return;
 
     setIsSubmitting(true);
     try {
-      const mediaId = media?.id;
-      if (media?.id && !media.isConfirmed) {
-        await mediaService.confirmMedia(media.id);
+      let mediaId: string | undefined = singleMediaItem?.id;
+
+      if (singleMediaItem?.id && !singleMediaItem.isConfirmed) {
+        const confirmResult = await confirmAllUnconfirmed();
+        if (!confirmResult.success) {
+          throw new Error('Xác nhận media thất bại');
+        }
+        mediaId = confirmResult.updatedMedia[0]?.id;
       }
+
       if (isUpdate && data?._id) {
         await commentService.updateComment(data._id, { content, mediaId });
         toast.success('Chỉnh sửa bình luận thành công');
@@ -169,11 +126,15 @@ export default function CommentEditor({
         if (!parentId) toast.success('Đăng bình luận thành công');
       }
       editor.commands.clearContent();
-      setMedia(undefined);
+      handleMediaChange([], {});
       onSuccess?.();
     } catch (error) {
       console.error('Submit failed:', error);
-      toast.error('Có lỗi xảy ra, vui lòng thử lại.');
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Có lỗi xảy ra, vui lòng thử lại.'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -181,15 +142,16 @@ export default function CommentEditor({
 
   if (!editor) return null;
 
-  const canSubmit = !editor.isEmpty || !!media;
+  const canSubmit = !editor.isEmpty || !!singleMediaItem;
 
   const isDisabled =
     !canSubmit ||
     isSubmitting ||
     isPendingDebounce ||
     (isUpdate && !hasChanges) ||
-    media?.isUploading ||
-    !!media?.uploadError;
+    hasUploadingFiles ||
+    hasUploadErrors ||
+    hasConfirmErrors;
 
   const containerClasses = cn({
     'bg-gray-100 rounded-md': variant === 'boxed',
@@ -217,8 +179,8 @@ export default function CommentEditor({
                   <Input
                     type="file"
                     accept="image/*,video/*"
-                    onChange={handleMediaUpload}
-                    disabled={isSubmitting || !!media}
+                    onChange={onHookMediaUpload}
+                    disabled={isSubmitting || media.length > 0}
                     className="hidden"
                   />
                 </label>
@@ -241,11 +203,11 @@ export default function CommentEditor({
           )}
         </Button>
       </div>
-      {media && (
+      {singleMediaItem && (
         <div className="pl-3 pt-2">
           <MediaComponent
             handle={{ onRemove: handleRemoveMedia }}
-            item={media}
+            item={singleMediaItem}
             className={{ container: 'w-24 h-24' }}
           />
         </div>

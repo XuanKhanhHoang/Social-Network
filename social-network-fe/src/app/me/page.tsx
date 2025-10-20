@@ -37,7 +37,8 @@ interface PostData {
 // ------------------------------------------------------------------
 // ĐỊNH NGHĨA COMPONENT CON TẠI CHỖ
 // ------------------------------------------------------------------
-const iconMap: { [key: string]: Icon } = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const iconMap: { [key: string]: any } = {
   'map-pin': MapPin,
   heart: Heart,
   briefcase: Briefcase,

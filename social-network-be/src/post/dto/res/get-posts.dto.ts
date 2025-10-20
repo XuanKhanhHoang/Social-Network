@@ -3,7 +3,7 @@ import { ReactionsBreakdown } from 'src/share/dto/other/reaction-break-down';
 import { Author } from 'src/share/dto/res/author';
 import { BeCursorPaginated } from 'src/share/dto/res/be-paginated.dto';
 import { MediaResponse } from 'src/share/dto/res/media-response';
-import { PostStatus, PostVisibility, ReactionType } from 'src/share/enums';
+import { PostStatus, UserPrivacy, ReactionType } from 'src/share/enums';
 
 export interface GetPostsResponse extends BeCursorPaginated<Post> {}
 
@@ -13,7 +13,7 @@ interface Post {
   content: JSON;
   backgroundValue: string;
   media: MediaResponse[];
-  visibility: PostVisibility;
+  visibility: UserPrivacy;
   reactionsCount: number;
   commentsCount: number;
   sharesCount: number;

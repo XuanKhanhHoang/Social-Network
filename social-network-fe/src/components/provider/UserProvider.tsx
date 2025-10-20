@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useStore } from '@/store';
-import { User } from '@/types-define/dtos';
+import { User } from '@/lib/dtos';
 
 export function UserProvider({
   initialUser,

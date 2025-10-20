@@ -1,6 +1,6 @@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageCircle, Send } from 'lucide-react';
-import { Post } from '@/types-define/dtos';
+import { Post } from '@/lib/dtos';
 import { ExpandableContent } from '@/components/ui/ExpandableContent';
 import { Button } from '@/components/ui/button';
 import CommentItem from './CommentItem';

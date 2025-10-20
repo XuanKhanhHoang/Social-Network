@@ -26,7 +26,7 @@ import { Input } from '@/components/ui/input';
 import { Emoji } from '@/lib/editor/emoji-node';
 import EmojiButton from '@/components/ui/emoji-button';
 import { postService } from '@/services/post';
-import { PostMediaDto } from '@/types-define/dtos';
+import { PostMediaDto } from '@/lib/dtos';
 import { toast } from 'sonner';
 import PostEditorMedia from './PostEditorMedia';
 import _ from 'lodash';

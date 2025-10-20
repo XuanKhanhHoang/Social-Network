@@ -1,4 +1,4 @@
-import { ApiError, RequestOptions } from '@/types-define/types/api';
+import { ApiError, RequestOptions } from './type';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
@@ -23,7 +23,6 @@ export class ApiClient {
       !(body instanceof Blob) &&
       !(body instanceof ArrayBuffer)
     ) {
-      // Nếu body là object → stringify và set JSON
       headers['Content-Type'] = headers['Content-Type'] || 'application/json';
       body = JSON.stringify(body);
     }

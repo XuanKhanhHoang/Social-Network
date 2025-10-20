@@ -7,7 +7,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { PostVisibility } from 'src/share/enums';
+import { UserPrivacy } from 'src/share/enums';
 import { TiptapDocument } from 'src/share/dto/req/tiptap-content.dto';
 
 export class CreatePostDto {
@@ -25,8 +25,8 @@ export class CreatePostDto {
   media?: PostMediaDto[];
 
   @IsOptional()
-  @IsEnum(PostVisibility)
-  visibility?: PostVisibility;
+  @IsEnum(UserPrivacy)
+  visibility?: UserPrivacy;
 
   //   @IsOptional()
   //   @IsString()

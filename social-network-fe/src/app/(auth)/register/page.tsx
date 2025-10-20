@@ -16,7 +16,7 @@ import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { validateEmail, validatePassword } from '@/lib/utils/validation';
 import Link from 'next/link';
 import { authService } from '@/services/auth';
-import { RegisterDto } from '@/types-define/dtos';
+import { RegisterDto } from '@/lib/dtos';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Gender } from '@/lib/constants/enums';
@@ -34,11 +34,9 @@ const RegisterPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-  // Refs để access form values mà không trigger re-render
   const formRef = useRef<HTMLFormElement>(null);
 
-  // Generate days, months, years (move to useMemo để tránh re-create)
-  const { days, months, years, currentYear } = useMemo(() => {
+  const { days, months, years } = useMemo(() => {
     const days = Array.from({ length: 31 }, (_, i) => i + 1);
     const months = [
       'Tháng 1',
@@ -58,10 +56,9 @@ const RegisterPage = () => {
     const currentYear = new Date().getFullYear() - minimumAge;
     const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
 
-    return { days, months, years, currentYear };
+    return { days, months, years };
   }, []);
 
-  // Function để lấy form data
   const getFormData = (): Record<string, string> => {
     if (!formRef.current) return {};
 
@@ -72,35 +69,29 @@ const RegisterPage = () => {
   const validateForm = (data: Record<string, string>): FormErrors => {
     const newErrors: FormErrors = {};
 
-    // Validate firstName
     if (!data.firstName?.trim()) {
       newErrors.firstName = 'Vui lòng nhập họ';
     } else if (data.firstName.length < 2) {
       newErrors.firstName = 'Họ phải có ít nhất 2 ký tự';
     }
 
-    // Validate lastName
     if (!data.lastName?.trim()) {
       newErrors.lastName = 'Vui lòng nhập tên';
     } else if (data.lastName.length < 2) {
       newErrors.lastName = 'Tên phải có ít nhất 2 ký tự';
     }
 
-    // Validate email
     const emailValidation = validateEmail(data.email || '');
     if (!emailValidation.isValid) newErrors.email = emailValidation?.error;
 
-    // Validate password
     const passwordValidation = validatePassword(data.password || '');
     if (!passwordValidation.isValid)
       newErrors.password = passwordValidation.errors;
 
-    // Validate birth date
     if (!data.day || !data.month || !data.year) {
       newErrors.birthDate = 'Vui lòng chọn ngày sinh đầy đủ';
     }
 
-    // Validate gender
     if (!data.gender) {
       newErrors.gender = 'Vui lòng chọn giới tính';
     }
@@ -165,20 +156,17 @@ const RegisterPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
       <div className="flex min-h-screen lg:flex-row flex-col">
-        {/* Left Side - Brand and Description */}
         <div className="flex-1 flex items-center justify-center px-8">
           <div className="max-w-lg">
             <div className="mb-6">
-              <img src="logo.png" alt="ThreshCity Logo" className="h-36" />
+              <img src="logo.png" alt="Logo" className="h-36" />
             </div>
             <p className="text-gray-700 text-lg font-semibold lg:font-normal lg:text-2xl leading-relaxed">
-              ThreshCity giúp bạn kết nối và chia sẻ với mọi người trong cuộc
-              sống.
+              Vibe - Make your vibe.
             </p>
           </div>
         </div>
 
-        {/* Right Side - Register Form */}
         <div className="flex-1 flex items-center justify-center mt-2 lg:mt-0 px-8">
           <div className="w-full max-w-md mt-16">
             <Card className="shadow-2xl">
@@ -311,7 +299,6 @@ const RegisterPage = () => {
                       ))}
                   </div>
 
-                  {/* Birth Date */}
                   <div className="space-y-2 mb-4">
                     <Label className="text-gray-700 text-sm font-medium">
                       Ngày sinh
@@ -375,7 +362,6 @@ const RegisterPage = () => {
                     )}
                   </div>
 
-                  {/* Gender */}
                   <div className="space-y-2 mb-4">
                     <Label className="text-gray-700 text-sm font-medium">
                       Giới tính
@@ -429,7 +415,6 @@ const RegisterPage = () => {
                     của chúng tôi.
                   </div>
 
-                  {/* Register Button */}
                   <Button
                     type="submit"
                     disabled={isSubmitting}
@@ -440,10 +425,8 @@ const RegisterPage = () => {
                   </Button>
                 </form>
 
-                {/* Separator */}
                 <Separator className="my-4" />
 
-                {/* Back to Login */}
                 <div className="text-center">
                   <Button
                     variant="link"
@@ -463,7 +446,6 @@ const RegisterPage = () => {
         </div>
       </div>
 
-      {/* Footer for Desktop */}
       <div className="hidden lg:block mt-3 w-full bg-white border-t border-gray-200 py-4">
         <div className="container mx-auto px-8">
           <p className="text-xs text-gray-400 text-center">

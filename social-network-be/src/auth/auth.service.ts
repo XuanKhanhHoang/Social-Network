@@ -1,7 +1,6 @@
 import {
   Injectable,
   UnauthorizedException,
-  ConflictException,
   BadRequestException,
   NotFoundException,
   Res,
@@ -11,34 +10,33 @@ import { Model } from 'mongoose';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import * as bcrypt from 'bcryptjs';
-import { User } from '../schemas';
-import { RegisterDto, LoginDto, VerifyEmailResponseDto } from './dtos';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { EmailVerification } from 'src/schemas/email-verification.schema';
 import * as crypto from 'crypto';
 import { MailService } from 'src/mail/mail.service';
+import { UserService } from 'src/user/user.service';
+import { RegisterDto } from './dtos/req/register.dto';
+import { VerifyEmailResponseDto } from './dtos/res/verify-email.dto';
+import { LoginDto } from './dtos/req';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(User.name) private userModel: Model<User>,
-    @InjectModel('EmailVerification')
+    @InjectModel(EmailVerification.name)
     private emailVerificationModel: Model<EmailVerification>,
     private jwtService: JwtService,
     private mailService: MailService,
+    private userService: UserService,
   ) {}
 
   private setCookies(res: Response, accessToken: string, refreshToken: string) {
-    // Access token - ngắn hạn
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       maxAge:
-        Number(process.env.JWT_ACCESS_EXPIRES_IN.slice(0, -1)) * 60 * 1000, // 15 minutes
+        Number(process.env.JWT_ACCESS_EXPIRES_IN.slice(0, -1)) * 60 * 1000,
     });
 
-    // Refresh token - dài hạn
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -48,7 +46,7 @@ export class AuthService {
         24 *
         60 *
         60 *
-        1000, // 7 days
+        1000,
     });
   }
   private generateTokens(userId: string) {
@@ -71,22 +69,17 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
   async validateUserID(userId: string) {
-    const user = await this.userModel
-      .findById(userId)
-      .select('avatar email firstName lastName ');
-    return user;
+    return this.userService.findByIdBasic(userId);
   }
+
   async validateUser(
     userId: string,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const user = await this.userModel
-      .findById(userId)
-      .select('avatar email firstName lastName');
-
+    const user = await this.userService.findByIdBasic(userId);
     if (!user) {
-      response.clearCookie('access_token');
-      response.clearCookie('refresh_token');
+      response.clearCookie('accessToken');
+      response.clearCookie('refreshToken');
 
       throw new NotFoundException('User not found');
     }
@@ -94,33 +87,13 @@ export class AuthService {
   }
 
   async register(registerDto: RegisterDto, res: Response) {
-    const { birthDate, firstName, gender, lastName, email, password } =
-      registerDto;
-
-    const existingUser = await this.userModel.findOne({ email });
-    if (existingUser) {
-      throw new ConflictException('User already exists');
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = new this.userModel({
-      firstName,
-      email,
-      password: hashedPassword,
-      lastName,
-      gender,
-      birthDate,
-      emailVerified: false,
-    });
-
-    await user.save();
+    const user = await this.userService.create(registerDto);
 
     const verificationToken = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 24);
     await this.emailVerificationModel.deleteMany({
-      email,
+      email: user.email,
       type: 'registration',
     });
 
@@ -135,7 +108,7 @@ export class AuthService {
     await emailVerification.save();
     try {
       await this.mailService.sendEmailVerification(
-        { email, firstName: user.firstName },
+        { email: user.email, firstName: user.firstName },
         verificationToken,
       );
     } catch (error) {
@@ -150,7 +123,7 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        emailVerified: false,
+        emailVerified: user.isVerified,
       },
     };
   }
@@ -168,17 +141,9 @@ export class AuthService {
       throw new BadRequestException('Invalid or expired verification token');
     }
 
-    const user = await this.userModel.findById(verification.userId);
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
-
-    if (user.isVerified) {
-      throw new BadRequestException('Email already verified');
-    }
-
-    user.isVerified = true;
-    await user.save();
+    const user = await this.userService.markUserAsVerified(
+      verification.userId._id.toString(),
+    );
 
     verification.isUsed = true;
     await verification.save();
@@ -190,13 +155,13 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        emailVerified: true,
+        emailVerified: user.isVerified,
       },
     };
   }
 
   async resendVerificationEmail(email: string) {
-    const user = await this.userModel.findOne({ email });
+    const user = await this.userService.findByEmail(email);
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -225,9 +190,8 @@ export class AuthService {
 
     await emailVerification.save();
 
-    // Gửi lại email
     await this.mailService.sendEmailVerification(
-      { email, firstName: user.firstName },
+      { email: user.email, firstName: user.firstName },
       verificationToken,
     );
 
@@ -237,9 +201,7 @@ export class AuthService {
   async login(loginDto: LoginDto, res: Response) {
     const { email, password } = loginDto;
 
-    const user = await this.userModel.findOne({
-      $and: [{ email }, { isVerified: true }],
-    });
+    const user = await this.userService.findByEmailAndVerified(email);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -270,18 +232,5 @@ export class AuthService {
     res.clearCookie('accessToken');
     res.clearCookie('refreshToken');
     return { message: 'Logout successful' };
-  }
-
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  async cleanupUnverifiedAccounts() {
-    const expiredAccountsDeletedResult = await this.userModel.deleteMany({
-      where: {
-        isEmailVerified: false,
-        emailVerificationExpires: { $lt: new Date() },
-      },
-    });
-    console.log(
-      `Đã xóa ${expiredAccountsDeletedResult.deletedCount} tài khoản chưa xác thực`,
-    );
   }
 }

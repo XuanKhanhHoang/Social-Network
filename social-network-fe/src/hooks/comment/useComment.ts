@@ -8,7 +8,7 @@ import type {
   GetCommentListResponse,
   CreateCommentDto,
   UpdateCommentDto,
-} from '@/types-define/dtos';
+} from '@/lib/dtos';
 
 export const commentKeys = {
   all: ['comments'] as const,

@@ -1,6 +1,6 @@
-import { CreatePostDto, Post, PostListResponse } from '@/types-define/dtos';
+import { CreatePostDto, Post, PostListResponse } from '@/lib/dtos';
 import { ApiClient } from './api';
-import { RequestOptions } from '@/types-define/types';
+import { RequestOptions } from './type';
 
 export const postService = {
   async createPost(data: CreatePostDto): Promise<unknown> {

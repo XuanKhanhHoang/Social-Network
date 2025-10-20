@@ -1,7 +1,7 @@
 // src/posts/schemas/post.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { PostVisibility, ReactionType } from 'src/share/enums';
+import { UserPrivacy, ReactionType } from 'src/share/enums';
 import { PostStatus } from 'src/share/enums';
 import { PostMedia } from './post-media.schema';
 
@@ -19,7 +19,7 @@ export class Post extends Document {
   @Prop({ type: [PostMedia] })
   media?: PostMedia[];
 
-  @Prop({ type: String, enum: PostVisibility, default: PostVisibility.PUBLIC })
+  @Prop({ type: String, enum: UserPrivacy, default: UserPrivacy.PUBLIC })
   visibility: string;
 
   @Prop({ type: Number, default: 0 })

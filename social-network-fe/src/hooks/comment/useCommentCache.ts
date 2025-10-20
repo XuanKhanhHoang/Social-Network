@@ -1,7 +1,7 @@
 import { useQueryClient, InfiniteData } from '@tanstack/react-query';
 import { getUpdatedReactionState } from '@/lib/cache/reaction-updater';
 import type { ReactionType } from '@/lib/constants/enums';
-import { Comment, GetCommentListResponse } from '@/types-define/dtos';
+import { Comment, GetCommentListResponse } from '@/lib/dtos';
 import { commentKeys } from './useComment';
 
 type CommentUpdater = (oldComment: Comment) => Comment;

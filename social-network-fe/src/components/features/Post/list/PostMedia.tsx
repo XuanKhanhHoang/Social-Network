@@ -1,4 +1,4 @@
-import { PostMediaItem } from '@/types-define/dtos';
+import { PostMediaItem } from '@/lib/dtos';
 import { PlayCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useRef } from 'react';

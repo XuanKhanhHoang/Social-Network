@@ -1,5 +1,8 @@
-import { Post } from '@/types-define/dtos';
-import { MediaItem, MediaItemWithHandlingStatus } from '@/types-define/types';
+import { Post } from '@/lib/dtos';
+import {
+  MediaItemWithHandlingStatus,
+  UIMediaItem,
+} from '../../common/MediaComponent/type';
 
 export type PostInEditor = Omit<
   Post,
@@ -20,7 +23,7 @@ export type PostEditorMediaProps = {
   media: MediaItemWithHandlingStatus[];
   handle: {
     onChange: (
-      media: MediaItem[],
+      media: UIMediaItem[],
       captions: { [index: number]: string }
     ) => void;
     handleMediaUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;

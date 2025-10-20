@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { timeAgo } from '@/lib/utils/time';
-import { Post } from '@/types-define/dtos';
+import { Post } from '@/lib/dtos';
 import { MoreHorizontal } from 'lucide-react';
 
 export function PostDetailHeader({ post }: { post: Post }) {

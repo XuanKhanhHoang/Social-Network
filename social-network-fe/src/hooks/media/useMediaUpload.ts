@@ -1,5 +1,5 @@
+import { MediaItemWithHandlingStatus } from '@/components/features/common/MediaComponent/type';
 import { mediaService } from '@/services/media';
-import { MediaItemWithHandlingStatus } from '@/types-define/types';
 import { useState, useCallback, useRef, useEffect } from 'react';
 
 export interface UseMediaUploadOptions {

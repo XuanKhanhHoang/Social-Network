@@ -6,6 +6,7 @@ export type User = {
   lastName: string;
   email: string;
   avatar: string;
+  username: string;
 };
 export type LoginResponseDto = {
   message: string;
@@ -14,13 +15,7 @@ export type LoginResponseDto = {
 
 export type VerifyEmailResponseDto = {
   message: string;
-  user: {
-    _id: unknown;
-    firstName: string;
-    lastName: string;
-    email: string;
-    emailVerified: boolean;
-  };
+  user: User & { emailVerified: boolean };
 };
 export type RegisterDto = {
   firstName: string;

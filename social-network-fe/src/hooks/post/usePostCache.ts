@@ -1,4 +1,4 @@
-import { PostListResponse, PostWithTopComment } from '@/types-define/dtos';
+import { PostListResponse, PostWithTopComment } from '@/lib/dtos';
 import { InfiniteData, useQueryClient } from '@tanstack/react-query';
 import { ReactionType } from '@/lib/constants/enums';
 import { getUpdatedReactionState } from '@/lib/cache/reaction-updater';

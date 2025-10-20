@@ -1,6 +1,6 @@
 import { IsString, IsOptional, IsEnum, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
-import { PostVisibility } from 'src/share/enums';
+import { UserPrivacy } from 'src/share/enums';
 import { CursorPaginationQueryDto } from 'src/share/dto/req/cursor-pagination-query.dto';
 export class GetPostsByCursorDto extends CursorPaginationQueryDto {
   @IsOptional()
@@ -13,6 +13,6 @@ export class GetPostsByCursorDto extends CursorPaginationQueryDto {
   cursor?: string;
 
   @IsOptional()
-  @IsEnum(PostVisibility)
-  visibility?: PostVisibility;
+  @IsEnum(UserPrivacy)
+  visibility?: UserPrivacy;
 }

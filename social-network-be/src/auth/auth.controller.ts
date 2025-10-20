@@ -10,9 +10,10 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto, VerifyEmailResponseDto } from './dtos';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { GetUserId } from 'src/share/decorators/user.decorator';
+import { LoginDto } from './dtos/req';
+import { RegisterDto } from './dtos/req/register.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -49,9 +50,7 @@ export class AuthController {
   }
 
   @Post('verify-email')
-  async verifyEmail(
-    @Body('token') token: string,
-  ): Promise<VerifyEmailResponseDto> {
+  async verifyEmail(@Body('token') token: string) {
     return this.authService.verifyEmail(token);
   }
   @Get('me')

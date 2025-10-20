@@ -1,13 +1,13 @@
 import { ReactionsBreakdown } from 'src/share/dto/other/reaction-break-down';
 import { MediaResponse } from 'src/share/dto/res/media-response';
-import { PostStatus, PostVisibility } from 'src/share/enums';
+import { PostStatus, UserPrivacy } from 'src/share/enums';
 
 export interface CreatePostResponse {
   author: string;
   content: JSON;
   backgroundValue: string;
   media: MediaResponse[];
-  visibility: PostVisibility;
+  visibility: UserPrivacy;
   reactionsCount: number;
   commentsCount: number;
   sharesCount: number;

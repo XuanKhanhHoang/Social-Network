@@ -13,7 +13,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import { Emoji } from '@/lib/editor/emoji-node';
 import { generateHTML } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { PostWithTopComment } from '@/types-define/dtos';
+import { PostWithTopComment } from '@/lib/dtos';
 import { PostReactionButton } from '@/components/wrappers/PostReaction';
 
 function PostItem({ post }: { post: PostWithTopComment }) {

@@ -5,3 +5,9 @@ export type UploadTempMediaResponseDto = {
   expiresAt: Date;
   message: string;
 };
+
+export type MediaItem = {
+  id: string;
+  mediaType: string;
+  url: string;
+};

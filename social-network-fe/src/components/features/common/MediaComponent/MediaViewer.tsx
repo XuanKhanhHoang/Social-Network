@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { PostMediaItem } from '@/types-define/dtos';
+import { PostMediaItem } from '@/lib/dtos';
 
 export default function MediaViewer({
   media,

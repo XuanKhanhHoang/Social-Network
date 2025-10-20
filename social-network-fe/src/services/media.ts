@@ -1,4 +1,4 @@
-import { UploadTempMediaResponseDto } from '@/types-define/dtos';
+import { UploadTempMediaResponseDto } from '@/lib/dtos';
 import { ApiClient } from './api';
 
 export const mediaService = {

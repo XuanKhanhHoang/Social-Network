@@ -1,4 +1,4 @@
-import { PostVisibility, ReactionType } from '@/lib/constants/enums';
+import { UserPrivacy, ReactionType } from '@/lib/constants/enums';
 import { JSONContent } from '@tiptap/react';
 import { Comment } from './comment';
 import { CursorPaginationResponse } from './pagination';
@@ -7,7 +7,7 @@ export type CreatePostDto = {
   content: Record<string, unknown>;
   backgroundValue?: string;
   media?: PostMediaDto[];
-  visibility?: PostVisibility;
+  visibility?: UserPrivacy;
 };
 export type PostMediaDto = {
   id: string;

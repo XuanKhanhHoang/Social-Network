@@ -1,17 +1,30 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtService } from '@nestjs/jwt';
+import { Reflector } from '@nestjs/core';
+import { IS_PUBLIC_KEY } from 'src/share/decorators/allow-public-req.decorator';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-  constructor(private jwtService: JwtService) {
+  constructor(
+    private jwtService: JwtService,
+    private reflector: Reflector,
+  ) {
     super();
   }
 
-  async canActivate(context: any): Promise<boolean> {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const response = context.switchToHttp().getResponse();
-
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (isPublic) return true;
     const accessToken = request.cookies?.accessToken;
     const refreshToken = request.cookies?.refreshToken;
 
@@ -19,7 +32,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       throw new UnauthorizedException('No tokens provided');
     }
     try {
-      // Try to verify access token
       if (accessToken) {
         const payload: { _id: string; iat: number; exp: number } =
           this.jwtService.verify(accessToken);
@@ -29,7 +41,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       }
       if (refreshToken) throw new Error();
     } catch (error) {
-      // Access token expired, try refresh token
       if (refreshToken) {
         try {
           const payload: { _id: string; iat: number; exp: number } =

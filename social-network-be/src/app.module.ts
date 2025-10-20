@@ -14,6 +14,7 @@ import { PostModule } from './post/post.module';
 import { CommentModule } from './comment/comment.module';
 import { ReactionModule } from './reaction/reaction.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { UserModule } from './user/user.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -55,6 +56,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     PostModule,
     CommentModule,
     ReactionModule,
+    UserModule,
   ],
 })
 export class AppModule {}

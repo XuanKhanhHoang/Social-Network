@@ -6,7 +6,7 @@ import MediaViewer from '../../common/MediaComponent/MediaViewer';
 import { useRouter } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import PostDetailSkeleton from './PostDetailSkeleton';
-import { Post } from '@/types-define/dtos';
+import { Post } from '@/lib/dtos';
 import { generateHTML } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Emoji } from '@/lib/editor/emoji-node';

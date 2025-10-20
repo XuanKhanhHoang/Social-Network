@@ -3,9 +3,9 @@ import {
   RegisterDto,
   User,
   VerifyEmailResponseDto,
-} from '@/types-define/dtos';
+} from '@/lib/dtos';
 import { ApiClient } from './api';
-import { RequestOptions } from '@/types-define/types';
+import { RequestOptions } from './type';
 
 export const authService = {
   async login(email: string, password: string): Promise<LoginResponseDto> {

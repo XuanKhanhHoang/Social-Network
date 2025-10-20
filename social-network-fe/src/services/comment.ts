@@ -2,9 +2,9 @@ import {
   CreateCommentDto,
   GetCommentListResponse,
   UpdateCommentDto,
-} from '@/types-define/dtos';
+} from '@/lib/dtos';
 import { ApiClient } from './api';
-import { RequestOptions } from '@/types-define/types';
+import { RequestOptions } from './type';
 
 export const commentService = {
   async createComment(

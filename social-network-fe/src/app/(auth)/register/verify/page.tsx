@@ -14,7 +14,7 @@ import Link from 'next/link';
 export default async function Page({
   searchParams,
 }: {
-  searchParams: { token?: string };
+  searchParams: Promise<{ token?: string }>;
 }) {
   const token = (await searchParams).token;
 

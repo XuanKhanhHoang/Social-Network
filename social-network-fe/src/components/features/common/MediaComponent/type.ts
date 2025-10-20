@@ -1,4 +1,4 @@
-import { MediaItemWithHandlingStatus } from '@/types-define/types';
+import { MediaItem } from '@/lib/dtos';
 
 export type MediaComponentParams = {
   item: MediaItemWithHandlingStatus;
@@ -12,4 +12,16 @@ export type MediaComponentParams = {
     onRemove?: () => void;
   };
   justShow?: boolean;
+};
+
+export type UIMediaItem = Omit<MediaItem, 'id'> & {
+  file?: File;
+  id?: string;
+};
+export type MediaItemWithHandlingStatus = UIMediaItem & {
+  isUploading?: boolean;
+  uploadError?: string;
+  confirmError?: string;
+  isConfirming?: boolean;
+  isConfirmed?: boolean;
 };

@@ -1,7 +1,32 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
-import { Gender } from 'src/share/enums';
+import { Document, Types } from 'mongoose';
+import { Gender, UserPrivacy } from 'src/share/enums';
 
+@Schema({ _id: false })
+class PrivacySettings {
+  @Prop({
+    type: String,
+    enum: UserPrivacy,
+    default: UserPrivacy.PUBLIC,
+  })
+  work: UserPrivacy;
+
+  @Prop({
+    type: String,
+    enum: UserPrivacy,
+    default: UserPrivacy.PUBLIC,
+  })
+  currentLocation: UserPrivacy;
+
+  @Prop({
+    type: String,
+    enum: UserPrivacy,
+    default: UserPrivacy.FRIENDS,
+  })
+  friendList: UserPrivacy;
+}
+
+const PrivacySettingsSchema = SchemaFactory.createForClass(PrivacySettings);
 @Schema({ timestamps: true })
 export class User extends Document {
   @Prop({ required: true })
@@ -10,13 +35,22 @@ export class User extends Document {
   @Prop({ required: true })
   lastName: string;
 
-  @Prop({ required: true, unique: true })
+  @Prop({
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true,
+    index: true,
+  })
+  username: string;
+
+  @Prop({ required: true, unique: true, index: true })
   email: string;
 
-  @Prop({ required: false, unique: true })
+  @Prop({ required: false, unique: true, sparse: true, default: null })
   phoneNumber: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, select: false })
   password: string;
 
   @Prop({ required: true })
@@ -28,8 +62,33 @@ export class User extends Document {
   @Prop({ default: '' })
   avatar: string;
 
+  @Prop({ default: '' })
+  coverPhoto: string;
+
   @Prop({ default: false })
   isVerified: boolean;
+
+  @Prop({ default: '', maxLength: 250 })
+  bio: string;
+
+  @Prop({ default: '' })
+  work: string;
+
+  @Prop({ default: '' })
+  currentLocation: string;
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
+  friends: Types.ObjectId[];
+
+  @Prop({ type: Number, default: 0 })
+  friendCount: number;
+  @Prop({
+    type: PrivacySettingsSchema,
+    default: () => ({}),
+  })
+  privacySettings: PrivacySettings;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

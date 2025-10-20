@@ -2,7 +2,7 @@
 
 import { ReactionTargetType, ReactionType } from '@/lib/constants/enums';
 import ReactionButton from '../ui/reaction-button';
-import { Comment } from '@/types-define/dtos';
+import { Comment } from '@/lib/dtos';
 import { useUpdateCommentCache } from '@/hooks/comment/useCommentCache';
 type CommentReactionButtonProps = Omit<
   React.ComponentProps<typeof ReactionButton>,

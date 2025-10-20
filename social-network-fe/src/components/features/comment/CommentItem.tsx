@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { timeAgo } from '@/lib/utils/time';
-import type { Comment } from '@/types-define/dtos';
+import type { Comment } from '@/lib/dtos';
 import { generateHTML } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Emoji } from '@/lib/editor/emoji-node';
