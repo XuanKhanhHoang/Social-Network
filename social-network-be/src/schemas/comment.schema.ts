@@ -1,4 +1,3 @@
-// src/comments/schemas/comment.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { ReactionType } from 'src/share/enums';
@@ -29,6 +28,9 @@ export class Comment extends Document {
   @Prop({ type: Number, default: 0 })
   repliesCount: number;
 
+  @Prop({ type: Number, default: 0 })
+  engagementScore: number;
+
   @Prop({
     type: Map,
     of: Number,
@@ -36,6 +38,9 @@ export class Comment extends Document {
     ref: 'Reaction',
   })
   reactionsBreakdown: Record<ReactionType, number>;
+
+  createAt: Date;
+  updateAt: Date;
 }
 
 export const CommentSchema = SchemaFactory.createForClass(Comment);

@@ -3,7 +3,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Reaction } from 'src/schemas';
-import { reactionEvent } from 'src/share/emitter-events';
+import { reactionEvent } from 'src/share/events';
 import { ReactionTargetType, ReactionType } from 'src/share/enums';
 
 @Injectable()

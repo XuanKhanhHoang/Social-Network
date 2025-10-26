@@ -3,7 +3,7 @@ import { Document, Types } from 'mongoose';
 import { Gender, UserPrivacy } from 'src/share/enums';
 
 @Schema({ _id: false })
-class PrivacySettings {
+export class PrivacySettings {
   @Prop({
     type: String,
     enum: UserPrivacy,

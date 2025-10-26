@@ -33,7 +33,7 @@ const NAV_ITEMS = [
   },
   { id: 'notifications', label: 'Thông báo', icon: Bell, href: '#', badge: 5 },
   { id: 'friends', label: 'Bạn bè', icon: Users, href: '#' },
-  { id: 'profile', label: 'Trang cá nhân', icon: User, href: '/me' },
+  { id: 'profile', label: 'Trang cá nhân', icon: User, href: '/user' },
 ];
 
 const VibeLogo = () => (

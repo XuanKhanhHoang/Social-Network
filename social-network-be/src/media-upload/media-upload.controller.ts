@@ -19,7 +19,6 @@ import { GetUserId } from 'src/share/decorators/user.decorator';
 export class MediaUploadController {
   constructor(private readonly mediaUploadService: MediaUploadService) {}
 
-  // Upload temporary media
   @Post('upload-temp')
   @UseInterceptors(
     FileInterceptor('file', {
@@ -42,7 +41,6 @@ export class MediaUploadController {
     return this.mediaUploadService.uploadTemporary(file, userId);
   }
 
-  // Confirm upload
   @Post('confirm')
   async confirmUpload(
     @Body() confirmDto: ConfirmTempMediaDto,
@@ -51,7 +49,6 @@ export class MediaUploadController {
     return this.mediaUploadService.confirmUpload(confirmDto.tempId, userId);
   }
 
-  // Cancel upload
   @Delete('temp/:id')
   async cancelUpload(
     @Param('id') tempMediaId: string,

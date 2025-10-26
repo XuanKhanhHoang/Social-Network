@@ -11,6 +11,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { MediaUpload } from 'src/schemas';
 import { MediaType } from 'src/share/enums';
+import { UserService } from 'src/user/services/user.service';
 
 @Injectable()
 export class MediaUploadService {
@@ -19,6 +20,7 @@ export class MediaUploadService {
   constructor(
     @Inject('CLOUDINARY') private cloudinaryInstance: typeof cloudinary,
     @InjectModel(MediaUpload.name) private mediaModel: Model<MediaUpload>,
+    private userService: UserService,
   ) {}
 
   private detectMediaType(mimetype: string): string {
@@ -27,6 +29,7 @@ export class MediaUploadService {
     throw new BadRequestException('Unsupported media type');
   }
 
+  async getPhotoByUserName(username: string) {}
   async uploadTemporary(file: Express.Multer.File, userId: string) {
     const mediaType = this.detectMediaType(file.mimetype);
     const maxSize =

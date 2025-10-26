@@ -10,11 +10,11 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { CommentService } from './comment.service';
 import { CreateCommentDto, UpdateCommentDto } from './dto/req';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ParseMongoIdPipe } from 'src/share/pipe/parse-mongo-id-pipe';
 import { GetUserId } from 'src/share/decorators/user.decorator';
+import { CommentService } from './services/comment.service';
 
 @UseGuards(JwtAuthGuard)
 @Controller('comments')

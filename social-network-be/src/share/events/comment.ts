@@ -1,4 +1,4 @@
-import { makeEventTree } from './makeTree';
+import { makeEventTree } from '../utils/makeEventTree';
 
 const Comment = makeEventTree('comment', {
   created: 'created',

@@ -13,7 +13,7 @@ import * as bcrypt from 'bcryptjs';
 import { EmailVerification } from 'src/schemas/email-verification.schema';
 import * as crypto from 'crypto';
 import { MailService } from 'src/mail/mail.service';
-import { UserService } from 'src/user/user.service';
+import { UserService } from 'src/user/services';
 import { RegisterDto } from './dtos/req/register.dto';
 import { VerifyEmailResponseDto } from './dtos/res/verify-email.dto';
 import { LoginDto } from './dtos/req';

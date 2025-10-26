@@ -18,5 +18,4 @@ export interface CreatePostResponse {
   _id: string;
   createdAt: Date;
   updatedAt: Date;
-  __v: number;
 }

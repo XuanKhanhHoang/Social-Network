@@ -8,13 +8,13 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { PostService } from './post.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreatePostDto } from './dto/req/create-post.dto';
 import { UpdatePostDto } from './dto/req/update-post.dto';
 import { GetPostsByCursorDto } from './dto/req/get-posts.dto';
 import { ParseMongoIdPipe } from 'src/share/pipe/parse-mongo-id-pipe';
 import { GetUserId } from 'src/share/decorators/user.decorator';
+import { PostService } from './services/post.service';
 
 @UseGuards(JwtAuthGuard)
 @Controller('post')

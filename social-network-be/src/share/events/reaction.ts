@@ -1,4 +1,4 @@
-import { makeEventTree } from './makeTree';
+import { makeEventTree } from '../utils/makeEventTree';
 
 const Reaction = makeEventTree('reaction', {
   created: 'created',
