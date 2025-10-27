@@ -3,7 +3,7 @@ import { Document, Types } from 'mongoose';
 import { ReactionTargetType, ReactionType } from 'src/share/enums';
 
 @Schema({ timestamps: true })
-export class Reaction extends Document {
+export class ReactionDocument extends Document {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   user: Types.ObjectId;
 
@@ -16,5 +16,5 @@ export class Reaction extends Document {
   @Prop({ type: String, enum: ReactionType, required: true })
   reactionType: ReactionType;
 }
-export const ReactionSchema = SchemaFactory.createForClass(Reaction);
+export const ReactionSchema = SchemaFactory.createForClass(ReactionDocument);
 ReactionSchema.index({ targetId: 1, targetType: 1, user: 1 });

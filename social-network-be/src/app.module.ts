@@ -16,6 +16,11 @@ import { ReactionModule } from './reaction/reaction.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { UserModule } from './user/user.module';
 import { RankingModule } from './ranking/ranking.module';
+import { PostModule } from './domains/post/post.module';
+import { PostModule } from './use-case/post/post.module';
+import { PostReService } from './use-case/post.re/post.re.service';
+import { GetPostsFeedService } from './use-case/get-posts-feed/get-posts-feed.service';
+import { CommentModule } from './domains/comment/comment.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -60,5 +65,6 @@ import { RankingModule } from './ranking/ranking.module';
     UserModule,
     RankingModule,
   ],
+  providers: [PostReService, GetPostsFeedService],
 })
 export class AppModule {}

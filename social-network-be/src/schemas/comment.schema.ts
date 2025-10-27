@@ -3,9 +3,9 @@ import { Document, Types } from 'mongoose';
 import { ReactionType } from 'src/share/enums';
 
 @Schema({ timestamps: true })
-export class Comment extends Document {
+export class CommentDocument extends Document {
   @Prop({ type: Types.ObjectId, ref: 'Post', required: true, index: true })
-  post: Types.ObjectId;
+  postId: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   author: Types.ObjectId;
@@ -43,4 +43,4 @@ export class Comment extends Document {
   updateAt: Date;
 }
 
-export const CommentSchema = SchemaFactory.createForClass(Comment);
+export const CommentSchema = SchemaFactory.createForClass(CommentDocument);

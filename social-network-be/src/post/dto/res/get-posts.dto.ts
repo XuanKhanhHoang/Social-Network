@@ -1,4 +1,3 @@
-import { Comment } from 'src/schemas';
 import { ReactionsBreakdown } from 'src/share/dto/other/reaction-break-down';
 import { Author } from 'src/share/dto/res/author';
 import { BeCursorPaginated } from 'src/share/dto/res/be-paginated.dto';
@@ -24,5 +23,4 @@ interface Post {
   createdAt: Date;
   updatedAt: Date;
   userReactionType: null | ReactionType;
-  userComments: Comment[];
 }

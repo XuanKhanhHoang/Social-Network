@@ -109,17 +109,23 @@ export abstract class BaseRepository<T extends Document> {
   async updateByIdAndGet(
     id: string,
     updateData: UpdateQuery<T>,
-    session?: ClientSession,
+    options?: BaseQueryOptions<T>,
   ): Promise<T | null> {
-    const options: { new: boolean; session?: ClientSession } = {
-      new: true,
-    };
-    if (session) {
-      options.session = session;
-    }
-    return this.model.findByIdAndUpdate(id, updateData, options).exec();
+    return this.model
+      .findByIdAndUpdate(id, updateData, {
+        new: true,
+        runValidators: true,
+        ...options,
+      })
+      .exec();
   }
-
+  async updateMany(
+    filter: FilterQuery<T>,
+    updateData: UpdateQuery<T>,
+    session?: ClientSession,
+  ): Promise<UpdateWriteOpResult> {
+    return this.model.updateMany(filter, updateData, { session }).exec();
+  }
   async bulkWrite(
     ops: AnyBulkWriteOperation<T>[],
     session?: ClientSession,

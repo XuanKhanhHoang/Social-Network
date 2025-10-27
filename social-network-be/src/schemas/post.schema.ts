@@ -6,7 +6,7 @@ import { PostStatus } from 'src/share/enums';
 import { PostMedia } from './post-media.schema';
 
 @Schema({ timestamps: true })
-export class Post extends Document {
+export class PostDocument extends Document {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   author: Types.ObjectId;
 
@@ -64,4 +64,4 @@ export class Post extends Document {
   updatedAt: Date;
 }
 
-export const PostSchema = SchemaFactory.createForClass(Post);
+export const PostSchema = SchemaFactory.createForClass(PostDocument);

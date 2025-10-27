@@ -7,24 +7,24 @@ import {
   Types,
   UpdateQuery,
 } from 'mongoose';
-import { Comment } from 'src/schemas/comment.schema';
 import { ReactionTargetType } from 'src/share/enums';
 import {
-  AggregatedComment,
-  AggregatedReplyComment,
   CommentCursorData,
   CommentWithMedia,
   CreateCommentData,
+  ReplyComment,
   ReplyCursorData,
   UpdateCommentData,
-} from '../comment.type';
+} from './interfaces/comment.type';
 import { BaseRepository } from 'src/share/base-class/base-repository.service';
+import { CommentDocument } from 'src/schemas';
+import { TopCommentInPost } from 'src/domains/comment/interfaces/comment.type';
 
 @Injectable()
-export class CommentRepository extends BaseRepository<Comment> {
+export class CommentRepository extends BaseRepository<CommentDocument> {
   constructor(
-    @InjectModel(Comment.name)
-    protected readonly model: Model<Comment>,
+    @InjectModel(CommentDocument.name)
+    protected readonly model: Model<CommentDocument>,
   ) {
     super(model);
   }
@@ -108,10 +108,10 @@ export class CommentRepository extends BaseRepository<Comment> {
   async create(
     data: CreateCommentData,
     session?: ClientSession,
-  ): Promise<Comment> {
+  ): Promise<CommentDocument> {
     const modelData = {
       author: new Types.ObjectId(data.authorId),
-      post: new Types.ObjectId(data.postId),
+      postId: new Types.ObjectId(data.postId),
       content: data.content,
       parentId: data.parentId ? new Types.ObjectId(data.parentId) : undefined,
       mediaId: data.mediaId ? new Types.ObjectId(data.mediaId) : undefined,
@@ -123,8 +123,8 @@ export class CommentRepository extends BaseRepository<Comment> {
     id: string,
     data: UpdateCommentData,
     session?: ClientSession,
-  ): Promise<Comment | null> {
-    const updateQuery: UpdateQuery<Comment> = {};
+  ): Promise<CommentDocument | null> {
+    const updateQuery: UpdateQuery<CommentDocument> = {};
     if (data.content !== undefined) {
       updateQuery.content = data.content;
     }
@@ -159,7 +159,7 @@ export class CommentRepository extends BaseRepository<Comment> {
     userId: string,
     limit: number,
     cursor?: CommentCursorData,
-  ): Promise<AggregatedComment[]> {
+  ): Promise<CommentWithMedia[]> {
     const postIdObj = new Types.ObjectId(postId);
     const userIdObj = new Types.ObjectId(userId);
 
@@ -167,7 +167,7 @@ export class CommentRepository extends BaseRepository<Comment> {
 
     pipeline.push({
       $match: {
-        post: postIdObj,
+        postId: postIdObj,
         parentId: { $exists: false },
       },
     });
@@ -235,6 +235,7 @@ export class CommentRepository extends BaseRepository<Comment> {
           avatar: '$authorInfo.avatar',
         },
         media: { $cond: { if: '$media', then: '$media', else: null } },
+        postId: { $toString: '$postId' },
         mentionedUser: {
           $cond: {
             if: '$mentionedUserInfo',
@@ -252,7 +253,7 @@ export class CommentRepository extends BaseRepository<Comment> {
         },
       },
     });
-    return this.model.aggregate(pipeline);
+    return this.model.aggregate<CommentWithMedia>(pipeline);
   }
 
   async getCommentReplies(
@@ -260,7 +261,7 @@ export class CommentRepository extends BaseRepository<Comment> {
     userId: string,
     limit: number = 20,
     cursor?: ReplyCursorData,
-  ): Promise<AggregatedReplyComment[]> {
+  ): Promise<ReplyComment[]> {
     const parentIdObj = new Types.ObjectId(commentId);
     const userIdObj = new Types.ObjectId(userId);
 
@@ -317,6 +318,7 @@ export class CommentRepository extends BaseRepository<Comment> {
         $project: {
           _id: 1,
           content: 1,
+          postId: { $toString: '$postId' },
           reactionsCount: 1,
           createdAt: 1,
           parentId: 1,
@@ -348,21 +350,21 @@ export class CommentRepository extends BaseRepository<Comment> {
 
     pipeline.push(...commonLookupStages);
 
-    return this.model.aggregate<AggregatedReplyComment>(pipeline);
+    return this.model.aggregate<ReplyComment>(pipeline);
   }
   async findTopCommentsForPosts(
-    postIds: Types.ObjectId[],
-    userId: Types.ObjectId,
-  ): Promise<any[]> {
-    //  AggregatedTopComment[] //TODO NEED TO BE FIXED
-
+    postIdsInp: string[],
+    userIdInp: string,
+  ): Promise<TopCommentInPost[]> {
+    const postIds = postIdsInp.map((id) => new Types.ObjectId(id));
+    const userId = new Types.ObjectId(userIdInp);
     const { GRAVITY, REPLY_WEIGHT, MILLISECONDS_IN_HOUR } =
       this.RELEVANCE_SCORE_CONFIG;
 
     const pipeline: PipelineStage[] = [];
     pipeline.push({
       $match: {
-        post: { $in: postIds },
+        postId: { $in: postIds },
         parentId: { $exists: false },
       },
     });
@@ -397,10 +399,10 @@ export class CommentRepository extends BaseRepository<Comment> {
     );
 
     pipeline.push(
-      { $sort: { post: 1, relevanceScore: -1 } },
+      { $sort: { postId: 1, relevanceScore: -1 } },
       {
         $group: {
-          _id: '$post',
+          _id: '$postId',
           topCommentDoc: { $first: '$$ROOT' },
         },
       },
@@ -409,7 +411,7 @@ export class CommentRepository extends BaseRepository<Comment> {
     pipeline.push({
       $project: {
         _id: '$topCommentDoc._id',
-        post: '$topCommentDoc.post',
+        postId: '$topCommentDoc.postId',
         author: '$topCommentDoc.author',
         content: '$topCommentDoc.content',
         mediaId: '$topCommentDoc.mediaId',
@@ -435,7 +437,7 @@ export class CommentRepository extends BaseRepository<Comment> {
         repliesCount: 1,
         reactionsBreakdown: 1,
         createdAt: 1,
-        post: 1,
+        postId: { $toString: '$postId' },
         author: {
           _id: '$authorInfo._id',
           firstName: '$authorInfo.firstName',

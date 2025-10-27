@@ -7,24 +7,23 @@ import {
   Types,
   UpdateResult,
 } from 'mongoose';
-import { Post } from 'src/schemas';
 import { ReactableRepository } from 'src/share/base-class/reactable-repository.service';
 import {
-  AggregatedPost,
   CreatePostData,
   PaginatedPhotos,
   PhotoPreview,
+  Post,
   PostCursorData,
-} from '../post.type';
+} from './interfaces/post.type';
 import { PostStatus, UserPrivacy } from 'src/share/enums';
-
+import { PostDocument } from 'src/schemas';
 @Injectable()
-export class PostRepository extends ReactableRepository<Post> {
+export class PostRepository extends ReactableRepository<PostDocument> {
   private readonly logger = new Logger(PostRepository.name);
 
   constructor(
-    @InjectModel(Post.name)
-    protected readonly model: Model<Post>,
+    @InjectModel(PostDocument.name)
+    protected readonly model: Model<PostDocument>,
   ) {
     super(model);
   }
@@ -153,7 +152,10 @@ export class PostRepository extends ReactableRepository<Post> {
     };
   }
   //* Handlers
-  async create(data: CreatePostData, session?: ClientSession): Promise<Post> {
+  async create(
+    data: CreatePostData,
+    session?: ClientSession,
+  ): Promise<PostDocument> {
     const media = data.media.map((item) => ({
       ...item,
       mediaId: new Types.ObjectId(item.mediaId),
@@ -168,7 +170,7 @@ export class PostRepository extends ReactableRepository<Post> {
     limit: number,
     userId: string,
     cursor?: PostCursorData,
-  ): Promise<AggregatedPost[]> {
+  ): Promise<any[]> {
     const pipeline: PipelineStage[] = [];
     pipeline.push({ $match: { status: PostStatus.ACTIVE } });
     if (cursor) {
@@ -200,12 +202,9 @@ export class PostRepository extends ReactableRepository<Post> {
       { $project: { mediaDetails: 0 } },
       ...this.getUserReactionStage(userId),
     );
-    return this.model.aggregate<AggregatedPost>(pipeline);
+    return this.model.aggregate<Post>(pipeline);
   }
-  async findFullPostById(
-    postId: string,
-    userId: string,
-  ): Promise<AggregatedPost | null> {
+  async findFullPostById(postId: string, userId: string): Promise<Post | null> {
     const aggregationPipeline: PipelineStage[] = [
       {
         $match: {
@@ -220,11 +219,8 @@ export class PostRepository extends ReactableRepository<Post> {
       ...this.getUserReactionStage(userId),
     ];
 
-    const [post] = await this.model
-      .aggregate<AggregatedPost>(aggregationPipeline)
-      .exec();
+    const [post] = await this.model.aggregate<Post>(aggregationPipeline).exec();
 
-    // 3. TRẢ VỀ KẾT QUẢ
     return post || null;
   }
   async increaseCommentCount(

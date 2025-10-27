@@ -1,9 +1,5 @@
 import { TiptapDocument } from 'src/share/dto/req/tiptap-content.dto';
-import { MediaType, ReactionType } from 'src/share/enums';
-import { Author } from 'src/share/dto/res/author';
-import { ReactionsBreakdown } from 'src/share/dto/other/reaction-break-down';
-import { MediaResponse } from 'src/share/dto/res/media-response';
-import { Comment } from 'src/schemas';
+import { MediaType } from 'src/share/enums';
 import { Types } from 'mongoose';
 
 export interface CommentCursorData {
@@ -27,33 +23,7 @@ export type UpdateCommentData = {
   content?: TiptapDocument;
   mediaId?: string | null;
 };
-export interface AggregatedComment {
-  _id: string;
-  author: Author;
-  content: JSON;
-  reactionsCount: number;
-  reactionsBreakdown: ReactionsBreakdown;
-  createdAt: Date;
-  priority: number;
-  engagementScore: null;
-  media: MediaResponse[];
-  mentionedUser: Author | null;
-  myReaction: ReactionType | null;
-  repliesCount: number;
-}
-export interface AggregatedReplyComment {
-  _id: string;
-  author: Author;
-  content: JSON;
-  reactionsCount: number;
-  reactionsBreakdown: ReactionsBreakdown;
-  createdAt: Date;
-  priority: number;
-  engagementScore: null;
-  media: MediaResponse[];
-  mentionedUser: Author | null;
-  myReaction: ReactionType | null;
-}
+
 export type CommentWithMedia = Omit<Comment, 'mediaId'> & {
   mediaId: {
     cloudinaryPublicId: string;

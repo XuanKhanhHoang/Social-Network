@@ -9,17 +9,27 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ClientSession, Model, Types } from 'mongoose';
 import { v2 as cloudinary } from 'cloudinary';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { MediaUpload } from 'src/schemas';
 import { MediaType } from 'src/share/enums';
 import { UserService } from 'src/user/services/user.service';
+import { MediaUploadDocument } from 'src/schemas';
 
+export interface MediaUpload {
+  cloudinaryPublicId: string;
+  cloudinaryUrl: string;
+  originalFilename: string;
+  mediaType: MediaType;
+  isConfirmed: boolean;
+  userId: string;
+  _id: string;
+}
 @Injectable()
 export class MediaUploadService {
   private readonly logger = new Logger(MediaUploadService.name);
 
   constructor(
     @Inject('CLOUDINARY') private cloudinaryInstance: typeof cloudinary,
-    @InjectModel(MediaUpload.name) private mediaModel: Model<MediaUpload>,
+    @InjectModel(MediaUploadDocument.name)
+    private mediaModel: Model<MediaUploadDocument>,
     private userService: UserService,
   ) {}
 
@@ -171,14 +181,16 @@ export class MediaUploadService {
     }
   }
   public async deleteFromDb(mediaId: string, session?: ClientSession) {
-    const media = await this.mediaModel.findOne(
-      {
-        _id: mediaId,
-        isConfirmed: false,
-      },
-      null,
-      { session },
-    );
+    const media = await this.mediaModel
+      .findOne(
+        {
+          _id: mediaId,
+          isConfirmed: false,
+        },
+        null,
+        { session },
+      )
+      .lean();
 
     if (!media) {
       return { message: 'Media not found or already confirmed, skipped' };
@@ -206,7 +218,9 @@ export class MediaUploadService {
       return false;
     }
   }
-  private async deleteMediaOnAllNotSafe(media: MediaUpload) {
+  private async deleteMediaOnAllNotSafe(
+    media: MediaUpload | MediaUploadDocument,
+  ) {
     try {
       await this.deleteFromDb(media._id.toString());
 
@@ -226,6 +240,42 @@ export class MediaUploadService {
       this.logger.error('Failed to delete media from DB:', error);
       throw error;
     }
+  }
+  async batchDeleteFromDb(
+    mediaIds: string[],
+    session?: ClientSession,
+  ): Promise<MediaUpload[]> {
+    if (mediaIds.length === 0) return [];
+
+    const deletedMedias: MediaUpload[] = [];
+
+    for (const mediaId of mediaIds) {
+      const media = (await this.deleteFromDb(
+        mediaId,
+        session,
+      )) as unknown as MediaUpload;
+      if (media) {
+        deletedMedias.push(media);
+      }
+    }
+
+    return deletedMedias;
+  }
+  async batchDeleteFromCloud(medias: MediaUpload[]): Promise<void> {
+    if (medias.length === 0) return;
+
+    const results = await Promise.allSettled(
+      medias.map((m) =>
+        this.deleteFromCloud(m.cloudinaryPublicId, m.mediaType as MediaType),
+      ),
+    );
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        this.logger.error(
+          `Failed to delete media ${medias[index]._id} from cloud: ${result.reason}`,
+        );
+      }
+    });
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)

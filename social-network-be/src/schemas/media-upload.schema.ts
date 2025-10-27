@@ -5,7 +5,7 @@ import { MediaType } from 'src/share/enums';
 @Schema({
   timestamps: true,
 })
-export class MediaUpload extends Document {
+export class MediaUploadDocument extends Document {
   @Prop({ required: true })
   cloudinaryPublicId: string;
 
@@ -27,5 +27,6 @@ export class MediaUpload extends Document {
   @Prop({ type: Date, default: () => new Date(Date.now() + 15 * 60 * 1000) })
   expiresAt?: Date;
 }
-export const MediaUploadSchema = SchemaFactory.createForClass(MediaUpload);
+export const MediaUploadSchema =
+  SchemaFactory.createForClass(MediaUploadDocument);
 MediaUploadSchema.index({ userId: 1, isConfirmed: 1 });

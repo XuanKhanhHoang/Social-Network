@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
 @Schema({ timestamps: true })
-export class EmailVerification extends Document {
+export class EmailVerificationDocument extends Document {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   userId: Types.ObjectId;
 
@@ -26,6 +26,7 @@ export class EmailVerification extends Document {
   type: string;
 }
 
-export const EmailVerificationSchema =
-  SchemaFactory.createForClass(EmailVerification);
+export const EmailVerificationSchema = SchemaFactory.createForClass(
+  EmailVerificationDocument,
+);
 EmailVerificationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });

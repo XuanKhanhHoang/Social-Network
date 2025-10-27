@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
-import { Connection, Types } from 'mongoose';
+import { Connection } from 'mongoose';
 import { Comment } from 'src/schemas';
 import { CreateCommentDto, UpdateCommentDto } from '../dto/req';
 import { MediaUploadService } from 'src/media-upload/media-upload.service';
@@ -245,12 +245,10 @@ export class CommentService {
     if (!postIds || postIds.length === 0) {
       return new Map();
     }
-
     const topComments = await this.commentRepository.findTopCommentsForPosts(
-      postIds.map((id) => new Types.ObjectId(id)),
-      new Types.ObjectId(userId),
+      postIds,
+      userId,
     );
-
     return new Map(
       topComments.map((comment) => [comment.post.toString(), comment]),
     );
