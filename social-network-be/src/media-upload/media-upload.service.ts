@@ -10,7 +10,6 @@ import { ClientSession, Model, Types } from 'mongoose';
 import { v2 as cloudinary } from 'cloudinary';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { MediaType } from 'src/share/enums';
-import { UserService } from 'src/user/services/user.service';
 import { MediaUploadDocument } from 'src/schemas';
 
 export interface MediaUpload {
@@ -30,7 +29,6 @@ export class MediaUploadService {
     @Inject('CLOUDINARY') private cloudinaryInstance: typeof cloudinary,
     @InjectModel(MediaUploadDocument.name)
     private mediaModel: Model<MediaUploadDocument>,
-    private userService: UserService,
   ) {}
 
   private detectMediaType(mimetype: string): string {
@@ -40,7 +38,16 @@ export class MediaUploadService {
   }
 
   async getPhotoByUserName(username: string) {}
-  async uploadTemporary(file: Express.Multer.File, userId: string) {
+  async uploadTemporary(
+    file: Express.Multer.File,
+    userId: string,
+  ): Promise<{
+    id: string;
+    url: string;
+    mediaType: string;
+    message: string;
+    expiresAt: Date;
+  }> {
     const mediaType = this.detectMediaType(file.mimetype);
     const maxSize =
       mediaType === 'image'
@@ -76,7 +83,7 @@ export class MediaUploadService {
 
       const tempMedia = new this.mediaModel({
         cloudinaryPublicId: uploadResult.public_id,
-        cloudinaryUrl: uploadResult.secure_url,
+        url: uploadResult.secure_url,
         originalFilename: file.originalname,
         mediaType,
         userId,
@@ -96,7 +103,16 @@ export class MediaUploadService {
     }
   }
 
-  async confirmUpload(mediaId: string, userId: string) {
+  async confirmUpload(
+    mediaId: string,
+    userId: string,
+  ): Promise<{
+    id: string;
+    url: string;
+    publicId: string;
+    mediaType: string;
+    message: string;
+  }> {
     const tempMedia = await this.mediaModel.findOne({
       _id: new Types.ObjectId(String(mediaId).trim()),
       userId,
@@ -128,7 +144,7 @@ export class MediaUploadService {
       // Update database
       tempMedia.isConfirmed = true;
       tempMedia.cloudinaryPublicId = newPublicId;
-      tempMedia.cloudinaryUrl = moveResult.secure_url;
+      tempMedia.url = moveResult.secure_url;
       await tempMedia.save();
 
       return {
@@ -146,7 +162,10 @@ export class MediaUploadService {
     }
   }
 
-  async cancelUpload(mediaId: string, userId: string) {
+  async cancelUpload(
+    mediaId: string,
+    userId: string,
+  ): Promise<{ message: string }> {
     const media = await this.mediaModel.findOne({
       _id: mediaId,
       userId,
@@ -180,7 +199,10 @@ export class MediaUploadService {
       throw new Error(`Failed to delete media from DB: ${dbErr.message}`);
     }
   }
-  public async deleteFromDb(mediaId: string, session?: ClientSession) {
+  public async deleteFromDb(
+    mediaId: string,
+    session?: ClientSession,
+  ): Promise<any> {
     const media = await this.mediaModel
       .findOne(
         {

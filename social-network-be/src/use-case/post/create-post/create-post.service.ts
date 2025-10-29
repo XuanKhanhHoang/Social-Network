@@ -1,13 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { CreatePostData } from 'src/domains/post/interfaces/post.type';
 import { PostService } from 'src/domains/post/post.service';
-import { CreatePostDto } from 'src/post/dto/req/create-post.dto';
 import { PostDocument } from 'src/schemas';
+import { TiptapDocument } from 'src/share/dto/req/tiptap-content.dto';
+import { UserPrivacy } from 'src/share/enums';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 
 export type CreatePostServiceInput = {
   userId: string;
-  data: CreatePostDto;
+  data: {
+    content: TiptapDocument;
+    backgroundValue?: string;
+    media?: { mediaId: string; caption?: string; order?: number }[];
+    visibility?: UserPrivacy;
+  };
 };
 @Injectable()
 export class CreatePostService extends BaseUseCaseService<
@@ -20,9 +26,9 @@ export class CreatePostService extends BaseUseCaseService<
   execute(input: CreatePostServiceInput): Promise<PostDocument> {
     const { userId, data } = input;
     const media = data.media?.map((item, index) => ({
-      mediaId: item.id,
+      mediaId: item.mediaId,
       caption: item.caption || '',
-      order: index,
+      order: item.order || index,
     }));
     const newData: CreatePostData = {
       author: userId,

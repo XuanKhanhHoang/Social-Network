@@ -18,7 +18,6 @@ import {
 } from './interfaces/comment.type';
 import { BaseRepository } from 'src/share/base-class/base-repository.service';
 import { CommentDocument } from 'src/schemas';
-import { TopCommentInPost } from 'src/domains/comment/interfaces/comment.type';
 
 @Injectable()
 export class CommentRepository extends BaseRepository<CommentDocument> {
@@ -112,7 +111,7 @@ export class CommentRepository extends BaseRepository<CommentDocument> {
     const modelData = {
       author: new Types.ObjectId(data.authorId),
       postId: new Types.ObjectId(data.postId),
-      content: data.content,
+      content: data?.content,
       parentId: data.parentId ? new Types.ObjectId(data.parentId) : undefined,
       mediaId: data.mediaId ? new Types.ObjectId(data.mediaId) : undefined,
     };
@@ -145,13 +144,20 @@ export class CommentRepository extends BaseRepository<CommentDocument> {
   ): Promise<CommentWithMedia | null> {
     const query = this.model.findById(id).populate({
       path: 'mediaId',
-      select: 'cloudinaryPublicId mediaType',
+      select:
+        'cloudinaryPublicId mediaType expiresAt isConfirmed userId originalFilename url ',
     });
 
     if (session) {
       query.session(session);
     }
-    return query.exec() as unknown as Promise<CommentWithMedia | null>; //! NEED FIX;
+    const comment = (await query.lean().exec()) as any;
+    if (comment && comment.mediaId) {
+      comment.media = comment.mediaId;
+      delete comment.mediaId;
+    }
+
+    return comment as Promise<CommentWithMedia | null>;
   }
 
   async findByPostIdWithCursor(
@@ -355,7 +361,7 @@ export class CommentRepository extends BaseRepository<CommentDocument> {
   async findTopCommentsForPosts(
     postIdsInp: string[],
     userIdInp: string,
-  ): Promise<TopCommentInPost[]> {
+  ): Promise<CommentWithMedia[]> {
     const postIds = postIdsInp.map((id) => new Types.ObjectId(id));
     const userId = new Types.ObjectId(userIdInp);
     const { GRAVITY, REPLY_WEIGHT, MILLISECONDS_IN_HOUR } =

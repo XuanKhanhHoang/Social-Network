@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { CommentService } from 'src/comment/services/comment.service';
 import {
-  Post,
+  PostWithMedia,
   PostWithTopComment,
 } from 'src/domains/post/interfaces/post.type';
 import { PostService } from 'src/domains/post/post.service';
@@ -60,7 +60,7 @@ export class GetPostsFeedService extends BaseUseCaseService<
     }
   }
   private async enrichPostsWithComments(
-    posts: Post[],
+    posts: PostWithMedia[],
     userId: string,
   ): Promise<PostWithTopComment[]> {
     if (posts.length === 0) {

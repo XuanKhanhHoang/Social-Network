@@ -6,7 +6,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PostRepository } from './post.repository';
-import { PostCursorData } from 'src/post/post.type';
 import {
   decodeCursor,
   encodeCursor,
@@ -15,6 +14,8 @@ import {
   CreatePostData,
   PaginatedPhotos,
   Post,
+  PostCursorData,
+  PostWithMedia,
   UpdatePostData,
 } from './interfaces/post.type';
 import { UserPrivacy } from 'src/share/enums';
@@ -35,7 +36,11 @@ export class PostService {
     limit: number,
     userId: string,
     decodedCursor?: PostCursorData,
-  ): Promise<{ posts: Post[]; hasMore: boolean; nextCursor: string | null }> {
+  ): Promise<{
+    posts: PostWithMedia[];
+    hasMore: boolean;
+    nextCursor: string | null;
+  }> {
     const posts = await this.postRepository.findByCursor(
       limit + 1,
       userId,
@@ -56,7 +61,7 @@ export class PostService {
 
     return { posts: results, hasMore, nextCursor };
   }
-  async getPostById(postId: string, userId: string): Promise<Post> {
+  async getPostById(postId: string, userId: string): Promise<PostWithMedia> {
     try {
       const post = await this.postRepository.findFullPostById(postId, userId);
       if (!post) {
@@ -123,26 +128,7 @@ export class PostService {
       throw new BadRequestException('Failed to create post');
     }
   }
-
-  async validateOwnership(
-    postId: string,
-    userId: string,
-    session?: ClientSession,
-  ): Promise<PostDocument> {
-    const post = await this.postRepository.findById(postId, session);
-
-    if (!post) {
-      throw new NotFoundException('Post not found');
-    }
-
-    if (post.author.toString() !== userId) {
-      throw new ForbiddenException('You are not allowed to update this post');
-    }
-
-    return post;
-  }
-
-  async updatePostData(
+  async updatePost(
     data: UpdatePostData,
     session?: ClientSession,
   ): Promise<PostDocument> {
@@ -179,6 +165,24 @@ export class PostService {
 
     return updatedPost;
   }
+  async validateOwnership(
+    postId: string,
+    userId: string,
+    session?: ClientSession,
+  ): Promise<PostDocument> {
+    const post = await this.postRepository.findById(postId, session);
+
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    if (post.author.toString() !== userId) {
+      throw new ForbiddenException('You are not allowed to update this post');
+    }
+
+    return post;
+  }
+
   decodeCursorSafely(cursor: string): PostCursorData | undefined {
     try {
       return decodeCursor<PostCursorData>(cursor);

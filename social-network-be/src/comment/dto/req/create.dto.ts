@@ -9,7 +9,7 @@ export class CreateCommentDto {
 
   @IsOptional()
   @IsObject()
-  content: TiptapDocument;
+  content?: TiptapDocument;
 
   @IsOptional()
   @IsMongoId()

@@ -47,7 +47,7 @@ export class UpdatePostService extends BaseUseCaseService<
           session,
         );
 
-        const updatedPost = await this.postService.updatePostData(
+        const updatedPost = await this.postService.updatePost(
           {
             content: input.content,
             visibility: input.visibility,
@@ -91,10 +91,12 @@ export class UpdatePostService extends BaseUseCaseService<
     };
   }
 
-  private scheduleCloudCleanup(deletedMedias: MediaUpload[]): void {
+  private async scheduleCloudCleanup(
+    deletedMedias: MediaUpload[],
+  ): Promise<void> {
     if (deletedMedias.length === 0) return;
 
-    this.mediaUploadService
+    await this.mediaUploadService
       .batchDeleteFromCloud(deletedMedias)
       .catch((error) => {
         this.logger.error('Unexpected error in cloud cleanup', error);

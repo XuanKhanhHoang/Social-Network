@@ -10,7 +10,7 @@ export class MediaUploadDocument extends Document {
   cloudinaryPublicId: string;
 
   @Prop({ required: true })
-  cloudinaryUrl: string;
+  url: string;
 
   @Prop({ required: true })
   originalFilename: string;

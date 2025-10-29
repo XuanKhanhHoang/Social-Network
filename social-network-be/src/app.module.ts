@@ -21,6 +21,13 @@ import { PostModule } from './use-case/post/post.module';
 import { PostReService } from './use-case/post.re/post.re.service';
 import { GetPostsFeedService } from './use-case/get-posts-feed/get-posts-feed.service';
 import { CommentModule } from './domains/comment/comment.module';
+import { ApiModule } from './api/api/api.module';
+import { ApiModule } from './api/api.module';
+import { CommentModule } from './use-case/comment/comment.module';
+import { GetPostCommentsService } from './use-case/comment/get-post-comments/get-post-comments.service';
+import { GetReplyCommentsService } from './use-case/comment/get-reply-comments/get-reply-comments.service';
+import { CreateCommentService } from './use-case/comment/create-comment/create-comment.service';
+import { UpdateCommentService } from './use-case/comment/update-comment/update-comment.service';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -64,7 +71,8 @@ import { CommentModule } from './domains/comment/comment.module';
     ReactionModule,
     UserModule,
     RankingModule,
+    ApiModule,
   ],
-  providers: [PostReService, GetPostsFeedService],
+  providers: [PostReService, GetPostsFeedService, GetPostCommentsService, GetReplyCommentsService, CreateCommentService, UpdateCommentService],
 })
 export class AppModule {}

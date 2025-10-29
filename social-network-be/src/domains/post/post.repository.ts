@@ -12,8 +12,8 @@ import {
   CreatePostData,
   PaginatedPhotos,
   PhotoPreview,
-  Post,
   PostCursorData,
+  PostWithMedia,
 } from './interfaces/post.type';
 import { PostStatus, UserPrivacy } from 'src/share/enums';
 import { PostDocument } from 'src/schemas';
@@ -170,7 +170,7 @@ export class PostRepository extends ReactableRepository<PostDocument> {
     limit: number,
     userId: string,
     cursor?: PostCursorData,
-  ): Promise<any[]> {
+  ): Promise<PostWithMedia[]> {
     const pipeline: PipelineStage[] = [];
     pipeline.push({ $match: { status: PostStatus.ACTIVE } });
     if (cursor) {
@@ -202,9 +202,12 @@ export class PostRepository extends ReactableRepository<PostDocument> {
       { $project: { mediaDetails: 0 } },
       ...this.getUserReactionStage(userId),
     );
-    return this.model.aggregate<Post>(pipeline);
+    return this.model.aggregate<PostWithMedia>(pipeline);
   }
-  async findFullPostById(postId: string, userId: string): Promise<Post | null> {
+  async findFullPostById(
+    postId: string,
+    userId: string,
+  ): Promise<PostWithMedia | null> {
     const aggregationPipeline: PipelineStage[] = [
       {
         $match: {
@@ -219,7 +222,9 @@ export class PostRepository extends ReactableRepository<PostDocument> {
       ...this.getUserReactionStage(userId),
     ];
 
-    const [post] = await this.model.aggregate<Post>(aggregationPipeline).exec();
+    const [post] = await this.model
+      .aggregate<PostWithMedia>(aggregationPipeline)
+      .exec();
 
     return post || null;
   }

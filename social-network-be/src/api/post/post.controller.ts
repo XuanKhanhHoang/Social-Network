@@ -14,19 +14,30 @@ import { UpdatePostDto } from './dto/req/update-post.dto';
 import { GetPostsByCursorDto } from './dto/req/get-posts.dto';
 import { ParseMongoIdPipe } from 'src/share/pipe/parse-mongo-id-pipe';
 import { GetUserId } from 'src/share/decorators/user.decorator';
-import { PostService } from './services/post.service';
+import { CreatePostService } from 'src/use-case/post/create-post/create-post.service';
+import { UpdatePostService } from 'src/use-case/post/update-post/update-post.service';
+import { GetPostsFeedService } from 'src/use-case/post/get-posts-feed/get-posts-feed.service';
+import { GetPostFullService } from 'src/use-case/post/get-post-full/get-post-full.service';
 
 @UseGuards(JwtAuthGuard)
-@Controller('post')
+@Controller('posts')
 export class PostController {
-  constructor(private readonly postService: PostService) {}
+  constructor(
+    private readonly createPostService: CreatePostService,
+    private readonly updatePostService: UpdatePostService,
+    private readonly getPostFeedService: GetPostsFeedService,
+    private readonly getPostFullService: GetPostFullService,
+  ) {}
 
   @Post('create')
   async createPost(
     @Body() createPostDto: CreatePostDto,
     @GetUserId() userId: string,
   ) {
-    return await this.postService.createPost(createPostDto, userId);
+    return await this.createPostService.execute({
+      data: createPostDto,
+      userId,
+    });
   }
   @Patch('update/:id')
   async updatePost(
@@ -34,14 +45,18 @@ export class PostController {
     @GetUserId() userId: string,
     @Body() updatePostDto: UpdatePostDto,
   ) {
-    return await this.postService.updatePost(postId, userId, updatePostDto);
+    return await this.updatePostService.execute({
+      ...updatePostDto,
+      postId,
+      userId,
+    });
   }
   @Get('gets')
   async getPosts(
     @Query() query: GetPostsByCursorDto,
     @GetUserId() userId: string,
   ) {
-    return await this.postService.getPostsByCursor(query, userId);
+    return await this.getPostFeedService.execute({ ...query, userId });
   }
 
   @Get(':id')
@@ -49,6 +64,6 @@ export class PostController {
     @Param('id', new ParseMongoIdPipe()) postId: string,
     @GetUserId() userId: string,
   ) {
-    return await this.postService.getPostById(postId, userId);
+    return await this.getPostFullService.execute({ postId, userId });
   }
 }

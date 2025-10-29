@@ -22,6 +22,7 @@ export type CreateCommentData = {
 export type UpdateCommentData = {
   content?: TiptapDocument;
   mediaId?: string | null;
+  commentId: string;
 };
 
 export type CommentWithMedia = Omit<Comment, 'mediaId'> & {

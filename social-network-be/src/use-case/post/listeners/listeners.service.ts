@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { PostRepository } from 'src/domains/post/post-repository.service';
+import { PostRepository } from 'src/domains/post/post.repository';
 import { ReactionEvents } from 'src/share/events';
 
 @Injectable()

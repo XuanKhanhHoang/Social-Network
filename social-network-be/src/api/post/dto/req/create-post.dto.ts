@@ -5,6 +5,7 @@ import {
   IsObject,
   IsEnum,
   ValidateNested,
+  IsNumber,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { UserPrivacy } from 'src/share/enums';
@@ -34,7 +35,10 @@ export class CreatePostDto {
 }
 export class PostMediaDto {
   @IsString()
-  id: string;
+  mediaId: string;
+
+  @IsNumber()
+  order: number;
 
   @IsOptional()
   @IsString()
