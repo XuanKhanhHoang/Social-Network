@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types, FilterQuery } from 'mongoose';
-import { User } from 'src/schemas';
 import {
   BaseQueryOptions,
   BaseRepository,
@@ -11,18 +10,22 @@ import {
   UserBasicData,
   UserFriendsContextData,
   UserFriendsData,
-  UserProfileData,
+  UserProfile,
 } from '../interfaces';
+import { UserDocument } from 'src/schemas';
 
 @Injectable()
-export class UserRepository extends BaseRepository<User> {
-  constructor(@InjectModel(User.name) private readonly userModel: Model<User>) {
+export class UserRepository extends BaseRepository<UserDocument> {
+  constructor(
+    @InjectModel(UserDocument.name)
+    private readonly userModel: Model<UserDocument>,
+  ) {
     super(userModel);
   }
   async findUserWithFriend(
     userId: string,
     friendId: string,
-  ): Promise<User | null> {
+  ): Promise<UserDocument | null> {
     return this.findOne({
       _id: new Types.ObjectId(userId),
       friends: new Types.ObjectId(friendId),
@@ -30,17 +33,17 @@ export class UserRepository extends BaseRepository<User> {
   }
   async findByEmail(
     email: string,
-    options?: BaseQueryOptions<User>,
-  ): Promise<User | null> {
+    options?: BaseQueryOptions<UserDocument>,
+  ): Promise<UserDocument | null> {
     return this.findOne({ email }, options);
   }
   async findByUsername(
     username: string,
-    options?: BaseQueryOptions<User>,
-  ): Promise<User | null> {
+    options?: BaseQueryOptions<UserDocument>,
+  ): Promise<UserDocument | null> {
     return this.findOne({ username }, options);
   }
-  async findByEmailAndVerified(email: string): Promise<User | null> {
+  async findByEmailAndVerified(email: string): Promise<UserDocument | null> {
     return this.findOne(
       { email, isVerified: true },
       { projection: '+password' },
@@ -52,20 +55,18 @@ export class UserRepository extends BaseRepository<User> {
     });
   }
 
-  async findProfileByUsername(
-    username: string,
-  ): Promise<UserProfileData | null> {
-    return this.findOneLean<UserProfileData>(
+  async findProfileByUsername(username: string): Promise<UserProfile | null> {
+    return this.findOneLean<UserProfile>(
       { username },
       {
         projection:
           'firstName lastName username avatar coverPhoto ' +
-          'privacySettings friendCount bio work currentLocation friends createdAt',
+          'privacySettings friendCount bio work currentLocation friends',
       },
     );
   }
 
-  async findByIdWithPopulatedFriends(
+  async findFriendsListById(
     userId: Types.ObjectId | string,
     limit: number,
   ): Promise<UserFriendsData | null> {
@@ -91,13 +92,21 @@ export class UserRepository extends BaseRepository<User> {
       },
     );
   }
-  async createUser(userDto: CreateUserData): Promise<User> {
+  async findUserIdByUsername(
+    username: string,
+  ): Promise<{ _id: string } | null> {
+    return this.findOneLean<{ _id: string }>(
+      { username },
+      { projection: '_id' },
+    );
+  }
+  async createUser(userDto: CreateUserData): Promise<UserDocument> {
     const user = new this.userModel(userDto);
     return user.save();
   }
 
   async deleteMany(
-    filter: FilterQuery<User>,
+    filter: FilterQuery<UserDocument>,
   ): Promise<{ deletedCount: number }> {
     const result = await this.model.deleteMany(filter);
     return { deletedCount: result.deletedCount };

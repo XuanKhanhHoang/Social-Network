@@ -46,12 +46,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
           const payload: { _id: string; iat: number; exp: number } =
             this.jwtService.verify(refreshToken);
 
-          // Generate new access token
           const newAccessToken = this.jwtService.sign(
             { _id: payload._id },
             { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m' },
           );
-          // Set new access token cookie
           response.cookie('accessToken', newAccessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -65,7 +63,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
           request['user'] = payload;
           return true;
         } catch (refreshError) {
-          // Both tokens invalid
           response.clearCookie('accessToken');
           response.clearCookie('refreshToken');
           throw new UnauthorizedException('Invalid tokens');

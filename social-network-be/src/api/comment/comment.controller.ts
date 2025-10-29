@@ -10,23 +10,31 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { CreateCommentDto, UpdateCommentDto } from './dto/req';
+import { CreateCommentDto, UpdateCommentDto } from './dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ParseMongoIdPipe } from 'src/share/pipe/parse-mongo-id-pipe';
 import { GetUserId } from 'src/share/decorators/user.decorator';
-import { CommentService } from './services/comment.service';
+import { CreateCommentService } from 'src/use-case/comment/create-comment/create-comment.service';
+import { UpdateCommentService } from 'src/use-case/comment/update-comment/update-comment.service';
+import { GetPostCommentsService } from 'src/use-case/comment/get-post-comments/get-post-comments.service';
+import { GetReplyCommentsService } from 'src/use-case/comment/get-reply-comments/get-reply-comments.service';
 
 @UseGuards(JwtAuthGuard)
 @Controller('comments')
 export class CommentController {
-  constructor(private readonly commentService: CommentService) {}
+  constructor(
+    private readonly createCommentService: CreateCommentService,
+    private readonly updateCommentService: UpdateCommentService,
+    private readonly getPostCommentsService: GetPostCommentsService,
+    private readonly getReplyCommentsService: GetReplyCommentsService,
+  ) {}
 
   @Post()
   async createComment(
     @Body() data: CreateCommentDto,
     @GetUserId() userId: string,
   ) {
-    return this.commentService.createComment(userId, data);
+    return this.createCommentService.execute({ ...data, authorId: userId });
   }
 
   @Patch(':id')
@@ -35,7 +43,11 @@ export class CommentController {
     @Param('id', ParseMongoIdPipe) id: string,
     @GetUserId() userId: string,
   ) {
-    return this.commentService.updateComment(userId, id, data);
+    return this.updateCommentService.execute({
+      ...data,
+      commentId: id,
+      userId,
+    });
   }
 
   @Get()
@@ -45,7 +57,12 @@ export class CommentController {
     @Query('cursor') cursor?: string,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit?: number,
   ) {
-    return this.commentService.getPostComments(postId, userId, limit, cursor);
+    return this.getPostCommentsService.execute({
+      postId,
+      userId,
+      cursor,
+      limit,
+    });
   }
 
   @Get(':commentId/replies')
@@ -55,11 +72,11 @@ export class CommentController {
     @Query('cursor') cursor?: string,
     @Query('limit', new DefaultValuePipe(5), ParseIntPipe) limit?: number,
   ) {
-    return this.commentService.getCommentReplies(
+    return this.getReplyCommentsService.execute({
       commentId,
       userId,
-      limit,
       cursor,
-    );
+      limit,
+    });
   }
 }
