@@ -13,6 +13,7 @@ import { ApiModule } from './api/api.module';
 import { AuthUseCaseModule } from './use-case/auth/auth.use-case.module';
 import { AuthModule } from './domains/auth/auth.module';
 import { UserModule } from './domains/user/user.module';
+import { UserUseCaseModule } from './use-case/user/user-use-case.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -53,6 +54,7 @@ import { UserModule } from './domains/user/user.module';
     AuthUseCaseModule,
     AuthModule,
     UserModule,
+    UserUseCaseModule,
   ],
 })
 export class AppModule {}

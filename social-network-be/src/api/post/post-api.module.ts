@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PostUseCaseModule } from 'src/use-case/post/post.use-case.module';
-import { PostController } from './post.controller';
+import { PostController } from './post-api.controller';
 
 @Module({
   imports: [PostUseCaseModule],

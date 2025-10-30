@@ -12,6 +12,7 @@ export interface PopulatedFriend {
 export interface UserFriendsData {
   _id: Types.ObjectId;
   friends: PopulatedFriend[];
+  friendCount: number;
 }
 
 export interface UserFriendsContextData {

@@ -7,11 +7,12 @@ import {
 } from 'src/share/base-class/base-repository.service';
 import {
   CreateUserData,
+  PopulatedFriend,
   UserBasicData,
   UserFriendsContextData,
   UserFriendsData,
   UserProfile,
-} from '../interfaces';
+} from './interfaces';
 import { UserDocument } from 'src/schemas';
 
 @Injectable()
@@ -69,17 +70,28 @@ export class UserRepository extends BaseRepository<UserDocument> {
   async findFriendsListById(
     userId: Types.ObjectId | string,
     limit: number,
-  ): Promise<UserFriendsData | null> {
-    return this.model
+    page = 1,
+  ): Promise<{ friends: PopulatedFriend[]; hasNextPage: boolean }> {
+    const user = (await this.model
       .findById(userId)
       .populate({
         path: 'friends',
         select: 'firstName lastName username avatar',
-        options: { limit },
+        options: {
+          limit: limit,
+          skip: (page - 1) * limit,
+        },
       })
-      .select('friends')
+      .select('friends friendCount')
       .lean()
-      .exec() as unknown as Promise<UserFriendsData | null>;
+      .exec()) as unknown as UserFriendsData;
+
+    if (user.friends.length == 0) {
+      return { friends: [], hasNextPage: false };
+    }
+
+    const hasNextPage = page * limit < user.friendCount;
+    return { friends: user.friends, hasNextPage };
   }
 
   async findUserFriendsContextByUsername(

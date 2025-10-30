@@ -15,6 +15,7 @@ import {
   UserHeaderWithRelationship,
   UserBio,
   UserProfileResponse,
+  PopulatedFriend,
 } from './interfaces';
 import { RelationshipType } from './interfaces/relationship.type';
 import { UserPrivacy } from 'src/share/enums';
@@ -98,10 +99,14 @@ export class UserService {
   async getFriendsPreview(
     username: string,
     requestingUserId: string | null,
-    limit: number = 9,
+    limit = 9,
+    page = 1,
   ): Promise<{
     total: number;
-    friends: any[];
+    data: PopulatedFriend[];
+    pagination: {
+      hasNextPage: boolean;
+    };
   }> {
     const profileUser =
       await this.userRepository.findUserFriendsContextByUsername(username);
@@ -127,13 +132,15 @@ export class UserService {
     const userWithFriends = await this.userRepository.findFriendsListById(
       profileUser._id,
       limit,
+      page,
     );
-
-    const friends = userWithFriends ? userWithFriends.friends : [];
 
     return {
       total: profileUser.friendCount,
-      friends: friends,
+      data: userWithFriends.friends,
+      pagination: {
+        hasNextPage: userWithFriends.hasNextPage,
+      },
     };
   }
 
@@ -224,7 +231,7 @@ export class UserService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    const targetUserId = user._id.toString();
+    const targetUserId = user._id;
 
     const isOwner = requestingUserId && targetUserId === requestingUserId;
     const isFriend =
