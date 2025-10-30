@@ -14,6 +14,8 @@ import { AuthUseCaseModule } from './use-case/auth/auth.use-case.module';
 import { AuthModule } from './domains/auth/auth.module';
 import { UserModule } from './domains/user/user.module';
 import { UserUseCaseModule } from './use-case/user/user-use-case.module';
+import { MediaUploadModule } from './domains/media-upload/media-upload.module';
+import { MediaUploadUseCaseModule } from './use-case/media-upload/media-upload-use-case.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -55,6 +57,8 @@ import { UserUseCaseModule } from './use-case/user/user-use-case.module';
     AuthModule,
     UserModule,
     UserUseCaseModule,
+    MediaUploadModule,
+    MediaUploadUseCaseModule,
   ],
 })
 export class AppModule {}

@@ -4,6 +4,7 @@ import {
   PostApiModule,
   CommentApiModule,
   AuthApiModuleModule,
+  MediaUploadApiModule,
 } from './';
 
 @Module({
@@ -12,6 +13,7 @@ import {
     CommentApiModule,
     AuthApiModuleModule,
     UserApiModule,
+    MediaUploadApiModule,
   ],
 })
 export class ApiModule {}

@@ -9,15 +9,23 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { MediaUploadService } from './media-upload.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { ConfirmTempMediaDto } from './dtos/confirm-temp-media.dto';
+import { JwtAuthGuard } from 'src/domains/auth/jwt-auth.guard';
 import { GetUserId } from 'src/share/decorators/user.decorator';
+import { ConfirmTempMediaDto } from './dto/confirm-temp-media.dto';
+import {
+  ConfirmTempFileService,
+  DeleteTempFileService,
+  UploadToTempService,
+} from 'src/use-case/media-upload';
 
 @Controller('media')
 @UseGuards(JwtAuthGuard)
-export class MediaUploadController {
-  constructor(private readonly mediaUploadService: MediaUploadService) {}
+export class MediaUploadApiController {
+  constructor(
+    private readonly uploadToTempService: UploadToTempService,
+    private readonly confirmTempFileService: ConfirmTempFileService,
+    private readonly deleteTempFileService: DeleteTempFileService,
+  ) {}
 
   @Post('upload-temp')
   @UseInterceptors(
@@ -38,7 +46,7 @@ export class MediaUploadController {
     @UploadedFile() file: Express.Multer.File,
     @GetUserId() userId: string,
   ) {
-    return this.mediaUploadService.uploadTemporary(file, userId);
+    return this.uploadToTempService.execute({ file, userId });
   }
 
   @Post('confirm')
@@ -46,7 +54,10 @@ export class MediaUploadController {
     @Body() confirmDto: ConfirmTempMediaDto,
     @GetUserId() userId: string,
   ) {
-    return this.mediaUploadService.confirmUpload(confirmDto.tempId, userId);
+    return this.confirmTempFileService.execute({
+      mediaId: confirmDto.tempId,
+      userId,
+    });
   }
 
   @Delete('temp/:id')
@@ -54,6 +65,6 @@ export class MediaUploadController {
     @Param('id') tempMediaId: string,
     @GetUserId() userId: string,
   ) {
-    return this.mediaUploadService.cancelUpload(tempMediaId, userId);
+    return this.deleteTempFileService.execute({ mediaId: tempMediaId, userId });
   }
 }

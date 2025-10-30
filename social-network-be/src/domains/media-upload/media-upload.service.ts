@@ -11,16 +11,8 @@ import { v2 as cloudinary } from 'cloudinary';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { MediaType } from 'src/share/enums';
 import { MediaUploadDocument } from 'src/schemas';
+import { MediaUpload } from './interfaces/type';
 
-export interface MediaUpload {
-  cloudinaryPublicId: string;
-  cloudinaryUrl: string;
-  originalFilename: string;
-  mediaType: MediaType;
-  isConfirmed: boolean;
-  userId: string;
-  _id: string;
-}
 @Injectable()
 export class MediaUploadService {
   private readonly logger = new Logger(MediaUploadService.name);
@@ -31,13 +23,22 @@ export class MediaUploadService {
     private mediaModel: Model<MediaUploadDocument>,
   ) {}
 
-  private detectMediaType(mimetype: string): string {
-    if (mimetype.startsWith('image/')) return 'image';
-    if (mimetype.startsWith('video/')) return 'video';
-    throw new BadRequestException('Unsupported media type');
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async cleanupExpiredMedia() {
+    const expiredMedia = await this.mediaModel.find({
+      isConfirmed: false,
+      expiresAt: { $lt: new Date() },
+    });
+
+    for (const media of expiredMedia) {
+      await this.deleteMediaOnAllNotSafe(media);
+    }
+
+    if (expiredMedia.length > 0) {
+      console.log(`Cleaned up ${expiredMedia.length} expired media files`);
+    }
   }
 
-  async getPhotoByUserName(username: string) {}
   async uploadTemporary(
     file: Express.Multer.File,
     userId: string,
@@ -69,7 +70,6 @@ export class MediaUploadService {
           resource_type: mediaType === 'video' ? 'video' : 'image',
           folder: tempMediaUploadFolder,
           public_id: `temp_${mediaType}_${Date.now()}_${userId}`,
-          // Basic optimization
           ...(mediaType === 'image' && {
             transformation: [
               { width: 1200, height: 1200, crop: 'limit', quality: 'auto' },
@@ -141,7 +141,6 @@ export class MediaUploadService {
         },
       );
 
-      // Update database
       tempMedia.isConfirmed = true;
       tempMedia.cloudinaryPublicId = newPublicId;
       tempMedia.url = moveResult.secure_url;
@@ -300,19 +299,9 @@ export class MediaUploadService {
     });
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
-  async cleanupExpiredMedia() {
-    const expiredMedia = await this.mediaModel.find({
-      isConfirmed: false,
-      expiresAt: { $lt: new Date() },
-    });
-
-    for (const media of expiredMedia) {
-      await this.deleteMediaOnAllNotSafe(media);
-    }
-
-    if (expiredMedia.length > 0) {
-      console.log(`Cleaned up ${expiredMedia.length} expired media files`);
-    }
+  private detectMediaType(mimetype: string): string {
+    if (mimetype.startsWith('image/')) return 'image';
+    if (mimetype.startsWith('video/')) return 'video';
+    throw new BadRequestException('Unsupported media type');
   }
 }
