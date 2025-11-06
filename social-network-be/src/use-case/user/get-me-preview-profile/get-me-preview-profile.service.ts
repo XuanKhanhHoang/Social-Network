@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UserRepository } from 'src/domains/user/user-repository.service';
+import { UserRepository } from 'src/domains/user/user.repository';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 
 export interface GetMePreviewProfileInput {

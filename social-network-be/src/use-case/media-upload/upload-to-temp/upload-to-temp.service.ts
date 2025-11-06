@@ -10,7 +10,6 @@ export interface UploadToTempServiceOutput {
   id: string;
   url: string;
   mediaType: string;
-  message: string;
   expiresAt: Date;
 }
 @Injectable()

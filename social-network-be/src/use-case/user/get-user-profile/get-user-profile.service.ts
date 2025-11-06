@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UserProfileResponse } from 'src/domains/user/interfaces';
-import { UserService } from 'src/domains/user/user.service';
+import { UserDomainsService } from 'src/domains/user/user-domains.service';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 
 export interface GetUserProfileInput {
@@ -12,11 +12,50 @@ export class GetUserProfileService extends BaseUseCaseService<
   GetUserProfileInput,
   UserProfileResponse
 > {
-  constructor(private readonly userService: UserService) {
+  constructor(private readonly userDomainService: UserDomainsService) {
     super();
   }
   async execute(input: GetUserProfileInput): Promise<UserProfileResponse> {
     const { username, requestingUserId } = input;
-    return this.userService.getProfileByUsername(username, requestingUserId);
+    const { profileUser, isOwner, isFriend } =
+      await this.userDomainService.getProfileAndRelationship(
+        username,
+        requestingUserId,
+      );
+
+    const settings = profileUser.privacySettings;
+
+    const profileResponse: UserProfileResponse = {
+      firstName: profileUser.firstName,
+      lastName: profileUser.lastName,
+      username: profileUser.username,
+      avatar: profileUser.avatar,
+      coverPhoto: profileUser.coverPhoto,
+      bio: profileUser.bio,
+      work: undefined,
+      currentLocation: undefined,
+      friendCount: undefined,
+      privacySettings: profileUser.privacySettings,
+    };
+
+    if (this.userDomainService.canView(settings.work, isOwner, isFriend)) {
+      profileResponse.work = profileUser.work;
+    }
+    if (
+      this.userDomainService.canView(
+        settings.currentLocation,
+        isOwner,
+        isFriend,
+      )
+    ) {
+      profileResponse.currentLocation = profileUser.currentLocation;
+    }
+    if (
+      this.userDomainService.canView(settings.friendList, isOwner, isFriend)
+    ) {
+      profileResponse.friendCount = profileUser.friendCount;
+    }
+
+    return profileResponse;
   }
 }

@@ -24,9 +24,15 @@ export class EmailVerificationRepository {
     return newVerification.save();
   }
 
-  async findOneByToken(
-    token: string,
-  ): Promise<EmailVerificationDocument | null> {
+  async findOneByToken(token: string): Promise<{
+    userId: string;
+    email: string;
+    token: string;
+    expiresAt: Date;
+    isUsed: boolean;
+    type: string;
+    _id: string;
+  } | null> {
     return this.emailVerificationModel
       .findOne({
         token,
@@ -35,7 +41,7 @@ export class EmailVerificationRepository {
       })
       .populate('userId')
       .lean()
-      .exec();
+      .exec() as unknown as any;
   }
 
   async deleteManyRegistrationTokens(email: string) {
@@ -47,10 +53,11 @@ export class EmailVerificationRepository {
       .exec();
   }
 
-  async markAsUsed(
-    verification: EmailVerificationDocument,
-  ): Promise<EmailVerificationDocument> {
-    verification.isUsed = true;
-    return verification.save();
+  async markAsUsed(verificationId: string): Promise<EmailVerificationDocument> {
+    return this.emailVerificationModel.findByIdAndUpdate(
+      verificationId,
+      { isUsed: true },
+      { new: true },
+    );
   }
 }

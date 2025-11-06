@@ -4,4 +4,6 @@ export * from './media-upload.schema';
 export * from './post.schema';
 export * from './comment.schema';
 export * from './reaction.schema';
-export * from './post-media.schema';
+export * from './sub-user.schema';
+export * from './sub-post-media.schema';
+export * from './sub-comment-media.schema';

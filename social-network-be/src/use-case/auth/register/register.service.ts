@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
-import { MailService } from 'src/mail/mail.service';
-import { UserService } from 'src/user/services';
+import { MailService } from 'src/share/module/mail/mail.service';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 import { EmailVerificationRepository } from 'src/domains/auth/services/email-verification.repository';
 import { Gender } from 'src/share/enums';
+import { UserDomainsService } from 'src/domains/user/user-domains.service';
+import { UserRepository } from 'src/domains/user/user.repository';
+import * as bcrypt from 'bcryptjs';
 
 export interface RegisterInput {
   email: string;
@@ -22,6 +24,7 @@ export interface RegisterOutput {
     lastName: string;
     email: string;
     avatar?: string;
+    username: string;
   };
 }
 @Injectable()
@@ -30,7 +33,8 @@ export class RegisterService extends BaseUseCaseService<
   RegisterOutput
 > {
   constructor(
-    private userService: UserService,
+    private userRepo: UserRepository,
+    private userDomainsService: UserDomainsService,
     private emailVerificationRepository: EmailVerificationRepository,
     private mailService: MailService,
   ) {
@@ -38,7 +42,23 @@ export class RegisterService extends BaseUseCaseService<
   }
 
   async execute(input: RegisterInput): Promise<RegisterOutput> {
-    const user = await this.userService.create(input);
+    const existingUser = await this.userRepo.findByEmail(input.email);
+    if (existingUser) {
+      throw new ConflictException('User already exists');
+    }
+    const username = await this.userDomainsService.generateUniqueUsername(
+      input.firstName,
+      input.lastName,
+    );
+
+    const password = await bcrypt.hash(
+      input.password,
+      +process.env.PASSWORD_HASH_ROUND,
+    );
+
+    const user = (
+      await this.userRepo.createUser({ ...input, username, password })
+    ).toObject();
 
     const verificationToken = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date();
@@ -56,14 +76,13 @@ export class RegisterService extends BaseUseCaseService<
       type: 'registration',
     });
 
-    try {
-      await this.mailService.sendEmailVerification(
+    this.mailService
+      .sendEmailVerification(
         { email: user.email, firstName: user.firstName },
         verificationToken,
-      );
-    } catch (error) {
-      console.error('Failed to send verification email:', error);
-    }
+      )
+      .then(() => {})
+      .catch((e) => console.error('Failed to send verification email:', e));
 
     return {
       message:
@@ -73,6 +92,8 @@ export class RegisterService extends BaseUseCaseService<
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
+        username: user.username,
+        avatar: user.avatar,
       },
     };
   }

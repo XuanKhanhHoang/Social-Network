@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PaginatedPhotos } from 'src/domains/post/interfaces/post.type';
-import { PostService } from 'src/domains/post/post.service';
-import { UserService } from 'src/domains/user/user.service';
+import { PostRepository } from 'src/domains/post/post.repository';
+import { UserRepository } from 'src/domains/user/user.repository';
+import { UserPrivacy } from 'src/share/enums';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 
 export interface GetUserPhotosInput {
   username: string;
-  requestingUserId: string;
+  requestingUserId?: string;
   limit?: number;
   page?: number;
 }
@@ -17,22 +18,34 @@ export class GetUserPhotosService extends BaseUseCaseService<
   PaginatedPhotos
 > {
   constructor(
-    private readonly userService: UserService,
-    private readonly postService: PostService,
+    private readonly userRepo: UserRepository,
+    private readonly postRepo: PostRepository,
   ) {
     super();
   }
 
   async execute(input: GetUserPhotosInput): Promise<PaginatedPhotos> {
     const { username, requestingUserId } = input;
-    const { visiblePrivacyLevels } =
-      await this.userService.getVisiblePrivacyLevels(
-        username,
-        requestingUserId,
-      );
-    return this.postService.getUserPhotos(
+    const userPrivacies: UserPrivacy[] = [UserPrivacy.PUBLIC];
+    if (requestingUserId) {
+      const profileUser = (
+        await this.userRepo.findByUsername(username)
+      ).toObject();
+      if (requestingUserId == profileUser._id) {
+        userPrivacies.push(UserPrivacy.PRIVATE, UserPrivacy.FRIENDS);
+      } else if (
+        await this.userRepo.areFriends(
+          profileUser._id as string,
+          requestingUserId,
+        )
+      ) {
+        userPrivacies.push(UserPrivacy.FRIENDS);
+      }
+    }
+
+    return this.postRepo.findPhotosForUser(
       username,
-      visiblePrivacyLevels,
+      userPrivacies,
       input.limit,
       input.page,
     );

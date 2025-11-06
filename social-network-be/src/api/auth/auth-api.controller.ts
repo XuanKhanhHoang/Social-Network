@@ -9,9 +9,9 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { LoginService } from 'src/use-case/auth/login/login.service';
-import { RegisterService } from 'src/use-case/auth/register/register.service';
-import { VerifyEmailService } from 'src/use-case/auth/verify-email/verify-email.service';
+import { LoginService } from '../../use-case/auth/login/login.service';
+import { RegisterService } from '../../use-case/auth/register/register.service';
+import { VerifyEmailService } from '../../use-case/auth/verify-email/verify-email.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto';
 

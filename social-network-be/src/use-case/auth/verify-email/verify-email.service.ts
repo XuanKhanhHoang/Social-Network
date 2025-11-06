@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { EmailVerificationRepository } from 'src/domains/auth/services/email-verification.repository';
+import { UserRepository } from 'src/domains/user/user.repository';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
-import { UserService } from 'src/user/services';
 
 export interface VerifyEmailInput {
   token: string;
@@ -24,7 +24,7 @@ export class VerifyEmailService extends BaseUseCaseService<
 > {
   constructor(
     private emailVerificationRepository: EmailVerificationRepository,
-    private userService: UserService,
+    private userRepo: UserRepository,
   ) {
     super();
   }
@@ -38,11 +38,13 @@ export class VerifyEmailService extends BaseUseCaseService<
       throw new BadRequestException('Invalid or expired verification token');
     }
 
-    const user = await this.userService.markUserAsVerified(
-      (verification.userId as any)._id.toString(),
-    );
+    const user = (
+      await this.userRepo.updateByIdAndGet(verification.userId, {
+        isVerified: true,
+      })
+    ).toObject();
 
-    await this.emailVerificationRepository.markAsUsed(verification);
+    await this.emailVerificationRepository.markAsUsed(verification._id);
 
     return {
       message: 'Email verified successfully',

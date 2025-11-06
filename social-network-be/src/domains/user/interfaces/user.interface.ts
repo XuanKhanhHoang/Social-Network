@@ -8,7 +8,6 @@ export interface CreateUserData {
   lastName: string;
   gender: Gender;
   birthDate: string;
-  isVerified: boolean;
   username: string;
 }
 

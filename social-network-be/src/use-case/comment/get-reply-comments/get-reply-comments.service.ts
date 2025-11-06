@@ -1,8 +1,14 @@
-import { Injectable } from '@nestjs/common';
-import { ReplyCursorData } from 'src/comment/comment.type';
-import { CommentService } from 'src/domains/comment/comment.service';
-import { ReplyComment } from 'src/domains/comment/interfaces/comment.type';
+import { Injectable, Logger } from '@nestjs/common';
+import { CommentRepository } from 'src/domains/comment/comment.repository';
+import {
+  ReplyComment,
+  ReplyCursorData,
+} from 'src/domains/comment/interfaces/comment.type';
 import { BeCursorPaginated } from 'src/share/dto/res/be-paginated.dto';
+import {
+  decodeCursor,
+  encodeCursor,
+} from 'src/share/utils/cursor-encode-handling';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 
 export type GetReplyCommentsInput = {
@@ -17,25 +23,51 @@ export class GetReplyCommentsService extends BaseUseCaseService<
   GetReplyCommentsInput,
   GetReplyCommentsOutput
 > {
-  constructor(private readonly commentService: CommentService) {
+  constructor(private readonly commentRepository: CommentRepository) {
     super();
   }
+  private readonly logger = new Logger(GetReplyCommentsService.name);
   async execute(input: GetReplyCommentsInput): Promise<GetReplyCommentsOutput> {
-    const limit = input.limit || 10;
+    const { commentId, limit = 10, userId, cursor } = input;
 
-    const decodedCursor = input.cursor
-      ? this.commentService.decodeCursorSafely<ReplyCursorData>(input.cursor)
+    const decodedCursorData = cursor
+      ? this.decodeCursorSafely<ReplyCursorData>(cursor)
       : undefined;
-    const { replies, hasMore, nextCursor } =
-      await this.commentService.getCommentReplies(
-        input.commentId,
-        input.userId,
-        limit,
-        decodedCursor,
-      );
+
+    const replies = await this.commentRepository.getCommentReplies(
+      commentId,
+      userId,
+      limit,
+      decodedCursorData,
+    );
+
+    let nextCursor: string | null = null;
+    let hasMore = false;
+
+    if (replies.length > limit) {
+      hasMore = true;
+      const lastReply = replies[limit - 1];
+
+      const cursorData: ReplyCursorData = {
+        lastPriority: lastReply.priority,
+        lastId: lastReply._id.toString(),
+      };
+      nextCursor = encodeCursor(cursorData);
+    }
+
+    const results = replies.slice(0, limit);
+
     return {
-      data: replies,
+      data: results,
       pagination: { nextCursor, hasMore },
     };
+  }
+  decodeCursorSafely<T extends ReplyCursorData>(cursor: string): T | undefined {
+    try {
+      return decodeCursor<T>(cursor);
+    } catch (error) {
+      this.logger.warn(`Invalid cursor format: ${cursor}`);
+      return undefined;
+    }
   }
 }

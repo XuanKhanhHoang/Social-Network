@@ -13,20 +13,20 @@ import {
   PaginatedPhotos,
   PhotoPreview,
   PostCursorData,
-  PostWithMedia,
+  PostWithMyReaction,
 } from './interfaces/post.type';
 import { PostStatus, UserPrivacy } from 'src/share/enums';
 import { PostDocument } from 'src/schemas';
 @Injectable()
 export class PostRepository extends ReactableRepository<PostDocument> {
-  private readonly logger = new Logger(PostRepository.name);
-
   constructor(
     @InjectModel(PostDocument.name)
     protected readonly model: Model<PostDocument>,
   ) {
     super(model);
   }
+  private readonly logger = new Logger(PostRepository.name);
+
   //* PIPELINE REUSABLE STAGES
   private getAuthorLookupStage(): PipelineStage[] {
     return [
@@ -77,11 +77,7 @@ export class PostRepository extends ReactableRepository<PostDocument> {
       {
         $addFields: {
           myReaction: {
-            $cond: {
-              if: { $gt: [{ $size: '$userReaction' }, 0] },
-              then: { $arrayElemAt: ['$userReaction.reactionType', 0] },
-              else: null,
-            },
+            $arrayElemAt: ['$userReaction.reactionType', 0],
           },
         },
       },
@@ -89,68 +85,6 @@ export class PostRepository extends ReactableRepository<PostDocument> {
     ];
   }
 
-  private getMediaLookupStage(): PipelineStage {
-    return {
-      $lookup: {
-        from: 'mediauploads',
-        localField: 'media.mediaId',
-        foreignField: '_id',
-        as: 'mediaDetails',
-        pipeline: [
-          { $match: { isConfirmed: true } },
-          {
-            $project: {
-              _id: 1,
-              cloudinaryUrl: 1,
-              originalFilename: 1,
-              mediaType: 1,
-            },
-          },
-        ],
-      },
-    };
-  }
-
-  private getMediaMappingStage(): PipelineStage {
-    return {
-      $addFields: {
-        media: {
-          $map: {
-            input: '$media',
-            as: 'mediaItem',
-            in: {
-              $let: {
-                vars: {
-                  matchedMedia: {
-                    $arrayElemAt: [
-                      {
-                        $filter: {
-                          input: '$mediaDetails',
-                          as: 'detail',
-                          cond: {
-                            $eq: ['$$detail._id', '$$mediaItem.mediaId'],
-                          },
-                        },
-                      },
-                      0,
-                    ],
-                  },
-                },
-                in: {
-                  mediaId: '$$mediaItem.mediaId',
-                  caption: '$$mediaItem.caption',
-                  order: '$$mediaItem.order',
-                  url: '$$matchedMedia.cloudinaryUrl',
-                  originalFilename: '$$matchedMedia.originalFilename',
-                  mediaType: '$$matchedMedia.mediaType',
-                },
-              },
-            },
-          },
-        },
-      },
-    };
-  }
   //* Handlers
   async create(
     data: CreatePostData,
@@ -160,17 +94,16 @@ export class PostRepository extends ReactableRepository<PostDocument> {
       ...item,
       mediaId: new Types.ObjectId(item.mediaId),
     }));
-    const [createdPost] = await this.model.create(
-      [{ ...data, author: new Types.ObjectId(data.author), media }],
-      { session },
-    );
+    const [createdPost] = await this.model.create([{ ...data, media }], {
+      session,
+    });
     return createdPost;
   }
   async findByCursor(
     limit: number,
     userId: string,
     cursor?: PostCursorData,
-  ): Promise<PostWithMedia[]> {
+  ): Promise<PostWithMyReaction[]> {
     const pipeline: PipelineStage[] = [];
     pipeline.push({ $match: { status: PostStatus.ACTIVE } });
     if (cursor) {
@@ -195,19 +128,13 @@ export class PostRepository extends ReactableRepository<PostDocument> {
       },
     });
     pipeline.push({ $limit: limit + 1 });
-    pipeline.push(
-      ...this.getAuthorLookupStage(),
-      this.getMediaLookupStage(),
-      this.getMediaMappingStage(),
-      { $project: { mediaDetails: 0 } },
-      ...this.getUserReactionStage(userId),
-    );
-    return this.model.aggregate<PostWithMedia>(pipeline);
+    pipeline.push(...this.getUserReactionStage(userId));
+    return this.model.aggregate<PostWithMyReaction>(pipeline);
   }
   async findFullPostById(
     postId: string,
     userId: string,
-  ): Promise<PostWithMedia | null> {
+  ): Promise<PostWithMyReaction | null> {
     const aggregationPipeline: PipelineStage[] = [
       {
         $match: {
@@ -215,15 +142,11 @@ export class PostRepository extends ReactableRepository<PostDocument> {
           status: PostStatus.ACTIVE,
         },
       },
-      ...this.getAuthorLookupStage(),
-      this.getMediaLookupStage(),
-      this.getMediaMappingStage(),
-      { $project: { mediaDetails: 0 } },
       ...this.getUserReactionStage(userId),
     ];
 
     const [post] = await this.model
-      .aggregate<PostWithMedia>(aggregationPipeline)
+      .aggregate<PostWithMyReaction>(aggregationPipeline)
       .exec();
 
     return post || null;
@@ -282,22 +205,13 @@ export class PostRepository extends ReactableRepository<PostDocument> {
       $limit: limit + 1,
     });
 
-    pipeline.push(this.getMediaLookupStage());
-
-    pipeline.push({
-      $addFields: {
-        mediaDetail: { $arrayElemAt: ['$mediaDetails', 0] },
-      },
-    });
-
     pipeline.push({
       $project: {
         _id: '$media.mediaId',
         postId: '$_id',
         caption: '$media.caption',
         order: '$media.order',
-        url: '$mediaDetail.cloudinaryUrl',
-        originalFilename: '$mediaDetail.originalFilename',
+        url: '$mediaDetail.url',
         mediaType: '$mediaDetail.mediaType',
       },
     });

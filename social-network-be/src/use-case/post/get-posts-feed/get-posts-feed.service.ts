@@ -1,11 +1,16 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { CommentService } from 'src/comment/services/comment.service';
+import { CommentRepository } from 'src/domains/comment/comment.repository';
 import {
-  PostWithMedia,
-  PostWithTopComment,
+  PostCursorData,
+  PostWithMyReaction,
+  PostWithTopCommentAndUserReaction,
 } from 'src/domains/post/interfaces/post.type';
-import { PostService } from 'src/domains/post/post.service';
+import { PostRepository } from 'src/domains/post/post.repository';
 import { BeCursorPaginated } from 'src/share/dto/res/be-paginated.dto';
+import {
+  decodeCursor,
+  encodeCursor,
+} from 'src/share/utils/cursor-encode-handling';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 export interface GetPostsFeedInput {
   cursor?: string;
@@ -14,7 +19,7 @@ export interface GetPostsFeedInput {
 }
 
 export interface GetPostsFeedOutput
-  extends BeCursorPaginated<PostWithTopComment> {}
+  extends BeCursorPaginated<PostWithTopCommentAndUserReaction> {}
 @Injectable()
 export class GetPostsFeedService extends BaseUseCaseService<
   GetPostsFeedInput,
@@ -22,57 +27,66 @@ export class GetPostsFeedService extends BaseUseCaseService<
 > {
   private readonly logger = new Logger(GetPostsFeedService.name);
   constructor(
-    private readonly postService: PostService,
-    private readonly commentService: CommentService,
+    private readonly commentRepository: CommentRepository,
+    private readonly postRepository: PostRepository,
   ) {
     super();
   }
   async execute(input: GetPostsFeedInput) {
+    const { userId, cursor, limit = 10 } = input;
     try {
-      const limit = input.limit || 10;
-
-      const decodedCursor = input.cursor
-        ? this.postService.decodeCursorSafely(input.cursor)
+      const decodedCursor = cursor
+        ? decodeCursor<PostCursorData>(cursor)
         : undefined;
 
-      const { posts, hasMore, nextCursor } =
-        await this.postService.getPostsByCursor(
-          limit,
-          input.userId,
-          decodedCursor,
-        );
-
-      const enrichedPosts = await this.enrichPostsWithComments(
-        posts,
-        input.userId,
+      const posts = await this.postRepository.findByCursor(
+        limit + 1,
+        userId,
+        decodedCursor,
       );
 
+      const hasMore = posts.length > limit;
+
+      let nextCursor: string | null = null;
+      if (hasMore) {
+        const lastPost = posts[limit - 1];
+        nextCursor = encodeCursor({
+          lastHotScore: lastPost.hotScore,
+          lastId: lastPost._id.toString(),
+        });
+      }
+      const enrichedPosts = await this.enrichPostsWithComments(
+        posts.slice(0, limit),
+        userId,
+      );
       return {
         data: enrichedPosts,
         pagination: { nextCursor, hasMore },
       };
     } catch (error) {
       this.logger.error(
-        `Failed to get posts feed for user ${input.userId}: ${error.message}`,
+        `Failed to get posts feed for user ${userId}: ${error.message}`,
         error.stack,
       );
       throw new BadRequestException('Failed to retrieve posts');
     }
   }
   private async enrichPostsWithComments(
-    posts: PostWithMedia[],
+    posts: PostWithMyReaction[],
     userId: string,
-  ): Promise<PostWithTopComment[]> {
+  ): Promise<PostWithTopCommentAndUserReaction[]> {
     if (posts.length === 0) {
       return [];
     }
 
     const postIds = posts.map((p) => p._id.toString());
-    const topCommentsMap = await this.commentService.getTopCommentsForPosts(
+    const comments = await this.commentRepository.findTopCommentsForPosts(
       postIds,
       userId,
     );
-
+    const topCommentsMap = new Map(
+      comments.map((comment) => [comment.postId, comment]),
+    );
     return posts.map((post) => ({
       ...post,
       topComment: topCommentsMap.get(post._id.toString()) || null,

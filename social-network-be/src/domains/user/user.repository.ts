@@ -123,4 +123,20 @@ export class UserRepository extends BaseRepository<UserDocument> {
     const result = await this.model.deleteMany(filter);
     return { deletedCount: result.deletedCount };
   }
+
+  async areFriends(
+    requestingUserId: string,
+    profileUserId: string,
+  ): Promise<boolean> {
+    if (requestingUserId === profileUserId) {
+      return false;
+    }
+
+    const requestingUser = await this.findUserWithFriend(
+      requestingUserId,
+      profileUserId,
+    );
+
+    return !!requestingUser;
+  }
 }

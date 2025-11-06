@@ -3,7 +3,7 @@
   "sourceRoot": "src",
   "compilerOptions": {
     "deleteOutDir": true,
-    "assets": ["**/*.hbs", "mail/templates/**/*"],
+    "assets": ["**/*.hbs", "**/*.hbs"],
     "watchAssets": true
   }
 }

@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { UserDocument, UserSchema } from 'src/schemas';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UserRepository } from './user-repository.service';
-import { UserService } from './user.service';
+import { UserDomainsService } from './user-domains.service';
+import { UserRepository } from './user.repository';
 
 @Module({
   imports: [
@@ -10,7 +10,7 @@ import { UserService } from './user.service';
       { name: UserDocument.name, schema: UserSchema },
     ]),
   ],
-  providers: [UserRepository, UserService],
-  exports: [UserRepository, UserService],
+  providers: [UserRepository, UserDomainsService],
+  exports: [UserRepository, UserDomainsService],
 })
 export class UserModule {}

@@ -27,7 +27,7 @@ export class PrivacySettings {
 }
 
 const PrivacySettingsSchema = SchemaFactory.createForClass(PrivacySettings);
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, collection: 'users' })
 export class UserDocument extends Document {
   @Prop({ required: true })
   firstName: string;

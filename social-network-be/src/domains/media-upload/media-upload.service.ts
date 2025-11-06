@@ -3,7 +3,6 @@ import {
   Inject,
   Logger,
   BadRequestException,
-  NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ClientSession, Model, Types } from 'mongoose';
@@ -13,6 +12,7 @@ import { MediaType } from 'src/share/enums';
 import { MediaUploadDocument } from 'src/schemas';
 import { MediaUpload } from './interfaces/type';
 
+//TODO: Need to split repository and service
 @Injectable()
 export class MediaUploadService {
   private readonly logger = new Logger(MediaUploadService.name);
@@ -38,7 +38,11 @@ export class MediaUploadService {
       console.log(`Cleaned up ${expiredMedia.length} expired media files`);
     }
   }
-
+  async findMedia(mediaIds: string[]) {
+    if (mediaIds.length === 0) return [];
+    const mediaIdObjs = mediaIds.map((id) => new Types.ObjectId(id));
+    return await this.mediaModel.find({ _id: { $in: mediaIdObjs } }).lean();
+  }
   async uploadTemporary(
     file: Express.Multer.File,
     userId: string,
@@ -46,7 +50,6 @@ export class MediaUploadService {
     id: string;
     url: string;
     mediaType: string;
-    message: string;
     expiresAt: Date;
   }> {
     const mediaType = this.detectMediaType(file.mimetype);
@@ -63,13 +66,13 @@ export class MediaUploadService {
       );
     }
     try {
-      const tempMediaUploadFolder = 'temp_uploads';
+      const uploadFolder = 'uploads';
       const uploadResult = await this.cloudinaryInstance.uploader.upload(
         `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
         {
           resource_type: mediaType === 'video' ? 'video' : 'image',
-          folder: tempMediaUploadFolder,
-          public_id: `temp_${mediaType}_${Date.now()}_${userId}`,
+          folder: uploadFolder,
+          public_id: `${mediaType}_${Date.now()}_${userId}`,
           ...(mediaType === 'image' && {
             transformation: [
               { width: 1200, height: 1200, crop: 'limit', quality: 'auto' },
@@ -92,71 +95,46 @@ export class MediaUploadService {
 
       return {
         id: savedMedia._id.toString(),
-        url: uploadResult.secure_url,
-        mediaType,
+        url: savedMedia.url,
+        mediaType: savedMedia.mediaType,
         expiresAt: savedMedia.expiresAt,
-        message: `Upload successfully. Media will expire after 15 minutes if not confirmed.`,
       };
     } catch (error) {
       this.logger.error('Upload failed:', error);
       throw new BadRequestException('Upload error, please try again.');
     }
   }
-
-  async confirmUpload(
-    mediaId: string,
-    userId: string,
-  ): Promise<{
-    id: string;
-    url: string;
-    publicId: string;
-    mediaType: string;
-    message: string;
-  }> {
-    const tempMedia = await this.mediaModel.findOne({
-      _id: new Types.ObjectId(String(mediaId).trim()),
-      userId,
-      isConfirmed: false,
-    });
-
-    if (!tempMedia) {
-      throw new NotFoundException('Media not found or already confirmed');
+  async confirmUploads(mediaIds: string[], userId: string): Promise<void> {
+    if (!mediaIds || mediaIds.length === 0) {
+      return;
     }
 
-    if (new Date() > tempMedia.expiresAt) {
-      throw new BadRequestException('Media is expired');
-    }
+    const objectIds = mediaIds.map(
+      (id) => new Types.ObjectId(String(id).trim()),
+    );
 
     try {
-      const newPublicId = tempMedia.cloudinaryPublicId.replace(
-        'temp_uploads/',
-        'confirmed/',
-      );
-
-      const moveResult = await this.cloudinaryInstance.uploader.rename(
-        tempMedia.cloudinaryPublicId,
-        newPublicId,
+      const result = await this.mediaModel.updateMany(
         {
-          resource_type: tempMedia.mediaType === 'video' ? 'video' : 'image',
+          _id: { $in: objectIds },
+          userId,
+          isConfirmed: false,
+        },
+        {
+          $set: { isConfirmed: true },
+          $unset: { expiresAt: '' },
         },
       );
 
-      tempMedia.isConfirmed = true;
-      tempMedia.cloudinaryPublicId = newPublicId;
-      tempMedia.url = moveResult.secure_url;
-      await tempMedia.save();
-
-      return {
-        id: tempMedia._id.toString(),
-        url: moveResult.secure_url,
-        publicId: newPublicId,
-        mediaType: tempMedia.mediaType,
-        message: 'Media is confirmed and moved to permanent storage',
-      };
+      if (result.matchedCount !== mediaIds.length) {
+        this.logger.warn(
+          `Potential media confirmation mismatch. Expected ${mediaIds.length}, found ${result.matchedCount}`,
+        );
+      }
     } catch (error) {
-      this.logger.error('Confirm upload failed:', error);
-      throw new BadRequestException(
-        'Media confirmation failed, please try again.',
+      this.logger.error(
+        `Failed to confirm media batch: ${mediaIds.join(',')}`,
+        error,
       );
     }
   }
@@ -236,6 +214,24 @@ export class MediaUploadService {
         `Failed to delete media ${mediaCloudinaryPublicId} from Cloud`,
         err,
       );
+      return false;
+    }
+  }
+  public async deleteFromCloudByMediaId(mediaId: string) {
+    try {
+      const media = await this.mediaModel.findById(mediaId).lean();
+      if (!media) {
+        return false;
+      }
+      const { cloudinaryPublicId, mediaType } = media;
+      await this.cloudinaryInstance.uploader.destroy(cloudinaryPublicId, {
+        resource_type:
+          mediaType === MediaType.VIDEO ? MediaType.VIDEO : MediaType.IMAGE,
+      });
+
+      return true;
+    } catch (err) {
+      this.logger.error(`Failed to delete media ${mediaId} from Cloud`, err);
       return false;
     }
   }

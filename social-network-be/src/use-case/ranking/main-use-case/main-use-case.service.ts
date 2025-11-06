@@ -3,9 +3,6 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { OnEvent } from '@nestjs/event-emitter';
 import { CommentEvents, ReactionEvents } from 'src/share/events';
 import { ReactionTargetType, PostStatus } from 'src/share/enums';
-import { PostRepository } from 'src/post/services/post-repository.service';
-import { CommentRepository } from 'src/comment/services/comment-repository.service';
-import { Post } from 'src/schemas';
 
 import {
   FilterQuery,
@@ -13,6 +10,9 @@ import {
   AnyBulkWriteOperation,
   Types,
 } from 'mongoose';
+import { PostRepository } from 'src/domains/post/post.repository';
+import { PostDocument } from 'src/schemas';
+import { CommentRepository } from 'src/domains/comment/comment.repository';
 const POST_RANKING_CONFIG = {
   REACTION_WEIGHT: 1,
   COMMENT_WEIGHT: 3,
@@ -43,12 +43,12 @@ export class RankingService {
 
     const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
 
-    const filter: FilterQuery<Post> = {
+    const filter: FilterQuery<PostDocument> = {
       createdAt: { $gte: threeDaysAgo },
       status: PostStatus.ACTIVE,
     };
 
-    const projection: ProjectionType<Post> = {
+    const projection: ProjectionType<PostDocument> = {
       reactionsCount: 1,
       commentsCount: 1,
       sharesCount: 1,
@@ -74,26 +74,28 @@ export class RankingService {
       return;
     }
 
-    const bulkOps: AnyBulkWriteOperation<Post>[] = postsToUpdate.map((post) => {
-      const interactionScore =
-        (post.reactionsCount || 0) * 1 +
-        (post.commentsCount || 0) * 3 +
-        (post.sharesCount || 0) * 5;
+    const bulkOps: AnyBulkWriteOperation<PostDocument>[] = postsToUpdate.map(
+      (post) => {
+        const interactionScore =
+          (post.reactionsCount || 0) * 1 +
+          (post.commentsCount || 0) * 3 +
+          (post.sharesCount || 0) * 5;
 
-      const hoursSinceCreation =
-        (Date.now() - new Date(post.createdAt).getTime()) / (1000 * 60 * 60);
-      const gravity = 1.8;
+        const hoursSinceCreation =
+          (Date.now() - new Date(post.createdAt).getTime()) / (1000 * 60 * 60);
+        const gravity = 1.8;
 
-      const hotScore =
-        interactionScore / Math.pow(hoursSinceCreation + 2, gravity);
+        const hotScore =
+          interactionScore / Math.pow(hoursSinceCreation + 2, gravity);
 
-      return {
-        updateOne: {
-          filter: { _id: post._id },
-          update: { $set: { hotScore: hotScore } },
-        },
-      };
-    });
+        return {
+          updateOne: {
+            filter: { _id: post._id },
+            update: { $set: { hotScore: hotScore } },
+          },
+        };
+      },
+    );
 
     try {
       const result = await this.postRepository.bulkWrite(bulkOps);
@@ -161,11 +163,26 @@ export class RankingService {
     targetType: ReactionTargetType;
   }) {
     if (payload.targetType === ReactionTargetType.POST) {
-      this.logger.debug(`Post reaction changed for: ${payload.targetId}`);
+      this.logger.debug(
+        `PostDocument reaction changed for: ${payload.targetId}`,
+      );
       await this.recalculateSinglePostScore(payload.targetId);
     } else if (payload.targetType === ReactionTargetType.COMMENT) {
       this.logger.debug(`Comment reaction changed for: ${payload.targetId}`);
       await this.recalculateSingleCommentEngagementScore(payload.targetId);
+    }
+  }
+
+  @OnEvent(CommentEvents.created)
+  @OnEvent(CommentEvents.removed)
+  async handleCommentChange(payload: { postId: string; parentId?: string }) {
+    this.logger.debug(`Comment changed for post: ${payload.postId}`);
+    await this.recalculateSinglePostScore(payload.postId);
+    if (payload.parentId) {
+      this.logger.debug(
+        `Reply changed for parent comment: ${payload.parentId}`,
+      );
+      await this.recalculateSingleCommentEngagementScore(payload.parentId);
     }
   }
   async recalculateSingleCommentEngagementScore(targetId: string) {
@@ -207,18 +224,5 @@ export class RankingService {
     await this.postRepository.updateById(targetId, {
       hotScore: hotScore,
     });
-  }
-
-  @OnEvent(CommentEvents.created)
-  @OnEvent(CommentEvents.removed)
-  async handleCommentChange(payload: { postId: string; parentId?: string }) {
-    this.logger.debug(`Comment changed for post: ${payload.postId}`);
-    await this.recalculateSinglePostScore(payload.postId);
-    if (payload.parentId) {
-      this.logger.debug(
-        `Reply changed for parent comment: ${payload.parentId}`,
-      );
-      await this.recalculateSingleCommentEngagementScore(payload.parentId);
-    }
   }
 }

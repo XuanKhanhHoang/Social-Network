@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import { MediaType } from 'src/share/enums';
 
 export interface MediaUpload {
@@ -19,3 +20,15 @@ export interface Media {
   _id: string;
   createdAt: Date;
 }
+
+export interface MediaBasicData<T = string | Types.ObjectId> {
+  mediaId: T;
+  mediaType: MediaType;
+  url: string;
+}
+export interface MediaBasicDataWithCaption<T> extends MediaBasicData<T> {
+  caption?: string;
+  order?: number;
+}
+export interface MediaBasicDataOnlyIdAndType
+  extends Pick<MediaBasicData, 'mediaId' | 'mediaType'> {}

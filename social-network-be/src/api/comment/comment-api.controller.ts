@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CreateCommentDto, UpdateCommentDto } from './dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/domains/auth/jwt-auth.guard';
 import { ParseMongoIdPipe } from 'src/share/pipe/parse-mongo-id-pipe';
 import { GetUserId } from 'src/share/decorators/user.decorator';
 import { CreateCommentService } from 'src/use-case/comment/create-comment/create-comment.service';

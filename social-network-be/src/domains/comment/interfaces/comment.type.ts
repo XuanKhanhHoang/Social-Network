@@ -2,7 +2,8 @@ import { TiptapDocument } from 'src/share/dto/req/tiptap-content.dto';
 import { ReactionType } from 'src/share/enums';
 import { Author } from 'src/share/dto/res/author';
 import { ReactionsBreakdown } from 'src/share/dto/other/reaction-break-down';
-import { Media } from 'src/media-upload/interfaces/type';
+import { MediaBasicData } from 'src/domains/media-upload/interfaces/type';
+import { UserBasicData } from 'src/domains/user/interfaces';
 
 export interface CommentCursorData {
   lastPriority: number;
@@ -14,16 +15,17 @@ export interface ReplyCursorData {
   lastId: string;
 }
 export type CreateCommentData = {
-  authorId: string;
+  author: UserBasicData;
   postId: string;
   content?: TiptapDocument;
   parentId?: string;
-  mediaId?: string;
+  media?: MediaBasicData;
 };
 
 export type UpdateCommentData = {
   content?: TiptapDocument;
   mediaId?: string | null;
+  commentId: string;
 };
 export interface Comment {
   _id: string;
@@ -37,11 +39,8 @@ export interface Comment {
   mentionedUser: Author | null;
   myReaction: ReactionType | null;
   repliesCount: number;
-  mediaId?: string;
+  media?: MediaBasicData<string>;
   postId: string;
 }
 
-export interface ReplyComment extends Omit<CommentWithMedia, 'repliesCount'> {}
-export interface CommentWithMedia extends Omit<Comment, 'mediaId'> {
-  media?: Media;
-}
+export interface ReplyComment extends Omit<Comment, 'repliesCount'> {}

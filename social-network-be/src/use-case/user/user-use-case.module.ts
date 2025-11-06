@@ -5,11 +5,12 @@ import { GetUserBioService } from './get-user-bio/get-user-bio.service';
 import { GetUserFriendsPreviewService } from './get-user-friends-preview/get-user-friends-preview.service';
 import { GetUserProfileService } from './get-user-profile/get-user-profile.service';
 import { GetUserPhotosService } from './get-user-photos/get-user-photos.service';
-import { UserService } from 'src/domains/user/user.service';
-import { PostService } from 'src/domains/post/post.service';
+import { UserModule } from 'src/domains/user/user.module';
+import { PostModule } from 'src/domains/post/post.module';
+import { CleanupUnverifiedAccountsListenerService } from './listeners/listeners.service';
 
 @Module({
-  imports: [UserService, PostService],
+  imports: [UserModule, PostModule],
   providers: [
     GetMePreviewProfileService,
     GetUserHeaderService,
@@ -17,6 +18,7 @@ import { PostService } from 'src/domains/post/post.service';
     GetUserFriendsPreviewService,
     GetUserProfileService,
     GetUserPhotosService,
+    CleanupUnverifiedAccountsListenerService,
   ],
   exports: [
     GetMePreviewProfileService,

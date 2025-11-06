@@ -2,49 +2,18 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
-import { MailerModule } from '@nestjs-modules/mailer';
-import { MailModule } from './mail/mail.module';
-import { join } from 'path';
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { MailModule } from './share/module/mail/mail.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ApiModule } from './api/api.module';
-import { AuthUseCaseModule } from './use-case/auth/auth.use-case.module';
-import { AuthModule } from './domains/auth/auth.module';
-import { UserModule } from './domains/user/user.module';
-import { UserUseCaseModule } from './use-case/user/user-use-case.module';
-import { MediaUploadModule } from './domains/media-upload/media-upload.module';
-import { MediaUploadUseCaseModule } from './use-case/media-upload/media-upload-use-case.module';
+import { RankingUseCaseModule } from './use-case/ranking/ranking-use-case.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRoot(process.env.MONGODB_URI),
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
-    MailerModule.forRootAsync({
-      useFactory: async () => ({
-        transport: {
-          host: process.env.MAIL_HOST,
-          port: process.env.MAIL_PORT ? parseInt(process.env.MAIL_PORT) : 587,
-          secure: false,
-          auth: {
-            user: process.env.MAIL_USER,
-            pass: process.env.MAIL_PASSWORD,
-          },
-        },
-        defaults: {
-          from: process.env.MAIL_FROM,
-        },
-        template: {
-          dir: join(__dirname, '/mail/templates'),
-          adapter: new HandlebarsAdapter(),
-          options: {
-            strict: true,
-          },
-        },
-      }),
-    }),
     PassportModule,
     JwtModule.register({
       global: true,
@@ -53,12 +22,8 @@ import { MediaUploadUseCaseModule } from './use-case/media-upload/media-upload-u
     }),
     MailModule,
     ApiModule,
-    AuthUseCaseModule,
-    AuthModule,
-    UserModule,
-    UserUseCaseModule,
-    MediaUploadModule,
-    MediaUploadUseCaseModule,
+    RankingUseCaseModule,
   ],
+  providers: [],
 })
 export class AppModule {}

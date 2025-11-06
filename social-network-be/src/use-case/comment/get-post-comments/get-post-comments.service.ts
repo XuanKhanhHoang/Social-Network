@@ -1,8 +1,14 @@
-import { Injectable } from '@nestjs/common';
-import { CommentCursorData } from 'src/comment/comment.type';
-import { CommentService } from 'src/domains/comment/comment.service';
-import { CommentWithMedia } from 'src/domains/comment/interfaces/comment.type';
+import { Injectable, Logger } from '@nestjs/common';
+import { CommentRepository } from 'src/domains/comment/comment.repository';
+import {
+  Comment,
+  CommentCursorData,
+} from 'src/domains/comment/interfaces/comment.type';
 import { BeCursorPaginated } from 'src/share/dto/res/be-paginated.dto';
+import {
+  decodeCursor,
+  encodeCursor,
+} from 'src/share/utils/cursor-encode-handling';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 
 export type GetPostCommentsInput = {
@@ -11,28 +17,55 @@ export type GetPostCommentsInput = {
   limit?: number;
   cursor?: string;
 };
-export type GetPostCommentsOutput = BeCursorPaginated<CommentWithMedia>;
+export type GetPostCommentsOutput = BeCursorPaginated<Comment>;
 @Injectable()
 export class GetPostCommentsService
   implements BaseUseCaseService<GetPostCommentsInput, GetPostCommentsOutput>
 {
-  constructor(private readonly commentService: CommentService) {}
+  constructor(private readonly commentRepository: CommentRepository) {}
+  private readonly logger = new Logger(GetPostCommentsService.name);
   async execute(input: GetPostCommentsInput): Promise<GetPostCommentsOutput> {
-    const limit = input.limit || 10;
+    const { postId, userId, cursor, limit = 10 } = input;
 
-    const decodedCursor = input.cursor
-      ? this.commentService.decodeCursorSafely<CommentCursorData>(input.cursor)
+    const decodedCursorData = cursor
+      ? this.decodeCursorSafely<CommentCursorData>(cursor)
       : undefined;
-    const { comments, hasMore, nextCursor } =
-      await this.commentService.getPostComments(
-        input.postId,
-        input.userId,
-        limit,
-        decodedCursor,
-      );
+    const comments = await this.commentRepository.findByPostIdWithCursor(
+      postId,
+      userId,
+      limit,
+      decodedCursorData,
+    );
+
+    let nextCursor: string | null = null;
+    let hasMore = false;
+
+    if (comments.length > limit) {
+      hasMore = true;
+      const lastComment = comments[limit - 1];
+      const cursorData: CommentCursorData = {
+        lastPriority: lastComment.priority,
+        lastScore: lastComment.engagementScore,
+        lastId: lastComment._id.toString(),
+      };
+      nextCursor = encodeCursor(cursorData);
+    }
+
+    const results = comments.slice(0, limit);
+
     return {
-      data: comments,
+      data: results,
       pagination: { nextCursor, hasMore },
     };
+  }
+  private decodeCursorSafely<T extends CommentCursorData>(
+    cursor: string,
+  ): T | undefined {
+    try {
+      return decodeCursor<T>(cursor);
+    } catch (error) {
+      this.logger.warn(`Invalid cursor format: ${cursor}`);
+      return undefined;
+    }
   }
 }

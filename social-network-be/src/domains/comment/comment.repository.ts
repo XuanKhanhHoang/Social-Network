@@ -9,8 +9,8 @@ import {
 } from 'mongoose';
 import { ReactionTargetType } from 'src/share/enums';
 import {
+  Comment,
   CommentCursorData,
-  CommentWithMedia,
   CreateCommentData,
   ReplyComment,
   ReplyCursorData,
@@ -32,32 +32,7 @@ export class CommentRepository extends BaseRepository<CommentDocument> {
     REPLY_WEIGHT: 1.5,
     MILLISECONDS_IN_HOUR: 3600000,
   };
-  private getAuthorLookupStage(): PipelineStage[] {
-    return [
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'author',
-          foreignField: '_id',
-          as: 'authorInfo',
-        },
-      },
-      { $unwind: { path: '$authorInfo', preserveNullAndEmptyArrays: true } },
-    ];
-  }
-  private getMediaLookupStage(): PipelineStage[] {
-    return [
-      {
-        $lookup: {
-          from: 'mediauploads',
-          localField: 'mediaId',
-          foreignField: '_id',
-          as: 'media',
-        },
-      },
-      { $unwind: { path: '$media', preserveNullAndEmptyArrays: true } },
-    ];
-  }
+
   private getUserReactionLookupStage(
     userIdObj: Types.ObjectId,
   ): PipelineStage[] {
@@ -85,35 +60,17 @@ export class CommentRepository extends BaseRepository<CommentDocument> {
       },
     ];
   }
-  private getMentionUserLookupStage(): PipelineStage[] {
-    return [
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'mentionedUser',
-          foreignField: '_id',
-          as: 'mentionedUserInfo',
-        },
-      },
-      {
-        $unwind: {
-          path: '$mentionedUserInfo',
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-    ];
-  }
 
   async create(
     data: CreateCommentData,
     session?: ClientSession,
   ): Promise<CommentDocument> {
     const modelData = {
-      author: new Types.ObjectId(data.authorId),
+      author: data.author,
       postId: new Types.ObjectId(data.postId),
       content: data?.content,
       parentId: data.parentId ? new Types.ObjectId(data.parentId) : undefined,
-      mediaId: data.mediaId ? new Types.ObjectId(data.mediaId) : undefined,
+      media: data?.media,
     };
     const [createdComment] = await this.model.create([modelData], { session });
     return createdComment;
@@ -138,34 +95,13 @@ export class CommentRepository extends BaseRepository<CommentDocument> {
 
     return this.updateByIdAndGet(id, updateQuery, session);
   }
-  async findByIdWithMedia(
-    id: string,
-    session?: ClientSession,
-  ): Promise<CommentWithMedia | null> {
-    const query = this.model.findById(id).populate({
-      path: 'mediaId',
-      select:
-        'cloudinaryPublicId mediaType expiresAt isConfirmed userId originalFilename url ',
-    });
-
-    if (session) {
-      query.session(session);
-    }
-    const comment = (await query.lean().exec()) as any;
-    if (comment && comment.mediaId) {
-      comment.media = comment.mediaId;
-      delete comment.mediaId;
-    }
-
-    return comment as Promise<CommentWithMedia | null>;
-  }
 
   async findByPostIdWithCursor(
     postId: string,
     userId: string,
     limit: number,
     cursor?: CommentCursorData,
-  ): Promise<CommentWithMedia[]> {
+  ): Promise<Comment[]> {
     const postIdObj = new Types.ObjectId(postId);
     const userIdObj = new Types.ObjectId(userId);
 
@@ -181,7 +117,7 @@ export class CommentRepository extends BaseRepository<CommentDocument> {
       $addFields: {
         priority: {
           $cond: {
-            if: { $eq: ['$mentionedUser', userIdObj] },
+            if: { $eq: ['$mentionedUser._id', userIdObj] },
             then: 2,
             else: {
               $cond: { if: { $eq: ['$author', userIdObj] }, then: 1, else: 0 },
@@ -221,9 +157,6 @@ export class CommentRepository extends BaseRepository<CommentDocument> {
       },
     });
     pipeline.push({ $limit: limit + 1 });
-    pipeline.push(...this.getAuthorLookupStage());
-    pipeline.push(...this.getMediaLookupStage());
-    pipeline.push(...this.getMentionUserLookupStage());
     pipeline.push(...this.getUserReactionLookupStage(userIdObj));
     pipeline.push({
       $project: {
@@ -234,32 +167,17 @@ export class CommentRepository extends BaseRepository<CommentDocument> {
         createdAt: 1,
         priority: 1,
         engagementScore: 1,
-        author: {
-          _id: '$authorInfo._id',
-          firstName: '$authorInfo.firstName',
-          lastName: '$authorInfo.lastName',
-          avatar: '$authorInfo.avatar',
-        },
-        media: { $cond: { if: '$media', then: '$media', else: null } },
+        author: 1,
+        media: 1,
         postId: { $toString: '$postId' },
-        mentionedUser: {
-          $cond: {
-            if: '$mentionedUserInfo',
-            then: {
-              _id: '$mentionedUserInfo._id',
-              firstName: '$mentionedUserInfo.firstName',
-              lastName: '$mentionedUserInfo.lastName',
-            },
-            else: null,
-          },
-        },
+        mentionedUser: 1,
         repliesCount: 1,
         myReaction: {
           $ifNull: [{ $first: '$userReaction.reactionType' }, null],
         },
       },
     });
-    return this.model.aggregate<CommentWithMedia>(pipeline);
+    return this.model.aggregate<Comment>(pipeline);
   }
 
   async getCommentReplies(
@@ -281,7 +199,7 @@ export class CommentRepository extends BaseRepository<CommentDocument> {
       $addFields: {
         priority: {
           $cond: {
-            if: { $eq: ['$mentionedUser', userIdObj] },
+            if: { $eq: ['$mentionedUser._id', userIdObj] },
             then: 1,
             else: 0,
           },
@@ -316,9 +234,6 @@ export class CommentRepository extends BaseRepository<CommentDocument> {
     pipeline.push({ $limit: limit + 1 });
 
     const commonLookupStages: PipelineStage[] = [
-      ...this.getAuthorLookupStage(),
-      ...this.getMediaLookupStage(),
-      ...this.getMentionUserLookupStage(),
       ...this.getUserReactionLookupStage(userIdObj),
       {
         $project: {
@@ -329,24 +244,9 @@ export class CommentRepository extends BaseRepository<CommentDocument> {
           createdAt: 1,
           parentId: 1,
           priority: 1,
-          author: {
-            _id: '$authorInfo._id',
-            firstName: '$authorInfo.firstName',
-            lastName: '$authorInfo.lastName',
-            avatar: '$authorInfo.avatar',
-          },
+          author: 1,
           media: { $cond: { if: '$media', then: '$media', else: null } },
-          mentionedUser: {
-            $cond: {
-              if: '$mentionedUserInfo',
-              then: {
-                _id: '$mentionedUserInfo._id',
-                firstName: '$mentionedUserInfo.firstName',
-                lastName: '$mentionedUserInfo.lastName',
-              },
-              else: null,
-            },
-          },
+          mentionedUser: 1,
           myReaction: {
             $ifNull: [{ $first: '$userReaction.reactionType' }, null],
           },
@@ -361,7 +261,7 @@ export class CommentRepository extends BaseRepository<CommentDocument> {
   async findTopCommentsForPosts(
     postIdsInp: string[],
     userIdInp: string,
-  ): Promise<CommentWithMedia[]> {
+  ): Promise<Comment[]> {
     const postIds = postIdsInp.map((id) => new Types.ObjectId(id));
     const userId = new Types.ObjectId(userIdInp);
     const { GRAVITY, REPLY_WEIGHT, MILLISECONDS_IN_HOUR } =
@@ -428,12 +328,7 @@ export class CommentRepository extends BaseRepository<CommentDocument> {
       },
     });
 
-    pipeline.push(
-      ...this.getAuthorLookupStage(),
-      ...this.getMediaLookupStage(),
-      ...this.getUserReactionLookupStage(userId),
-      ...this.getMentionUserLookupStage(),
-    );
+    pipeline.push(...this.getUserReactionLookupStage(userId));
 
     pipeline.push({
       $project: {
@@ -444,23 +339,8 @@ export class CommentRepository extends BaseRepository<CommentDocument> {
         reactionsBreakdown: 1,
         createdAt: 1,
         postId: { $toString: '$postId' },
-        author: {
-          _id: '$authorInfo._id',
-          firstName: '$authorInfo.firstName',
-          lastName: '$authorInfo.lastName',
-          avatar: '$authorInfo.avatar',
-        },
-        mentionedUser: {
-          $cond: {
-            if: '$mentionedUserInfo',
-            then: {
-              _id: '$mentionedUserInfo._id',
-              firstName: '$mentionedUserInfo.firstName',
-              lastName: '$mentionedUserInfo.lastName',
-            },
-            else: null,
-          },
-        },
+        author: 1,
+        mentionedUser: 1,
         media: { $ifNull: ['$media', null] },
         myReaction: {
           $ifNull: [{ $first: '$userReaction.reactionType' }, null],

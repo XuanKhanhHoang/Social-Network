@@ -1,14 +1,15 @@
-// src/posts/schemas/post.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { UserPrivacy, ReactionType } from 'src/share/enums';
 import { PostStatus } from 'src/share/enums';
-import { PostMedia } from './post-media.schema';
+import { UserDocument } from './user.schema';
+import { SubUser } from './sub-user.schema';
+import { SubPostMedia } from './sub-post-media.schema';
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, collection: 'posts' })
 export class PostDocument extends Document {
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  author: Types.ObjectId;
+  @Prop({ type: SubUser, required: true })
+  author: SubUser;
 
   @Prop({ type: Object, required: true })
   content: Record<string, any>;
@@ -16,8 +17,8 @@ export class PostDocument extends Document {
   @Prop({ type: String })
   backgroundValue?: string;
 
-  @Prop({ type: [PostMedia] })
-  media?: PostMedia[];
+  @Prop({ type: [SubPostMedia] })
+  media?: SubPostMedia[];
 
   @Prop({ type: String, enum: UserPrivacy, default: UserPrivacy.PUBLIC })
   visibility: string;
@@ -31,7 +32,7 @@ export class PostDocument extends Document {
   @Prop({ type: Number, default: 0 })
   sharesCount: number;
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }] })
+  @Prop({ type: [{ type: Types.ObjectId, ref: UserDocument.name }] })
   tags: Types.ObjectId[];
 
   @Prop({ type: [String] })
@@ -40,7 +41,7 @@ export class PostDocument extends Document {
   @Prop({ type: String })
   location: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'Post' })
+  @Prop({ type: Types.ObjectId, ref: PostDocument.name })
   parentPost?: Types.ObjectId;
 
   @Prop({

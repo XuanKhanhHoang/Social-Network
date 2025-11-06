@@ -54,7 +54,7 @@ export class UserApiController {
   ) {
     return this.getUserFriendsPreviewService.execute({
       username,
-      requesting: requestingUserId,
+      requestingUserId: requestingUserId,
       limit,
       page,
     });

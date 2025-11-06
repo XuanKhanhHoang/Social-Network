@@ -1,14 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UserService } from 'src/user/services';
-// BỎ: Rất nhiều import đã được chuyển sang Use Case
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private jwtService: JwtService,
-    private userService: UserService,
-  ) {}
+  constructor(private jwtService: JwtService) {}
   generateTokens(userId: string) {
     const accessToken = this.jwtService.sign(
       { _id: userId },
@@ -27,13 +22,5 @@ export class AuthService {
     );
 
     return { accessToken, refreshToken };
-  }
-
-  async validateUserID(userId: string) {
-    const user = await this.userService.findByIdBasic(userId);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    return user;
   }
 }

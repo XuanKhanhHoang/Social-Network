@@ -1,7 +1,6 @@
 import {
   Controller,
   Post,
-  Body,
   UseInterceptors,
   UploadedFile,
   Param,
@@ -11,9 +10,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/domains/auth/jwt-auth.guard';
 import { GetUserId } from 'src/share/decorators/user.decorator';
-import { ConfirmTempMediaDto } from './dto/confirm-temp-media.dto';
 import {
-  ConfirmTempFileService,
   DeleteTempFileService,
   UploadToTempService,
 } from 'src/use-case/media-upload';
@@ -23,11 +20,10 @@ import {
 export class MediaUploadApiController {
   constructor(
     private readonly uploadToTempService: UploadToTempService,
-    private readonly confirmTempFileService: ConfirmTempFileService,
     private readonly deleteTempFileService: DeleteTempFileService,
   ) {}
 
-  @Post('upload-temp')
+  @Post('upload')
   @UseInterceptors(
     FileInterceptor('file', {
       limits: {
@@ -49,18 +45,7 @@ export class MediaUploadApiController {
     return this.uploadToTempService.execute({ file, userId });
   }
 
-  @Post('confirm')
-  async confirmUpload(
-    @Body() confirmDto: ConfirmTempMediaDto,
-    @GetUserId() userId: string,
-  ) {
-    return this.confirmTempFileService.execute({
-      mediaId: confirmDto.tempId,
-      userId,
-    });
-  }
-
-  @Delete('temp/:id')
+  @Delete(':id')
   async cancelUpload(
     @Param('id') tempMediaId: string,
     @GetUserId() userId: string,

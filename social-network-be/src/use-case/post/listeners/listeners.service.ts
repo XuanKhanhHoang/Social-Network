@@ -5,10 +5,8 @@ import { ReactionEvents } from 'src/share/events';
 
 @Injectable()
 export class ListenersService {
-  constructor(
-    private readonly postRepository: PostRepository,
-    private readonly logger = new Logger(ListenersService.name),
-  ) {}
+  constructor(private readonly postRepository: PostRepository) {}
+  private readonly logger = new Logger(ListenersService.name);
   @OnEvent(ReactionEvents.created)
   async handleReactionCreated(payload: any): Promise<void> {
     try {

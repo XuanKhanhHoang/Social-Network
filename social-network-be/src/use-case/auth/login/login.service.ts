@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from 'src/domains/auth/services/auth.service';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 import * as bcrypt from 'bcryptjs';
-import { UserService } from 'src/user/services';
+import { UserRepository } from 'src/domains/user/user.repository';
 export type LoginInput = {
   email: string;
   password: string;
@@ -22,7 +22,7 @@ export type LoginOutput = {
 @Injectable()
 export class LoginService extends BaseUseCaseService<LoginInput, LoginOutput> {
   constructor(
-    private userService: UserService,
+    private userRepository: UserRepository,
     private authService: AuthService,
   ) {
     super();
@@ -30,7 +30,9 @@ export class LoginService extends BaseUseCaseService<LoginInput, LoginOutput> {
   async execute(input: LoginInput): Promise<LoginOutput> {
     const { email, password } = input;
 
-    const user = await this.userService.findByEmailAndVerified(email);
+    const user = (
+      await this.userRepository.findByEmailAndVerified(email)
+    )?.toObject();
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }

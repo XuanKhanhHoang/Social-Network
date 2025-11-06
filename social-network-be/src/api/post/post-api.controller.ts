@@ -44,9 +44,9 @@ export class PostController {
     @Body() updatePostDto: UpdatePostDto,
   ) {
     return await this.updatePostService.execute({
-      ...updatePostDto,
       postId,
       userId,
+      data: updatePostDto,
     });
   }
   @Get('gets')
