@@ -1,58 +1,66 @@
-import { UserPrivacy } from '../constants/enums';
+import { UserRelationship } from '../constants/enums/user-relationship';
+import { VisibilityPrivacy } from '../constants/enums/visibility-privacy';
 
-interface PrivacySettingsDto {
-  bio: UserPrivacy;
-  work: UserPrivacy;
-  currentLocation: UserPrivacy;
-  friendList: UserPrivacy;
+export interface UserSummaryDto {
+  _id: string;
+  username: string;
+  avatar?: string;
+  firstName: string;
+  lastName: string;
 }
 
-interface UserProfileDto {
+export interface GetUserHeaderResponseDto {
   firstName: string;
   lastName: string;
   username: string;
-  avatar: string;
-  coverPhoto: string;
-  createdAt: Date;
-  bio: string;
-  work: string;
-  currentLocation: string;
-  friendCount: number;
-  email: string;
-  phoneNumber: string | null;
+  avatar?: string;
+  coverPhoto?: string;
+  relationship: UserRelationship;
+}
+
+export interface PrivacySettingsDto {
+  work: VisibilityPrivacy;
+  currentLocation: VisibilityPrivacy;
+  friendList: VisibilityPrivacy;
+}
+
+export interface GetUserProfileResponseDto {
+  firstName: string;
+  lastName: string;
+  username: string;
+  avatar?: string;
+  coverPhoto?: string;
+  bio?: string;
+  work?: string;
+  currentLocation?: string;
+  friendCount?: number;
   privacySettings: PrivacySettingsDto;
 }
 
-export type PublicProfileResponseDto = Pick<
-  UserProfileDto,
-  'firstName' | 'lastName' | 'username' | 'avatar' | 'coverPhoto' | 'createdAt'
->;
+export interface GetUserBioResponseDto {
+  bio?: string;
+  work?: string;
+  currentLocation?: string;
+}
 
-type FriendFieldsDto = Pick<
-  UserProfileDto,
-  'bio' | 'work' | 'currentLocation' | 'friendCount'
->;
+export interface GetUserFriendsPreviewResponseDto {
+  total: number;
+  data: UserSummaryDto[];
+  pagination: {
+    hasNextPage: boolean;
+  };
+}
 
-export type FriendProfileResponseDto = PublicProfileResponseDto &
-  Partial<FriendFieldsDto>;
+interface PhotoDto {
+  mediaId: string;
+  mediaType: string;
+  url: string;
+}
 
-export type OwnerProfileResponseDto = Pick<
-  UserProfileDto,
-  | 'firstName'
-  | 'lastName'
-  | 'username'
-  | 'avatar'
-  | 'coverPhoto'
-  | 'createdAt'
-  | 'bio'
-  | 'work'
-  | 'currentLocation'
-  | 'friendCount'
-  | 'email'
-  | 'phoneNumber'
-  | 'privacySettings'
->;
-export type GetProfileResponseDto =
-  | PublicProfileResponseDto
-  | FriendProfileResponseDto
-  | OwnerProfileResponseDto;
+export interface GetUserPhotosResponseDto {
+  total: number;
+  data: PhotoDto[];
+  pagination: {
+    hasNextPage: boolean;
+  };
+}

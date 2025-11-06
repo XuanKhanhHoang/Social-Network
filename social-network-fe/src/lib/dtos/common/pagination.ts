@@ -1,8 +1,8 @@
-export type CursorPagination = {
+export interface CursorPagination {
   nextCursor: string | null;
   hasMore: boolean;
-};
-export type CursorPaginationResponse<T> = {
+}
+export interface CursorPaginationResponse<T> {
   data: T[];
   pagination: CursorPagination;
-};
+}

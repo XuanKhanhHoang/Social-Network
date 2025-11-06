@@ -27,7 +27,7 @@ export class PostController {
     private readonly getPostFullService: GetPostFullService,
   ) {}
 
-  @Post('create')
+  @Post('')
   async createPost(
     @Body() createPostDto: CreatePostDto,
     @GetUserId() userId: string,
@@ -37,7 +37,7 @@ export class PostController {
       userId,
     });
   }
-  @Patch('update/:id')
+  @Patch(':id')
   async updatePost(
     @Param('id') postId: string,
     @GetUserId() userId: string,

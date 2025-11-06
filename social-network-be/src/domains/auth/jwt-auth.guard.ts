@@ -7,6 +7,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { JwtService } from '@nestjs/jwt';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from 'src/share/decorators/allow-public-req.decorator';
+import { IS_SEMI_PUBLIC_KEY } from 'src/share/decorators/allow-semi-public.decorator';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -24,13 +25,18 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       context.getHandler(),
       context.getClass(),
     ]);
+    const isSemiPublic = this.reflector.getAllAndOverride<boolean>(
+      IS_SEMI_PUBLIC_KEY,
+      [context.getHandler(), context.getClass()],
+    );
     if (isPublic) return true;
     const accessToken = request.cookies?.accessToken;
     const refreshToken = request.cookies?.refreshToken;
 
-    if (!accessToken && !refreshToken) {
+    if (!accessToken && !refreshToken && !isSemiPublic) {
       throw new UnauthorizedException('No tokens provided');
     }
+    if (isSemiPublic && !accessToken && !refreshToken) return true;
     try {
       if (accessToken) {
         const payload: { _id: string; iat: number; exp: number } =

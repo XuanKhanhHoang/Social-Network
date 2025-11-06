@@ -1,24 +1,29 @@
+import {
+  RemoveReactionResponseDto,
+  ToggleReactionResponseDto,
+} from '@/lib/dtos';
 import { ApiClient } from './api';
 import { ReactionTargetType, ReactionType } from '@/lib/constants/enums';
 
-const ENDPOINT = '/reaction';
+const REACTION_PREFIX = '/reaction-api';
 
 export const reactionService = {
   reaction(
     targetId: string,
     reactionType: ReactionType,
     targetType: ReactionTargetType
-  ) {
-    return ApiClient.post(ENDPOINT, {
+  ): Promise<ToggleReactionResponseDto> {
+    return ApiClient.post(REACTION_PREFIX, {
       targetId,
       targetType,
       reactionType,
     });
   },
 
-  unReaction(targetId: string, targetType: ReactionTargetType) {
-    return ApiClient.delete(
-      `${ENDPOINT}/un-reaction/${targetType}/${targetId}`
-    );
+  unReaction(
+    targetId: string,
+    targetType: ReactionTargetType
+  ): Promise<RemoveReactionResponseDto> {
+    return ApiClient.delete(`${REACTION_PREFIX}/${targetType}/${targetId}`);
   },
 };

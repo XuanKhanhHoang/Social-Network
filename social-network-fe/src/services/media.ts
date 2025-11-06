@@ -1,20 +1,20 @@
-import { UploadTempMediaResponseDto } from '@/lib/dtos';
+import { DeleteMediaResponseDto, UploadMediaResponseDto } from '@/lib/dtos';
 import { ApiClient } from './api';
 
+const MEDIA_PREFIX = '/medias';
+
 export const mediaService = {
-  async uploadTempMedia(file: File): Promise<UploadTempMediaResponseDto> {
+  async uploadMedia(file: File): Promise<UploadMediaResponseDto> {
     const formData = new FormData();
     formData.append('file', file);
-    return ApiClient.post<UploadTempMediaResponseDto>(
-      '/media/upload-temp',
-      formData
-    );
-  },
-  async confirmMedia(tempId: string) {
-    return ApiClient.post('/media/confirm', { tempId });
+    return ApiClient.post<UploadMediaResponseDto>(MEDIA_PREFIX, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
   },
 
-  async cancelTempMedia(tempId: string) {
-    return ApiClient.delete(`/media/temp/${tempId}`);
+  async deleteMedia(id: string): Promise<DeleteMediaResponseDto> {
+    return ApiClient.delete<DeleteMediaResponseDto>(`${MEDIA_PREFIX}/${id}`);
   },
 };

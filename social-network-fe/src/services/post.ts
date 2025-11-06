@@ -1,13 +1,25 @@
-import { CreatePostDto, Post, PostListResponse } from '@/lib/dtos';
+import {
+  CreatePostRequestDto,
+  CreatePostResponseDto,
+  GetPostsFeedResponseDto,
+  PostWithMyReactionDto,
+  UpdatePostRequestDto,
+  UpdatePostResponseDto,
+} from '@/lib/dtos';
 import { ApiClient } from './api';
 import { RequestOptions } from './type';
 
+const POST_PREFIX = '/posts';
+
 export const postService = {
-  async createPost(data: CreatePostDto): Promise<unknown> {
-    return ApiClient.post<unknown>('/post/create', data);
+  async createPost(data: CreatePostRequestDto): Promise<CreatePostResponseDto> {
+    return ApiClient.post(`${POST_PREFIX}`, data);
   },
-  async updatePost(id: string, data: CreatePostDto): Promise<unknown> {
-    return ApiClient.patch<unknown>(`/post/update/${id}`, data);
+  async updatePost(
+    id: string,
+    data: UpdatePostRequestDto
+  ): Promise<UpdatePostResponseDto> {
+    return ApiClient.patch(`${POST_PREFIX}/${id}`, data);
   },
   async getPostsByCursor({
     cursor,
@@ -17,13 +29,21 @@ export const postService = {
     cursor?: string;
     limit?: number;
     options?: RequestOptions;
-  }): Promise<PostListResponse> {
+  }): Promise<GetPostsFeedResponseDto> {
     const queries = new URLSearchParams();
     if (cursor) queries.set('cursor', cursor);
     if (limit) queries.set('limit', limit.toString());
-    return ApiClient.get(`/post/gets?${queries.toString()}`, options);
+
+    const queryString = queries.toString();
+    return ApiClient.get(
+      `${POST_PREFIX}/gets${queryString ? `?${queryString}` : ''}`,
+      options
+    );
   },
-  async getPost(postId: string, options?: RequestOptions): Promise<Post> {
-    return ApiClient.get('/post/' + postId, options);
+  async getPost(
+    postId: string,
+    options?: RequestOptions
+  ): Promise<PostWithMyReactionDto> {
+    return ApiClient.get(`${POST_PREFIX}/${postId}`, options);
   },
 };

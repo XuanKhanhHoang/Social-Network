@@ -77,7 +77,10 @@ export class UserDocument extends Document {
   @Prop({ default: '' })
   currentLocation: string;
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
+  @Prop({
+    type: [{ type: Types.ObjectId, ref: UserDocument.name }],
+    default: [],
+  })
   friends: Types.ObjectId[];
 
   @Prop({ type: Number, default: 0 })

@@ -15,7 +15,7 @@ import {
   UploadToTempService,
 } from 'src/use-case/media-upload';
 
-@Controller('media')
+@Controller('medias')
 @UseGuards(JwtAuthGuard)
 export class MediaUploadApiController {
   constructor(
@@ -23,7 +23,7 @@ export class MediaUploadApiController {
     private readonly deleteTempFileService: DeleteTempFileService,
   ) {}
 
-  @Post('upload')
+  @Post('')
   @UseInterceptors(
     FileInterceptor('file', {
       limits: {

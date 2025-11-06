@@ -47,7 +47,7 @@ export class MediaUploadService {
     file: Express.Multer.File,
     userId: string,
   ): Promise<{
-    id: string;
+    _id: string;
     url: string;
     mediaType: string;
     expiresAt: Date;
@@ -94,7 +94,7 @@ export class MediaUploadService {
       const savedMedia = await tempMedia.save();
 
       return {
-        id: savedMedia._id.toString(),
+        _id: savedMedia._id.toString(),
         url: savedMedia.url,
         mediaType: savedMedia.mediaType,
         expiresAt: savedMedia.expiresAt,

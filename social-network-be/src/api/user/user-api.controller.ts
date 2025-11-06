@@ -1,5 +1,6 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
-import { AllowPublic } from 'src/share/decorators/allow-public-req.decorator';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/domains/auth/jwt-auth.guard';
+import { AllowSemiPublic } from 'src/share/decorators/allow-semi-public.decorator';
 import { GetUserId } from 'src/share/decorators/user.decorator';
 import {
   GetMePreviewProfileService,
@@ -11,6 +12,7 @@ import {
 } from 'src/use-case/user';
 
 @Controller('users')
+@UseGuards(JwtAuthGuard)
 export class UserApiController {
   constructor(
     private readonly getMeProfileService: GetMePreviewProfileService,
@@ -27,7 +29,7 @@ export class UserApiController {
   }
 
   @Get(':username/header')
-  @AllowPublic()
+  @AllowSemiPublic()
   async getUserHeader(
     @Param('username') username: string,
     @GetUserId() requestingUserId?: string,
@@ -36,7 +38,7 @@ export class UserApiController {
   }
 
   @Get(':username/bio')
-  @AllowPublic()
+  @AllowSemiPublic()
   async getUserBio(
     @Param('username') username: string,
     @GetUserId() requestingUserId?: string,
@@ -45,7 +47,7 @@ export class UserApiController {
   }
 
   @Get(':username/friends-preview')
-  @AllowPublic()
+  @AllowSemiPublic()
   async getFriendsPreview(
     @Param('username') username: string,
     @GetUserId() requestingUserId?: string,
@@ -61,7 +63,7 @@ export class UserApiController {
   }
 
   @Get(':username/profile')
-  @AllowPublic()
+  @AllowSemiPublic()
   async getProfile(
     @Param('username') username: string,
     @GetUserId() requestingUserId?: string,
@@ -69,7 +71,7 @@ export class UserApiController {
     return this.getUserProfileService.execute({ username, requestingUserId });
   }
   @Get(':username/photos-preview')
-  @AllowPublic()
+  @AllowSemiPublic()
   async getPhotosPreview(
     @Param('username') username: string,
     @GetUserId() requestingUserId?: string,

@@ -7,7 +7,7 @@ export interface UploadToTempServiceInput {
   userId: string;
 }
 export interface UploadToTempServiceOutput {
-  id: string;
+  _id: string;
   url: string;
   mediaType: string;
   expiresAt: Date;

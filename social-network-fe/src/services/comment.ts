@@ -1,23 +1,28 @@
 import {
-  CreateCommentDto,
-  GetCommentListResponse,
-  UpdateCommentDto,
+  CreateCommentRequestDto,
+  GetCommentsResponseDto,
+  UpdateCommentRequestDto,
 } from '@/lib/dtos';
 import { ApiClient } from './api';
 import { RequestOptions } from './type';
 
+const COMMENT_PREFIX = '/comments';
+
 export const commentService = {
   async createComment(
-    data: CreateCommentDto
+    data: CreateCommentRequestDto
   ): Promise<{ _id: string } & unknown> {
-    return ApiClient.post<{ _id: string } & unknown>('/comments', data);
+    return ApiClient.post<{ _id: string } & unknown>(COMMENT_PREFIX, data);
   },
 
   async updateComment(
     id: string,
-    data: UpdateCommentDto
+    data: UpdateCommentRequestDto
   ): Promise<{ _id: string } & unknown> {
-    return ApiClient.patch<{ _id: string } & unknown>(`/comments/${id}`, data);
+    return ApiClient.patch<{ _id: string } & unknown>(
+      `${COMMENT_PREFIX}/${id}`,
+      data
+    );
   },
 
   async getPostComments({
@@ -30,13 +35,13 @@ export const commentService = {
     cursor?: string;
     limit?: number;
     options?: RequestOptions;
-  }): Promise<GetCommentListResponse> {
+  }): Promise<GetCommentsResponseDto> {
     const queries = new URLSearchParams();
     queries.set('postId', postId);
     if (cursor) queries.set('cursor', cursor);
     if (limit) queries.set('limit', limit.toString());
 
-    return ApiClient.get(`/comments?${queries.toString()}`, options);
+    return ApiClient.get(`${COMMENT_PREFIX}?${queries.toString()}`, options);
   },
 
   async getCommentReplies({
@@ -49,16 +54,19 @@ export const commentService = {
     cursor?: string;
     limit?: number;
     options?: RequestOptions;
-  }): Promise<GetCommentListResponse> {
+  }): Promise<GetCommentsResponseDto> {
     const queries = new URLSearchParams();
     if (cursor) queries.set('cursor', cursor);
     if (limit) queries.set('limit', limit.toString());
 
-    const url = `/comments/${commentId}/replies?${queries.toString()}`;
+    const queryString = queries.toString();
+    const url = `${COMMENT_PREFIX}/${commentId}/replies${
+      queryString ? `?${queryString}` : ''
+    }`;
 
     return ApiClient.get(url, options);
   },
   async deleteComment(commentId: string) {
-    return ApiClient.delete(`/comments/${commentId}`);
+    return ApiClient.delete(`${COMMENT_PREFIX}/${commentId}`);
   },
 };

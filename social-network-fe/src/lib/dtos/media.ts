@@ -1,13 +1,12 @@
-export type UploadTempMediaResponseDto = {
-  id: string;
-  url: string;
-  mediaType: string;
-  expiresAt: Date;
-  message: string;
-};
+import { MediaType } from '../constants/enums';
 
-export type MediaItem = {
-  id: string;
-  mediaType: string;
+export interface UploadMediaResponseDto {
+  _id: string;
   url: string;
-};
+  mediaType: MediaType;
+  expiresAt: string;
+}
+
+export interface DeleteMediaResponseDto {
+  message: string;
+}

@@ -1,27 +1,48 @@
-import { Gender } from '@/lib/constants/enums';
+import { Gender } from '../constants/enums';
 
-export type User = {
-  _id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  avatar: string;
-  username: string;
-};
-export type LoginResponseDto = {
+export interface RegisterResponseDto {
   message: string;
-  user: User;
-};
+  user: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    username: string;
+    avatar?: string;
+  };
+}
 
-export type VerifyEmailResponseDto = {
+export interface LoginResponseDto {
   message: string;
-  user: User & { emailVerified: boolean };
-};
-export type RegisterDto = {
+  user: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    avatar?: string;
+  };
+}
+
+export interface VerifyEmailResponseDto {
+  message: string;
+  user: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    emailVerified: boolean;
+  };
+}
+
+export interface LogoutResponseDto {
+  message: string;
+}
+
+export interface RegisterRequestDto {
   firstName: string;
   lastName: string;
   email: string;
   password: string;
   birthDate: string;
   gender: Gender;
-};
+}
