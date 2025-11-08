@@ -1,4 +1,3 @@
-// src/store/index.ts - Root store
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { AuthSlice, createAuthSlice } from './slices/authSlice';
