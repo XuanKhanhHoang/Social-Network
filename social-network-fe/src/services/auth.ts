@@ -9,7 +9,7 @@ import { ApiClient } from './api';
 import { RequestOptions } from './type';
 
 const AUTH_PREFIX = '/auth';
-const USER_PREFIX = '/user';
+const USER_PREFIX = '/users';
 
 export const authService = {
   async login(email: string, password: string): Promise<LoginResponseDto> {
