@@ -76,10 +76,7 @@ function PostItem({ post }: PostItemProps) {
           showLabel={false}
           showCount={true}
           initialCount={post.reactionsCount}
-          initialReaction={
-            // post.myReaction ||
-            undefined
-          }
+          initialReaction={post.myReaction}
           btnClassName="px-2 py-1"
         />
         <Link

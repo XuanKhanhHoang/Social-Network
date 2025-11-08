@@ -55,7 +55,7 @@ const REACTION_MAP = [
 interface ReactionButtonProps {
   entityId: string;
   entityType?: ReactionTargetType;
-  initialReaction?: ReactionType;
+  initialReaction: ReactionType | null;
   initialCount?: number;
   showLabel?: boolean;
   showCount?: boolean;

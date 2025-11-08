@@ -7,7 +7,7 @@ import { ReactionTargetType, ReactionType } from '@/lib/constants/enums';
 interface UseReactionOptions {
   entityId: string;
   entityType: ReactionTargetType;
-  initialReaction?: ReactionType;
+  initialReaction: ReactionType | null;
   initialCount?: number;
   onReactionChange?: (
     newReaction: ReactionType | null,
@@ -26,7 +26,7 @@ interface UseReactionOptions {
 }
 
 interface ReactionState {
-  currentReaction: ReactionType | undefined;
+  currentReaction: ReactionType | null;
   reactionCount: number;
 }
 
@@ -45,16 +45,14 @@ export function useReaction({
     reactionCount: initialCount,
   });
 
-  const pendingReactionRef = useRef<ReactionType | undefined>(initialReaction);
-  const lastSyncedReactionRef = useRef<ReactionType | undefined>(
-    initialReaction
-  );
+  const pendingReactionRef = useRef<ReactionType | null>(initialReaction);
+  const lastSyncedReactionRef = useRef<ReactionType | null>(initialReaction);
 
   const isMountedRef = useRef(true);
 
   const syncMutation = useMutation({
-    mutationFn: async (targetReaction: ReactionType | undefined) => {
-      if (targetReaction === undefined) {
+    mutationFn: async (targetReaction: ReactionType | null) => {
+      if (targetReaction === null) {
         await unReactionFn(entityId, entityType);
       } else {
         await reactionFn(entityId, targetReaction, entityType);
@@ -88,7 +86,7 @@ export function useReaction({
   });
 
   const debouncedSync = useCallback(
-    debounce((reaction: ReactionType | undefined) => {
+    debounce((reaction: ReactionType | null) => {
       if (!isMountedRef.current) return;
 
       if (reaction !== lastSyncedReactionRef.current) {
@@ -99,8 +97,8 @@ export function useReaction({
   );
 
   const calculateCountChange = (
-    oldReaction: ReactionType | undefined,
-    newReaction: ReactionType | undefined
+    oldReaction: ReactionType | null,
+    newReaction: ReactionType | null
   ): number => {
     if (!oldReaction && newReaction) return 1;
     if (oldReaction && !newReaction) return -1;
@@ -108,7 +106,7 @@ export function useReaction({
   };
 
   const handleReaction = useCallback(
-    (reaction: ReactionType | undefined) => {
+    (reaction: ReactionType | null) => {
       const countChange = calculateCountChange(state.currentReaction, reaction);
       const newCount = Math.max(0, state.reactionCount + countChange);
 
@@ -128,8 +126,7 @@ export function useReaction({
 
   const toggleReaction = useCallback(
     (reaction: ReactionType) => {
-      const newReaction =
-        state.currentReaction === reaction ? undefined : reaction;
+      const newReaction = state.currentReaction === reaction ? null : reaction;
       handleReaction(newReaction);
     },
     [state.currentReaction, handleReaction]
@@ -150,7 +147,7 @@ export function useReaction({
       const lastSynced = lastSyncedReactionRef.current;
 
       if (pending !== lastSynced) {
-        if (pending === undefined) {
+        if (pending === null) {
           unReactionFn(entityId, entityType).catch(console.error);
         } else {
           reactionFn(entityId, pending, entityType).catch(console.error);
