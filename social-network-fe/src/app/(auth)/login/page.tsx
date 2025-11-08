@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { useStore } from '@/store';
+import { transformToStoreUser } from '@/store/slices/authSlice';
 
 interface FormErrors {
   email?: string;
@@ -69,7 +70,7 @@ const LoginForm = () => {
     if (Object.keys(newErrors).length === 0) {
       try {
         const response = await authService.login(data.email, data.password);
-        setUser(response.user);
+        setUser(transformToStoreUser(response.user));
         toast.success('Đăng nhập thành công !');
         router.push('/');
         router.refresh();

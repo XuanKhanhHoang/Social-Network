@@ -15,6 +15,7 @@ export type LoginOutput = {
     lastName: string;
     email: string;
     avatar?: string;
+    username: string;
   };
   accessToken: string;
   refreshToken: string;
@@ -54,6 +55,7 @@ export class LoginService extends BaseUseCaseService<LoginInput, LoginOutput> {
         lastName: user.lastName,
         email: user.email,
         avatar: user.avatar,
+        username: user.username,
       },
       accessToken,
       refreshToken,

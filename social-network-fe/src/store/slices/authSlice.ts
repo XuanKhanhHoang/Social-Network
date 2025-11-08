@@ -1,9 +1,35 @@
-import { User } from '@/lib/dtos';
 import { StateCreator } from 'zustand';
 
+export interface StoreUser {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  avatar?: string;
+  username: string;
+}
+export function transformToStoreUser(
+  user: unknown & {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    avatar?: string;
+    username: string;
+  }
+): StoreUser {
+  return {
+    id: user['_id'],
+    firstName: user['firstName'],
+    lastName: user['lastName'],
+    email: user['email'],
+    avatar: user['avatar'],
+    username: user['username'],
+  };
+}
 export interface AuthSlice {
-  user: User | null;
-  setUser: (user: User | null) => void;
+  user: StoreUser | null;
+  setUser: (user: StoreUser | null) => void;
   clearUser: () => void;
 }
 

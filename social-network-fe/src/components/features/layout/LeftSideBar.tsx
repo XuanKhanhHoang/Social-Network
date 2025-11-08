@@ -72,10 +72,10 @@ const SidebarFooter = () => {
 const LeftSidebar = () => {
   const [activeItem, setActiveItem] = useState('home');
   const user = useStore((s) => s.user);
-  const userName = `${user?.firstName} ${user?.lastName}`;
+  const userName = `${user?.lastName} ${user?.firstName}`;
   const { openCreate } = useCreatePostContext();
 
-  const userHandle = '@johndoe';
+  const userHandle = '@' + user?.username;
 
   return (
     <aside className="w-60 bg-white border-r border-gray-200 sticky top-0 h-screen flex flex-col max-w-[240px] flex-shrink-0">

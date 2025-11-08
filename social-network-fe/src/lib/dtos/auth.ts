@@ -1,35 +1,21 @@
 import { Gender } from '../constants/enums';
+import { UserSummaryDto } from './user';
+
+export type UserSummaryAuth = UserSummaryDto & { email: string };
 
 export interface RegisterResponseDto {
   message: string;
-  user: {
-    _id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    username: string;
-    avatar?: string;
-  };
+  user: UserSummaryAuth;
 }
 
 export interface LoginResponseDto {
   message: string;
-  user: {
-    _id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    avatar?: string;
-  };
+  user: UserSummaryAuth;
 }
 
 export interface VerifyEmailResponseDto {
   message: string;
-  user: {
-    _id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
+  user: UserSummaryAuth & {
     emailVerified: boolean;
   };
 }
