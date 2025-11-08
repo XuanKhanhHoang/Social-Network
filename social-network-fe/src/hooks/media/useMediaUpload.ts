@@ -1,4 +1,4 @@
-import { MediaItemWithHandlingStatus } from '@/components/features/common/MediaComponent/type';
+import { MediaItemWithHandlingStatus } from '@/components/features/media/type';
 import { MediaType } from '@/lib/constants/enums';
 import { mediaService } from '@/services/media';
 import { useState, useCallback, useRef, useEffect } from 'react';
