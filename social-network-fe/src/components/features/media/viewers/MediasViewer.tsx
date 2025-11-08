@@ -9,7 +9,7 @@ export type MediaViewerProps = {
   onIndexChange: (index: number) => void;
   onClose: () => void;
 };
-export default function MediaViewer({
+export default function MediasViewer({
   media,
   currentIndex,
   onIndexChange,
