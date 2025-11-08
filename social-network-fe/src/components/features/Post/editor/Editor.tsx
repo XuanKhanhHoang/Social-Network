@@ -134,8 +134,8 @@ const usePostEditor = ({
 
     const originalMediaIds = original.media?.map((m) => m.mediaId).sort() || [];
     const currentMediaIds = media
-      .filter((m) => m._id)
-      .map((m) => m._id)
+      .filter((m) => m.id)
+      .map((m) => m.id)
       .sort();
     const mediaChanged = !_.isEqual(originalMediaIds, currentMediaIds);
 
@@ -147,7 +147,7 @@ const usePostEditor = ({
 
     const currentCaptions = media.reduce<Record<string, string>>(
       (acc, item, idx) => {
-        if (item._id) acc[item._id] = captions[idx] || '';
+        if (item.id) acc[item.id] = captions[idx] || '';
         return acc;
       },
       {}
@@ -171,7 +171,7 @@ const usePostEditor = ({
       }
 
       const mediaInfo: PostMediaCreateRequestDto[] = media.map((item, idx) => ({
-        mediaId: item._id!,
+        mediaId: item.id!,
         caption: captions[idx] || '',
         order: idx,
       }));

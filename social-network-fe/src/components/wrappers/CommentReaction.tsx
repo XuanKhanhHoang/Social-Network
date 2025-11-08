@@ -25,13 +25,13 @@ export function CommentReactionButton({
     newReaction: ReactionType | null,
     oldReaction?: ReactionType | null
   ) => {
-    updateUserReaction(comment._id, newReaction, oldReaction);
+    updateUserReaction(comment.id, newReaction, oldReaction);
   };
 
   return (
     <ReactionButton
       {...props}
-      entityId={comment._id}
+      entityId={comment.id}
       entityType={ReactionTargetType.COMMENT}
       initialReaction={comment.myReaction}
       initialCount={comment.reactionsCount}
