@@ -2,8 +2,8 @@
 
 import { ReactionTargetType, ReactionType } from '@/lib/constants/enums';
 import ReactionButton from '../ui/reaction-button';
-import { Comment } from '@/lib/dtos';
 import { useUpdateCommentCache } from '@/hooks/comment/useCommentCache';
+import { CommentWithMyReaction } from '@/lib/interfaces/comment';
 type CommentReactionButtonProps = Omit<
   React.ComponentProps<typeof ReactionButton>,
   | 'entityId'
@@ -12,7 +12,7 @@ type CommentReactionButtonProps = Omit<
   | 'initialCount'
   | 'onReactionChange'
 > & {
-  comment: Comment;
+  comment: CommentWithMyReaction;
 };
 
 export function CommentReactionButton({
