@@ -1,15 +1,6 @@
 'use client';
 import { useState } from 'react';
-import Image from 'next/image';
-import {
-  X,
-  Edit3,
-  Play,
-  ImagePlus,
-  AlertCircle,
-  Check,
-  Loader,
-} from 'lucide-react';
+import { X, Edit3, ImagePlus, AlertCircle, Check, Loader } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -22,11 +13,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { truncateFileName } from '@/lib/utils/string';
 import { formatFileSize } from '@/lib/utils/other';
-import MediaComponent from '@/components/features/common/MediaComponent/MediaComponent';
-import {
-  MediaItemWithHandlingStatus,
-  UIMediaItem,
-} from '../../common/MediaComponent/type';
+import { MediaItemWithHandlingStatus, UIMediaItem } from '../../media/type';
+import MediaUploadItem from '../../media/uploader/UploadItem';
+import MediaPreview from '../../media/common/MediaPreview';
 
 export type PostEditorMediaProps = {
   media: MediaItemWithHandlingStatus[];
@@ -155,7 +144,7 @@ export default function PostEditorMedia({
         {/* 1 ảnh - Hiển thị gần tỉ lệ gốc */}
         {media.length === 1 && (
           <div className="grid grid-cols-1 gap-0 rounded-lg overflow-hidden">
-            <MediaComponent
+            <MediaUploadItem
               item={media[0]}
               className={{ container: 'w-full h-96 ' }}
               handle={{
@@ -168,14 +157,14 @@ export default function PostEditorMedia({
         {/* 2 ảnh - Chia đều 2 cột */}
         {media.length === 2 && (
           <div className="grid grid-cols-2 gap-2 rounded-lg overflow-hidden">
-            <MediaComponent
+            <MediaUploadItem
               item={media[0]}
               className={{ container: 'w-full h-64' }}
               handle={{
                 onRetryUpload: () => onRetryUpload?.(0),
               }}
             />
-            <MediaComponent
+            <MediaUploadItem
               item={media[1]}
               className={{ container: 'w-full h-64' }}
               handle={{
@@ -189,7 +178,7 @@ export default function PostEditorMedia({
         {media.length === 3 && (
           <div className="grid grid-cols-5 gap-2 rounded-lg overflow-hidden h-80">
             <div className="col-span-3">
-              <MediaComponent
+              <MediaUploadItem
                 item={media[0]}
                 className={{ container: 'w-full h-full' }}
                 handle={{
@@ -198,14 +187,14 @@ export default function PostEditorMedia({
               />
             </div>
             <div className="col-span-2 grid grid-rows-2 gap-2">
-              <MediaComponent
+              <MediaUploadItem
                 item={media[1]}
                 className={{ container: 'w-full h-full' }}
                 handle={{
                   onRetryUpload: () => onRetryUpload?.(1),
                 }}
               />
-              <MediaComponent
+              <MediaUploadItem
                 item={media[2]}
                 className={{ container: 'w-full h-full' }}
                 handle={{
@@ -220,7 +209,7 @@ export default function PostEditorMedia({
         {media.length === 4 && (
           <div className="grid grid-cols-2 gap-2 rounded-lg overflow-hidden">
             {media.slice(0, 4).map((item, index) => (
-              <MediaComponent
+              <MediaUploadItem
                 key={index}
                 item={item}
                 className={{ container: 'w-full h-48' }}
@@ -237,7 +226,7 @@ export default function PostEditorMedia({
           <div className="rounded-lg overflow-hidden">
             <div className="grid grid-cols-8 gap-2 h-80">
               <div className="col-span-3">
-                <MediaComponent
+                <MediaUploadItem
                   item={media[0]}
                   className={{ container: 'w-full h-full' }}
                   handle={{
@@ -246,7 +235,7 @@ export default function PostEditorMedia({
                 />
               </div>
               <div className="col-span-3">
-                <MediaComponent
+                <MediaUploadItem
                   item={media[1]}
                   className={{ container: 'w-full h-full' }}
                   handle={{
@@ -255,21 +244,21 @@ export default function PostEditorMedia({
                 />
               </div>
               <div className="col-span-2 grid grid-rows-3 gap-2">
-                <MediaComponent
+                <MediaUploadItem
                   item={media[2]}
                   className={{ container: 'w-full h-full' }}
                   handle={{
                     onRetryUpload: () => onRetryUpload?.(2),
                   }}
                 />
-                <MediaComponent
+                <MediaUploadItem
                   item={media[3]}
                   className={{ container: 'w-full h-full' }}
                   handle={{
                     onRetryUpload: () => onRetryUpload?.(3),
                   }}
                 />
-                <MediaComponent
+                <MediaUploadItem
                   item={media[4]}
                   className={{ container: 'w-full h-full' }}
                   handle={{
@@ -286,7 +275,7 @@ export default function PostEditorMedia({
             <div className="grid grid-cols-3 gap-2">
               {media.slice(0, 6).map((item, index) => (
                 <div key={index} className="relative">
-                  <MediaComponent
+                  <MediaUploadItem
                     item={item}
                     className={{ container: 'w-full h-32' }}
                     handle={{
@@ -396,30 +385,12 @@ export default function PostEditorMedia({
 
                 <div className="flex items-start gap-4">
                   <div className="relative w-32 h-32 flex-shrink-0 bg-gray-100 rounded-lg overflow-visible">
-                    {item.mediaType === 'video' ? (
-                      <>
-                        <video
-                          src={item.url}
-                          className="w-full h-full object-contain"
-                          muted
-                        />
-                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                          <div className="bg-white/90 rounded-full p-2">
-                            <Play
-                              className="w-4 h-4 text-gray-800"
-                              fill="currentColor"
-                            />
-                          </div>
-                        </div>
-                      </>
-                    ) : (
-                      <Image
-                        src={item.url}
-                        alt={`edit-${i}`}
-                        fill
-                        className="object-contain"
-                      />
-                    )}
+                    <MediaPreview
+                      url={item.url}
+                      mediaType={item.mediaType}
+                      alt={`edit-${i}`}
+                      className="object-contain"
+                    />
 
                     <Button
                       variant="secondary"
