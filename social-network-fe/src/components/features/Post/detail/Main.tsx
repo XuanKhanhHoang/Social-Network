@@ -2,17 +2,17 @@
 import { X } from 'lucide-react';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import MediaViewer from '../../common/MediaComponent/MediaViewer';
 import { useRouter } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import PostDetailSkeleton from './Skeleton';
 import { generateHTML } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Emoji } from '@/lib/editor/emoji-node';
-import CommentEditor from '../../comment/CommentEditor';
 import { CommentSection } from '../../comment/CommentSection';
 import { PostWithMyReaction } from '@/lib/interfaces/post';
 import { PostDetailHeader } from './Header';
+import MediasViewer from '../../media/viewers/MediasViewer';
+import CommentEditor from '../../comment/Editor';
 
 export type PostDetailProps = {
   post?: PostWithMyReaction;
@@ -71,7 +71,7 @@ export default function PostDetail({
           <div className="flex w-full h-full overflow-hidden">
             {hasMedia && (
               <div className="flex-1 bg-black flex items-center justify-center">
-                <MediaViewer
+                <MediasViewer
                   media={post.media!}
                   currentIndex={currentMediaIndex}
                   onIndexChange={setCurrentMediaIndex}
