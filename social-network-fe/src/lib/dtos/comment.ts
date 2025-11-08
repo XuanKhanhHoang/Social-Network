@@ -31,8 +31,8 @@ export interface CommentDto {
   repliesCount: number;
   engagementScore: number;
   reactionsBreakdown: ReactionsBreakdownDto;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CommentWithMyReactionDto extends CommentDto {
