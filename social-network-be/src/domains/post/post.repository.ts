@@ -155,9 +155,9 @@ export class PostRepository extends ReactableRepository<PostDocument> {
     postId: string,
     session?: ClientSession,
   ): Promise<UpdateResult> {
-    return await this.model.updateOne(
+    return this.model.updateOne(
       { _id: new Types.ObjectId(postId) },
-      { $inc: { commentCount: 1 } },
+      { $inc: { commentsCount: 1 } },
       { session },
     );
   }
@@ -167,7 +167,7 @@ export class PostRepository extends ReactableRepository<PostDocument> {
   ): Promise<UpdateResult> {
     return await this.model.updateOne(
       { _id: new Types.ObjectId(postId) },
-      { $inc: { commentCount: -1 } },
+      { $inc: { commentsCount: -1 } },
       { session },
     );
   }
