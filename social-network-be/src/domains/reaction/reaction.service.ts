@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { reactionEvent } from 'src/share/events';
+import {
+  ReactionCreatedEventPayload,
+  reactionEvent,
+  ReactionRemovedEventPayload,
+  ReactionUpdatedEventPayload,
+} from 'src/share/events';
 import { ReactionTargetType, ReactionType } from 'src/share/enums';
 import { ReactionDocument } from 'src/schemas/reaction.schema';
 
@@ -32,13 +37,14 @@ export class ReactionService {
       const action = 'updated';
       const delta = 0;
 
-      this.eventEmitter.emit(reactionEvent(action), {
+      const payload: ReactionUpdatedEventPayload = {
         targetId,
         targetType,
         userId,
         oldReactionType: oldType,
         newReactionType: reactionType,
-      });
+      };
+      this.eventEmitter.emit(reactionEvent(action), payload);
 
       return { action, reaction: existingReaction, delta };
     } else {
@@ -50,13 +56,13 @@ export class ReactionService {
       });
       const action = 'created';
       const delta = 1;
-
-      this.eventEmitter.emit(reactionEvent(action), {
+      const payload: ReactionCreatedEventPayload = {
         targetId,
         targetType,
         userId,
         reactionType,
-      });
+      };
+      this.eventEmitter.emit(reactionEvent(action), payload);
 
       return { action, reaction: newReaction, delta };
     }
@@ -81,12 +87,13 @@ export class ReactionService {
     const action = 'removed';
     const delta = -1;
 
-    this.eventEmitter.emit(reactionEvent(action), {
+    const payload: ReactionRemovedEventPayload = {
       targetId,
       userId,
       targetType,
       reactionType: existingReaction.reactionType,
-    });
+    };
+    this.eventEmitter.emit(reactionEvent(action), payload);
 
     return { action, reaction: null, delta };
   }
