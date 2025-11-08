@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { timeAgo } from '@/lib/utils/time';
-import type { Comment } from '@/lib/dtos';
 import { generateHTML } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Emoji } from '@/lib/editor/emoji-node';
@@ -11,9 +10,13 @@ import CommentEditor from './CommentEditor';
 import { useStore } from '@/store';
 import { CommentReactionButton } from '@/components/wrappers/CommentReaction';
 import { useGetCommentReplies } from '@/hooks/comment/useComment';
+import {
+  CommentWithMyReaction,
+  transformToCommentWithMyReaction,
+} from '@/lib/interfaces/comment';
 
 type CommentItemProps = {
-  comment: Comment;
+  comment: CommentWithMyReaction;
   postId: string;
   level?: number;
 };
@@ -28,9 +31,12 @@ export default function CommentItem({
   const user = useStore((s) => s.user);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useGetCommentReplies(comment._id, 5, { enabled: showReplies });
+    useGetCommentReplies(comment.id, 5, { enabled: showReplies });
 
-  const replies = data?.pages.flatMap((page) => page.data) ?? [];
+  const replies =
+    data?.pages
+      .flatMap((page) => page.data)
+      .map((rp) => transformToCommentWithMyReaction(rp)) ?? [];
 
   const contentHtml = comment.content
     ? generateHTML(comment.content, [StarterKit, Emoji])
@@ -86,7 +92,7 @@ export default function CommentItem({
             <div className="flex-1">
               <CommentEditor
                 postId={postId}
-                parentId={comment._id}
+                parentId={comment.id}
                 placeholder={`Replying to ${comment.author.firstName}...`}
                 onSuccess={() => setIsReplying(false)}
                 autoFocus={true}
@@ -115,7 +121,7 @@ export default function CommentItem({
 
             {replies.map((reply) => (
               <CommentItem
-                key={reply._id}
+                key={reply.id}
                 comment={reply}
                 postId={postId}
                 level={level + 1}

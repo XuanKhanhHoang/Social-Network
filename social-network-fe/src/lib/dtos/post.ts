@@ -10,24 +10,19 @@ import { CommentWithMyReactionDto } from './comment';
 export interface CreatePostRequestDto {
   content?: JSONContent;
   backgroundValue?: string;
-  media?: {
-    mediaId: string;
-    caption?: string;
-    order?: number;
-  }[];
+  media?: PostMediaCreateRequestDto[];
   visibility?: VisibilityPrivacy;
+}
+export interface PostMediaCreateRequestDto {
+  mediaId: string;
+  caption?: string;
+  order?: number;
 }
 
 export interface UpdatePostRequestDto {
   content?: JSONContent;
   backgroundValue?: string;
-  media?:
-    | {
-        mediaId: string;
-        caption?: string;
-        order?: number;
-      }[]
-    | null;
+  media?: PostMediaCreateRequestDto[] | null;
   visibility?: VisibilityPrivacy;
 }
 
@@ -63,8 +58,8 @@ export interface PostDto {
   status: PostStatus;
   reactionsBreakdown: ReactionsBreakdownDto;
   hotScore: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface PostWithMyReactionDto extends PostDto {

@@ -1,5 +1,9 @@
+import {
+  CreatePostRequestDto,
+  GetPostsFeedResponseDto,
+  PostWithMyReactionDto,
+} from '@/lib/dtos';
 import { postService } from '@/services/post';
-import { CreatePostDto, PostListResponse, Post } from '@/lib/dtos';
 import {
   useQuery,
   useMutation,
@@ -23,7 +27,7 @@ export function useInfinitePosts(limit: number = 10) {
         cursor: pageParam,
         limit,
       }),
-    getNextPageParam: (lastPage: PostListResponse) => {
+    getNextPageParam: (lastPage: GetPostsFeedResponseDto) => {
       return lastPage.pagination.hasMore && lastPage.pagination.nextCursor
         ? lastPage.pagination.nextCursor
         : undefined;
@@ -32,7 +36,7 @@ export function useInfinitePosts(limit: number = 10) {
   });
 }
 
-export function usePost(postId: string, initialData?: Post) {
+export function usePost(postId: string, initialData?: PostWithMyReactionDto) {
   return useQuery({
     queryKey: postKeys.detail(postId),
     queryFn: () => postService.getPost(postId),
@@ -45,7 +49,7 @@ export function useCreatePost() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreatePostDto) => postService.createPost(data),
+    mutationFn: (data: CreatePostRequestDto) => postService.createPost(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: postKeys.lists() });
     },

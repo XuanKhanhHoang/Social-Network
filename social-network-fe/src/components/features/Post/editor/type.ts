@@ -1,40 +1,25 @@
-import { Post } from '@/lib/dtos';
-import {
-  MediaItemWithHandlingStatus,
-  UIMediaItem,
-} from '../../common/MediaComponent/type';
+import { PostMediaDto } from '@/lib/dtos';
+import { JSONContent } from '@tiptap/react';
 
-export type PostInEditor = Omit<
-  Post,
-  | 'author'
-  | 'reactionsCount'
-  | 'commentsCount'
-  | 'sharesCount'
-  | 'userReactionType'
-  | 'reactionsBreakdown'
-  | 'createdAt'
-  | 'updatedAt'
-  | 'status'
-  | 'tags'
-  | 'userComments'
->;
-
-export type PostEditorMediaProps = {
-  media: MediaItemWithHandlingStatus[];
-  handle: {
-    onChange: (
-      media: UIMediaItem[],
-      captions: { [index: number]: string }
-    ) => void;
-    handleMediaUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    onRetryUpload: (index: number) => void;
-    onRetryConfirm: (index: number) => void;
+export function transformToPostInEditor(
+  post: unknown & {
+    content: JSONContent;
+    media?: PostMediaDto[];
+    backgroundValue?: string;
+    _id: string;
+  }
+): PostInEditor {
+  return {
+    id: post._id,
+    content: post.content,
+    backgroundValue: post.backgroundValue,
+    media: post.media,
   };
-  captions: Record<number, string>;
-};
+}
 
-export type PostEditorProps = {
-  handleClose: () => void;
-  mode?: 'create' | 'edit';
-  post?: PostInEditor;
+export type PostInEditor = {
+  id: string;
+  content: JSONContent;
+  backgroundValue?: string;
+  media?: PostMediaDto[];
 };
