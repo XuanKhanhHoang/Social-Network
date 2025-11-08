@@ -7,11 +7,7 @@ export const mediaService = {
   async uploadMedia(file: File): Promise<UploadMediaResponseDto> {
     const formData = new FormData();
     formData.append('file', file);
-    return ApiClient.post<UploadMediaResponseDto>(MEDIA_PREFIX, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    return ApiClient.post<UploadMediaResponseDto>(MEDIA_PREFIX, formData);
   },
 
   async deleteMedia(id: string): Promise<DeleteMediaResponseDto> {

@@ -1,27 +1,12 @@
-import { MediaItem } from '@/lib/dtos';
+import { MediaType } from '@/lib/constants/enums';
 
-export type MediaComponentParams = {
-  item: MediaItemWithHandlingStatus;
-  className?: {
-    container?: string;
-    media?: string;
-  };
-  handle?: {
-    onRetryUpload?: () => void;
-    onRetryConfirm?: () => void;
-    onRemove?: () => void;
-  };
-  justShow?: boolean;
-};
-
-export type UIMediaItem = Omit<MediaItem, 'id'> & {
+export type UIMediaItem = {
   file?: File;
   id?: string;
+  mediaType: MediaType;
+  url: string;
 };
 export type MediaItemWithHandlingStatus = UIMediaItem & {
   isUploading?: boolean;
   uploadError?: string;
-  confirmError?: string;
-  isConfirming?: boolean;
-  isConfirmed?: boolean;
 };
