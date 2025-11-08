@@ -1,20 +1,19 @@
 'use client';
-
+import { PostMedia } from '@/lib/interfaces/post';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { PostMediaItem } from '@/lib/dtos';
 
+export type MediaViewerProps = {
+  media: PostMedia[];
+  currentIndex: number;
+  onIndexChange: (index: number) => void;
+  onClose: () => void;
+};
 export default function MediaViewer({
   media,
   currentIndex,
   onIndexChange,
-  onClose,
-}: {
-  media: PostMediaItem[];
-  currentIndex: number;
-  onIndexChange: (index: number) => void;
-  onClose: () => void;
-}) {
+}: MediaViewerProps) {
   const [expandedCaption, setExpandedCaption] = useState<number | null>(null);
 
   const nextMedia = () => {
