@@ -1,6 +1,5 @@
 'use-client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 import { timeAgo } from '@/lib/utils/time';
 import { generateHTML } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -43,14 +42,10 @@ export default function FeedCommentItem({ comment }: FeedCommentItemProps) {
             iconSize={18}
             btnClassName="px-2 py-1"
           />
-          <button className="font-semibold hover:underline">Reply</button>
+          {(comment.repliesCount ?? 0) > 0 && (
+            <span className="font-semibold hover:underline">5 phản hồi</span>
+          )}
         </div>
-
-        {(comment.repliesCount ?? 0) > 0 && (
-          <Button variant="link" size="sm" className="p-0 h-auto font-semibold">
-            View {comment.repliesCount} replies
-          </Button>
-        )}
       </div>
     </div>
   );
