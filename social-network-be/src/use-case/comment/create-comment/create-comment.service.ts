@@ -90,6 +90,7 @@ export class CreateCommentService extends BaseUseCaseService<
         ).toObject() as Comment;
 
         await this.postRepository.increaseCommentCount(comment.postId, session);
+
         return comment;
       });
       return result;
