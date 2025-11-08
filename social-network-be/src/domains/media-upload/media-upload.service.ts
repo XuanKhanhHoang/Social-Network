@@ -41,7 +41,9 @@ export class MediaUploadService {
   async findMedia(mediaIds: string[]) {
     if (mediaIds.length === 0) return [];
     const mediaIdObjs = mediaIds.map((id) => new Types.ObjectId(id));
-    return await this.mediaModel.find({ _id: { $in: mediaIdObjs } }).lean();
+    return (
+      await this.mediaModel.find({ _id: { $in: mediaIdObjs } }).lean()
+    ).map((item) => ({ ...item, _id: item._id.toString() }));
   }
   async uploadTemporary(
     file: Express.Multer.File,
