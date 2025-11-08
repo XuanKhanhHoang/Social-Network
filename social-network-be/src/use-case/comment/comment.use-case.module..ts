@@ -7,6 +7,7 @@ import { GetReplyCommentsService } from './get-reply-comments/get-reply-comments
 import { UpdateCommentService } from './update-comment/update-comment.service';
 import { MediaUploadModule } from 'src/domains/media-upload/media-upload.module';
 import { UserModule } from 'src/domains/user/user.module';
+import { ListenersService } from './listeners/listeners.service';
 
 @Module({
   imports: [PostModule, CommentModule, MediaUploadModule, UserModule],
@@ -21,6 +22,7 @@ import { UserModule } from 'src/domains/user/user.module';
     GetPostCommentsService,
     GetReplyCommentsService,
     UpdateCommentService,
+    ListenersService,
   ],
 })
 export class CommentUseCaseModule {}

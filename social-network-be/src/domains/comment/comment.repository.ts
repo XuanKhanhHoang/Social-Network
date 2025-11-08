@@ -16,11 +16,11 @@ import {
   ReplyCursorData,
   UpdateCommentData,
 } from './interfaces/comment.type';
-import { BaseRepository } from 'src/share/base-class/base-repository.service';
+import { ReactableRepository } from 'src/share/base-class/reactable-repository.service';
 import { CommentDocument } from 'src/schemas';
 
 @Injectable()
-export class CommentRepository extends BaseRepository<CommentDocument> {
+export class CommentRepository extends ReactableRepository<CommentDocument> {
   constructor(
     @InjectModel(CommentDocument.name)
     protected readonly model: Model<CommentDocument>,
