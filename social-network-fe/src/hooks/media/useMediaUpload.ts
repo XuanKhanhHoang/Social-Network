@@ -77,7 +77,7 @@ export function useMediaUpload(
         const response = await mediaService.uploadMedia(file);
 
         updateMediaItem(index, {
-          _id: response._id,
+          id: response._id,
           url: response.url,
           isUploading: false,
         });

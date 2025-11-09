@@ -77,11 +77,13 @@ export class CreateCommentService extends BaseUseCaseService<
             {
               author,
               content,
-              media: mediaId && {
-                mediaId: mediaItem.id,
-                mediaType: mediaItem.mediaType as unknown as MediaType,
-                url: mediaItem.url,
-              },
+              media: mediaId
+                ? {
+                    mediaId: mediaItem._id,
+                    mediaType: mediaItem.mediaType as unknown as MediaType,
+                    url: mediaItem.url,
+                  }
+                : undefined,
               parentId,
               postId,
             },
