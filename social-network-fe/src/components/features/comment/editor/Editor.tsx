@@ -32,6 +32,7 @@ export type CommentEditorProps = {
   autoFocus?: boolean;
   allowMedia?: boolean;
   variant?: 'minimal' | 'boxed';
+  placeholderSize?: 'xs' | 'sm' | 'base' | 'lg';
 };
 export default function CommentEditor({
   postId,
@@ -43,6 +44,7 @@ export default function CommentEditor({
   placeholder = 'Thêm bình luận ...',
   autoFocus = false,
   allowMedia = true,
+  placeholderSize = 'base',
   variant = 'minimal',
 }: CommentEditorProps) {
   const isUpdate = mode === 'edit';
@@ -80,7 +82,12 @@ export default function CommentEditor({
       debouncedUpdate.cancel();
     };
   }, [debouncedUpdate]);
-
+  const placeholderClass = {
+    xs: '[&_p.is-editor-empty:first-child::before]:text-xs',
+    sm: '[&_p.is-editor-empty:first-child::before]:text-sm',
+    base: '[&_p.is-editor-empty:first-child::before]:text-base',
+    lg: '[&_p.is-editor-empty:first-child::before]:text-lg',
+  }[placeholderSize];
   const editor = useEditor({
     extensions: [StarterKit, Placeholder.configure({ placeholder }), Emoji],
     content: data?.content,
@@ -173,10 +180,14 @@ export default function CommentEditor({
   return (
     <div className={className}>
       <div className={`flex items-center w-full ${containerClasses}`}>
-        <div className="flex-1 flex items-center">
+        <div className="flex-1 flex items-center min-w-0">
           <EditorContent
             editor={editor}
-            className="w-full [&_.ProseMirror]:outline-none [&_.ProseMirror]:py-2 [&_.ProseMirror]:px-3 [&_.ProseMirror]:bg-transparent"
+            className={cn(
+              'flex-1 min-w-0 [&_.ProseMirror]:outline-none [&_.ProseMirror]:py-2 [&_.ProseMirror]:px-3 [&_.ProseMirror]:bg-transparent',
+              '[&_.ProseMirror]:break-words',
+              placeholderClass
+            )}
           />
           <div className="flex items-center justify-end gap-1 pr-2">
             {allowMedia && (
