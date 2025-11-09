@@ -6,6 +6,7 @@ import StarterKit from '@tiptap/starter-kit';
 import { Emoji } from '@/lib/editor/emoji-node';
 import { CommentReactionButton } from '@/components/wrappers/CommentReaction';
 import { CommentWithMyReaction } from '@/lib/interfaces/comment';
+import EmbeddedMedia from '../../media/embedded/EmbeddedMedia';
 export type FeedCommentItemProps = {
   comment: CommentWithMyReaction;
 };
@@ -32,6 +33,19 @@ export default function FeedCommentItem({ comment }: FeedCommentItemProps) {
               className="text-sm prose"
               dangerouslySetInnerHTML={{ __html: contentHtml }}
             />
+          )}
+          {comment.media?.mediaId && (
+            <div className="">
+              <EmbeddedMedia
+                //TODO Fix Media size
+                mediaType={comment.media.mediaType}
+                url={comment.media.url}
+                className={{
+                  container: 'relative min-h-30 ',
+                  media: '!w-auto',
+                }}
+              />
+            </div>
           )}
         </div>
 
