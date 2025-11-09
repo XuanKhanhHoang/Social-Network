@@ -20,6 +20,12 @@ export class MediaUploadDocument extends Document {
   @Prop({ required: true, enum: MediaType })
   mediaType: string;
 
+  @Prop({ type: Number })
+  width?: number;
+
+  @Prop({ type: Number })
+  height?: number;
+
   @Prop({ default: false })
   isConfirmed: boolean;
 
