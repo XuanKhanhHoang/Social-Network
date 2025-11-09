@@ -1,7 +1,6 @@
 import { MessageCircle, MoreHorizontal, Send } from 'lucide-react';
 import { memo } from 'react';
 import PostMedia from './Media';
-import CommentEditor from '../../comment/CommentEditor';
 import { formatDisplayTime } from '@/lib/utils/time';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -15,6 +14,7 @@ import StarterKit from '@tiptap/starter-kit';
 import { PostReactionButton } from '@/components/wrappers/PostReaction';
 import { PostWithTopComment } from '@/lib/interfaces/post';
 import FeedCommentItem from './CommentItem';
+import CommentEditor from '../../comment/editor/Editor';
 
 export type PostItemProps = {
   post: PostWithTopComment;
