@@ -1,18 +1,18 @@
-import { PostListResponse, PostWithTopComment } from '@/lib/dtos';
 import { InfiniteData, useQueryClient } from '@tanstack/react-query';
 import { ReactionType } from '@/lib/constants/enums';
 import { getUpdatedReactionState } from '@/lib/cache/reaction-updater';
 import { postService } from '@/services/post';
 import { postKeys } from './usePost';
+import { GetPostsFeedResponseDto, PostWithTopCommentDto } from '@/lib/dtos';
 
-type PostUpdater = (oldPost: PostWithTopComment) => PostWithTopComment;
+type PostUpdater = (oldPost: PostWithTopCommentDto) => PostWithTopCommentDto;
 
 export function useUpdatePostCache() {
   const queryClient = useQueryClient();
 
   const updatePostInAllCaches = (postId: string, updater: PostUpdater) => {
     queryClient.setQueryData<
-      InfiniteData<PostListResponse, string | undefined>
+      InfiniteData<GetPostsFeedResponseDto, string | undefined>
     >(postKeys.lists(), (oldData) => {
       if (!oldData) return oldData;
 
@@ -28,7 +28,7 @@ export function useUpdatePostCache() {
       };
     });
 
-    queryClient.setQueryData<PostWithTopComment>(
+    queryClient.setQueryData<PostWithTopCommentDto>(
       postKeys.detail(postId),
       (oldPost) => (oldPost ? updater(oldPost) : undefined)
     );
@@ -55,7 +55,11 @@ export function useUpdatePostCache() {
       previousReaction?: ReactionType | null
     ) => {
       updatePostInAllCaches(postId, (post) =>
-        getUpdatedReactionState(post, newReaction, previousReaction)
+        getUpdatedReactionState<PostWithTopCommentDto>(
+          post,
+          newReaction,
+          previousReaction
+        )
       );
     },
 
@@ -95,7 +99,10 @@ export function useUpdatePostCache() {
         });
 
         if (freshPost) {
-          updatePostInAllCaches(postId, () => freshPost);
+          updatePostInAllCaches(postId, (oldPost) => ({
+            ...freshPost,
+            topComment: oldPost.topComment,
+          }));
         }
         return freshPost;
       } catch (error) {
