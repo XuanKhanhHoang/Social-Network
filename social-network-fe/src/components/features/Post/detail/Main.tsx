@@ -68,6 +68,13 @@ export default function PostDetail({
             hasMedia ? '!max-w-7xl w-[90vw]' : '!max-w-2xl w-full'
           } !h-[90vh] !max-h-[90vh] p-0 gap-0 border-0 data-[state=open]:animate-none data-[state=closed]:animate-none overflow-hidden`}
           showCloseButton={false}
+          onInteractOutside={(e) => {
+            if (
+              (e.target as HTMLElement).closest('[data-emoji-picker="true"]')
+            ) {
+              e.preventDefault();
+            }
+          }}
         >
           <DialogTitle className="sr-only">
             Post by {post.author.firstName}
