@@ -54,5 +54,15 @@ export function useUpdateCommentCache() {
         repliesCount: Math.max(0, (comment.repliesCount || 0) - 1),
       }));
     },
+    invalidateRootsComments: (postId: string) => {
+      return queryClient.invalidateQueries({
+        queryKey: commentKeys.rootList(postId),
+      });
+    },
+    invalidateReplies: (parentId: string) => {
+      return queryClient.invalidateQueries({
+        queryKey: commentKeys.replyList(parentId),
+      });
+    },
   };
 }
