@@ -350,4 +350,12 @@ export class CommentRepository extends ReactableRepository<CommentDocument> {
 
     return this.model.aggregate(pipeline).exec();
   }
+  async increaseReplyCount(commentId: string, session?: ClientSession) {
+    const commentIdObj = new Types.ObjectId(commentId);
+    await this.model.updateOne(
+      { _id: commentIdObj },
+      { $inc: { repliesCount: 1 } },
+      { session },
+    );
+  }
 }
