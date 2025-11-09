@@ -55,7 +55,6 @@ export function EmojiPickerProvider({ children }: { children: ReactNode }) {
     onSelect: (emoji: EmojiClickData) => void;
   }) => {
     if (isOpen && anchorEl === refs.reference.current) {
-      // 👉 bấm cùng 1 button thì toggle off
       setIsOpen(false);
       return;
     }
@@ -74,12 +73,15 @@ export function EmojiPickerProvider({ children }: { children: ReactNode }) {
 
       <div
         ref={refs.setFloating}
+        data-emoji-picker="true"
         style={{
           ...floatingStyles,
-          display: isOpen ? 'block' : 'none', // 👉 toggle CSS
+          opacity: isOpen ? 1 : 0,
+          pointerEvents: isOpen ? 'auto' : 'none',
+          zIndex: isOpen ? 9999 : 'auto',
         }}
         {...getFloatingProps()}
-        className="z-[9999] bg-white shadow-lg rounded-lg border"
+        className=" bg-white shadow-lg rounded-lg border"
       >
         <EmojiPicker
           lazyLoadEmojis
