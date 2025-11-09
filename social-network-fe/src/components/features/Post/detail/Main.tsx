@@ -8,11 +8,15 @@ import PostDetailSkeleton from './Skeleton';
 import { generateHTML } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Emoji } from '@/lib/editor/emoji-node';
-import { CommentSection } from '../../comment/CommentSection';
 import { PostWithMyReaction } from '@/lib/interfaces/post';
 import { PostDetailHeader } from './Header';
 import MediasViewer from '../../media/viewers/MediasViewer';
-import CommentEditor from '../../comment/Editor';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { MessageCircle, Send } from 'lucide-react';
+import { ExpandableContent } from '@/components/ui/ExpandableContent';
+import { PostReactionButton } from '@/components/wrappers/PostReaction';
+import PostDetailCommentSection from './CommentSection';
+import CommentEditor from '../../comment/editor/Editor';
 
 export type PostDetailProps = {
   post?: PostWithMyReaction;
@@ -88,11 +92,36 @@ export default function PostDetail({
               <PostDetailHeader post={post} />
 
               <div className="flex-1 flex flex-col min-h-0">
-                <CommentSection
-                  postId={post.id}
-                  post={post}
-                  postContentHtml={contentHtml}
-                />
+                <ScrollArea className="flex-1 min-h-0">
+                  <div className="p-4 flex-shrink-0">
+                    {contentHtml && (
+                      <ExpandableContent html={contentHtml} maxHeight={320} />
+                    )}
+                  </div>
+                  <div className="border-y flex-shrink-0 px-4 py-2">
+                    <div className="flex items-center space-x-6 text-gray-500 ">
+                      <PostReactionButton
+                        postId={post.id}
+                        initialCount={post.reactionsCount}
+                        initialReaction={post.myReaction}
+                        btnClassName="px-2 py-1"
+                      />
+                      <button className="flex items-center space-x-2 hover:text-indigo-500 transition-colors">
+                        <MessageCircle className="w-5 h-5" />
+                        <span className="text-sm font-medium">
+                          {post.commentsCount}
+                        </span>
+                      </button>
+                      <button className="flex items-center space-x-2 hover:text-green-500 transition-colors">
+                        <Send className="w-5 h-5" />
+                        <span className="text-sm font-medium">
+                          {post.sharesCount}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                  <PostDetailCommentSection postId={post.id} post={post} />
+                </ScrollArea>
               </div>
 
               <div className="border-t w-full px-3 py-1 bg-white flex-shrink-0">
