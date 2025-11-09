@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { ImagePlus, Loader2, SendHorizontal } from 'lucide-react';
 import EmojiButton from '@/components/ui/emoji-button';
 import { Input } from '@/components/ui/input';
-import { commentService } from '@/services/comment';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import _ from 'lodash';
@@ -17,6 +16,7 @@ import { MediaItemWithHandlingStatus } from '../../media/type';
 import MediaUploadItem from '../../media/uploader/UploadItem';
 import { useUpdatePostCache } from '@/hooks/post/usePostCache';
 import { useUpdateCommentCache } from '@/hooks/comment/useCommentCache';
+import { commentService } from '@/services/comment';
 export type CommentEditorProps = {
   postId: string;
   parentId?: string;
