@@ -27,6 +27,7 @@ export default function PostDetailCommentSection({
           postId={post.id}
           comment={transformToCommentWithMyReaction(comment)}
           key={comment._id}
+          rootId={comment._id}
         />
       ))}
 

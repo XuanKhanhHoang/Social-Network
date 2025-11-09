@@ -35,11 +35,13 @@ export default function PostDetail({
   const [currentMediaIndex, setCurrentMediaIndex] = useState(initialMediaIndex);
   const [isOpen, setIsOpen] = useState(true);
   const router = useRouter();
+  const { replyingTo, setReplyingTo } = useReplyStore();
 
   const onOpenChange = (open: boolean) => {
     if (!open) {
       setIsOpen(false);
       router.back();
+      setReplyingTo(null);
     }
   };
 
@@ -51,7 +53,11 @@ export default function PostDetail({
   const contentHtml = post.content
     ? generateHTML(post.content, [StarterKit, Emoji])
     : '';
-
+  const isReplying = !!replyingTo;
+  const editorParentId = isReplying ? replyingTo.rootId : undefined;
+  const editorPlaceholder = isReplying
+    ? `Trả lời ${replyingTo.comment.author.firstName}...`
+    : 'Viết bình luận...';
   return (
     <>
       {createPortal(
@@ -133,7 +139,32 @@ export default function PostDetail({
               </div>
 
               <div className="border-t w-full px-3 py-1 bg-white flex-shrink-0">
-                <CommentEditor postId={post.id} />
+                {isReplying && (
+                  <div className="text-sm text-gray-500 px-1 pt-1 flex justify-between items-center">
+                    <span className="truncate">
+                      Đang trả lời <b>{replyingTo.comment.author.firstName}</b>
+                    </span>
+                    <button
+                      onClick={() => setReplyingTo(null)}
+                      className="p-1 rounded-full hover:bg-gray-200 flex-shrink-0"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                )}
+                <CommentEditor
+                  postId={post.id}
+                  parentId={editorParentId}
+                  placeholder={editorPlaceholder}
+                  autoFocus={isReplying}
+                  onSuccess={() => {
+                    if (isReplying) {
+                      setReplyingTo(null);
+                    }
+                  }}
+                  variant="minimal"
+                  placeholderSize="sm"
+                />
               </div>
             </div>
           </div>

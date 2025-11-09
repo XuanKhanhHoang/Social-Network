@@ -6,29 +6,29 @@ import { timeAgo } from '@/lib/utils/time';
 import { generateHTML } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Emoji } from '@/lib/editor/emoji-node';
-import { useStore } from '@/store';
 import { CommentReactionButton } from '@/components/wrappers/CommentReaction';
 import { useGetCommentReplies } from '@/hooks/comment/useComment';
 import {
   CommentWithMyReaction,
   transformToCommentWithMyReaction,
 } from '@/lib/interfaces/comment';
-import CommentEditor from '../editor/Editor';
+import { useReplyStore } from '@/store/reply-comments/reply.store';
 
 type CommentItemProps = {
   comment: CommentWithMyReaction;
   postId: string;
   level?: number;
+  rootId: string;
 };
 
 export default function CommentItem({
   comment,
   postId,
   level = 0,
+  rootId,
 }: CommentItemProps) {
   const [showReplies, setShowReplies] = useState(false);
-  const [isReplying, setIsReplying] = useState(false);
-  const user = useStore((s) => s.user);
+  const setReplyingTo = useReplyStore((state) => state.setReplyingTo);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useGetCommentReplies(comment.id, 5, { enabled: showReplies });
@@ -42,18 +42,20 @@ export default function CommentItem({
     ? generateHTML(comment.content, [StarterKit, Emoji])
     : '';
 
-  const indentationStyle = { paddingLeft: `${level * 48}px` };
+  const indentationStyle = level > 0 ? { paddingLeft: '48px' } : {};
 
   return (
-    <div className="flex gap-3" style={indentationStyle}>
-      <Avatar className="w-8 h-8">
-        <AvatarImage src={comment.author.avatar} />
-        <AvatarFallback>
-          {comment.author.firstName[0]?.toUpperCase()}
-        </AvatarFallback>
-      </Avatar>
+    <div className="flex gap-3 mb-0">
+      <div style={indentationStyle}>
+        <Avatar className="w-8 h-8">
+          <AvatarImage src={comment.author.avatar} />
+          <AvatarFallback>
+            {comment.author.firstName[0]?.toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+      </div>
 
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         <div className="bg-gray-100 rounded-lg px-3 py-2">
           <span className="font-semibold text-sm">
             {comment.author.firstName}
@@ -75,56 +77,35 @@ export default function CommentItem({
           />
           <button
             className="font-semibold hover:underline"
-            onClick={() => setIsReplying(!isReplying)}
+            onClick={() => setReplyingTo({ comment, rootId })}
           >
-            Reply
+            Trả lời
           </button>
         </div>
 
-        {isReplying && (
-          <div className="mt-2 flex gap-3">
-            <Avatar className="w-8 h-8">
-              <AvatarImage src={user?.avatar} />
-              <AvatarFallback>
-                {user?.firstName[0]?.toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <CommentEditor
-                postId={postId}
-                parentId={comment.id}
-                placeholder={`Replying to ${comment.author.firstName}...`}
-                onSuccess={() => setIsReplying(false)}
-                autoFocus={true}
-                variant="boxed"
-              />
-            </div>
-          </div>
-        )}
-
         {(comment.repliesCount ?? 0) > 0 && !showReplies && (
           <Button
-            variant="link"
             size="sm"
+            variant="ghost"
             onClick={() => setShowReplies(true)}
-            className="p-0 h-auto font-semibold"
+            className="!p-0 !h-auto !font-semibold !text-gray-500 !hover:bg-transparent !hover:text-gray-500 flex items-center gap-4"
           >
-            View {comment.repliesCount} replies
+            <span className="block w-6 border-t border-gray-500"></span>
+            <span>{`Xem phản hồi (${comment.repliesCount})`}</span>
           </Button>
         )}
 
         {showReplies && (
           <div className="space-y-3 mt-2">
-            {isLoading && (
-              <p className="text-sm text-gray-500">Loading replies...</p>
-            )}
+            {isLoading && <p className="text-sm text-gray-500">Loading ...</p>}
 
             {replies.map((reply) => (
               <CommentItem
                 key={reply.id}
                 comment={reply}
                 postId={postId}
-                level={level + 1}
+                level={1}
+                rootId={rootId}
               />
             ))}
 
@@ -141,12 +122,13 @@ export default function CommentItem({
             )}
 
             <Button
-              variant="link"
+              variant="ghost"
               size="sm"
               onClick={() => setShowReplies(false)}
-              className="p-0 h-auto font-semibold text-gray-500"
+              className="!p-0 !h-auto !font-semibold !text-gray-500 !hover:bg-transparent !hover:text-gray-500 flex items-center gap-4" // <-- Đã thêm !
             >
-              Hide replies
+              <span className="block w-6 border-t border-gray-500"></span>
+              <span>Ẩn các phản hồi</span>
             </Button>
           </div>
         )}
