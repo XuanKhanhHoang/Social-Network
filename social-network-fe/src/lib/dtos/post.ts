@@ -40,6 +40,8 @@ export interface PostMediaDto {
   url: string;
   caption?: string;
   order: number;
+  width?: number;
+  height?: number;
 }
 
 export interface PostDto {

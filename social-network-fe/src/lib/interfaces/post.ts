@@ -58,6 +58,8 @@ export interface PostMedia {
   url: string;
   caption?: string;
   order: number;
+  width?: number;
+  height?: number;
 }
 export interface Post {
   id: string;

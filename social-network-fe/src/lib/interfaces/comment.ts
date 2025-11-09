@@ -53,6 +53,8 @@ export interface CommentMedia {
   mediaId: string;
   mediaType: MediaType;
   url: string;
+  width?: number;
+  height?: number;
 }
 export interface CommentWithMyReaction extends Comment {
   myReaction: ReactionType | null;

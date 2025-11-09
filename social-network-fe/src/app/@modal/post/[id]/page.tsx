@@ -1,5 +1,5 @@
 'use client';
-import PostDetail from '@/components/features/Post/detail/Main';
+import PostDetail from '@/components/features/post/detail/Main';
 import { usePost } from '@/hooks/post/usePost';
 import { transformToPostWithMyReaction } from '@/lib/interfaces/post';
 import { useParams, useSearchParams } from 'next/navigation';
