@@ -82,6 +82,8 @@ export class CreateCommentService extends BaseUseCaseService<
                     mediaId: mediaItem._id,
                     mediaType: mediaItem.mediaType as unknown as MediaType,
                     url: mediaItem.url,
+                    width: mediaItem.width,
+                    height: mediaItem.height,
                   }
                 : undefined,
               parentId,

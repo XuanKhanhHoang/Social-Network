@@ -94,6 +94,8 @@ export class UpdatePostService extends BaseUseCaseService<
               order: mediaData?.order || 0,
               url: item.url,
               mediaType: item.mediaType as unknown as MediaType,
+              width: item.width,
+              height: item.height,
             };
           });
         }
