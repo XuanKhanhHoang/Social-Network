@@ -24,6 +24,7 @@ export default function EmojiButton({
           alt: emoji.emoji,
         },
       })
+      .insertContent(' ')
       .run();
   };
 
