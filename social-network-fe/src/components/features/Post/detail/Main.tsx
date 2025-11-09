@@ -17,6 +17,7 @@ import { ExpandableContent } from '@/components/ui/ExpandableContent';
 import { PostReactionButton } from '@/components/wrappers/PostReaction';
 import PostDetailCommentSection from './CommentSection';
 import CommentEditor from '../../comment/editor/Editor';
+import { useReplyStore } from '@/store/reply-comments/reply.store';
 
 export type PostDetailProps = {
   post?: PostWithMyReaction;
