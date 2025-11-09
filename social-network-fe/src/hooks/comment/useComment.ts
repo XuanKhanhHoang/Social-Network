@@ -4,10 +4,10 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { commentService } from '@/services/comment';
-import type {
-  GetCommentListResponse,
-  CreateCommentDto,
-  UpdateCommentDto,
+import {
+  CreateCommentRequestDto,
+  GetCommentsResponseDto,
+  UpdateCommentRequestDto,
 } from '@/lib/dtos';
 
 export const commentKeys = {
@@ -28,7 +28,7 @@ export function useGetRootComments(postId: string, limit: number = 10) {
         cursor: pageParam,
         limit,
       }),
-    getNextPageParam: (lastPage: GetCommentListResponse) =>
+    getNextPageParam: (lastPage: GetCommentsResponseDto) =>
       lastPage.pagination.hasMore ? lastPage.pagination.nextCursor : undefined,
     initialPageParam: undefined as string | undefined,
     enabled: !!postId,
@@ -48,7 +48,7 @@ export function useGetCommentReplies(
         cursor: pageParam,
         limit,
       }),
-    getNextPageParam: (lastPage: GetCommentListResponse) =>
+    getNextPageParam: (lastPage: GetCommentsResponseDto) =>
       lastPage.pagination.hasMore ? lastPage.pagination.nextCursor : undefined,
     initialPageParam: undefined as string | undefined,
     enabled: !!parentId && (options?.enabled ?? true),
@@ -59,7 +59,8 @@ export function useCreateComment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateCommentDto) => commentService.createComment(data),
+    mutationFn: (data: CreateCommentRequestDto) =>
+      commentService.createComment(data),
     onSuccess: (_, variables) => {
       if (variables.parentId) {
         queryClient.invalidateQueries({
@@ -83,7 +84,7 @@ export function useUpdateComment() {
       data,
     }: {
       commentId: string;
-      data: UpdateCommentDto;
+      data: UpdateCommentRequestDto;
     }) => commentService.updateComment(commentId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: commentKeys.lists() });

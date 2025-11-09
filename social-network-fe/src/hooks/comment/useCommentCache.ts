@@ -1,10 +1,12 @@
 import { useQueryClient, InfiniteData } from '@tanstack/react-query';
 import { getUpdatedReactionState } from '@/lib/cache/reaction-updater';
 import type { ReactionType } from '@/lib/constants/enums';
-import { Comment, GetCommentListResponse } from '@/lib/dtos';
 import { commentKeys } from './useComment';
+import { CommentWithMyReactionDto, GetCommentsResponseDto } from '@/lib/dtos';
 
-type CommentUpdater = (oldComment: Comment) => Comment;
+type CommentUpdater = (
+  oldComment: CommentWithMyReactionDto
+) => CommentWithMyReactionDto;
 
 export function useUpdateCommentCache() {
   const queryClient = useQueryClient();
@@ -12,7 +14,7 @@ export function useUpdateCommentCache() {
     commentId: string,
     updater: CommentUpdater
   ) => {
-    queryClient.setQueriesData<InfiniteData<GetCommentListResponse>>(
+    queryClient.setQueriesData<InfiniteData<GetCommentsResponseDto>>(
       { queryKey: commentKeys.lists() },
       (oldData) => {
         if (!oldData) return oldData;
