@@ -1,23 +1,11 @@
 import { ReactionType } from '@/lib/constants/enums';
+import { ReactionsBreakdownDto } from '../dtos';
 
 export interface Reactable {
-  userReaction?: ReactionType;
-  myReaction?: ReactionType; // Giữ lại cả 2 cho nhất quán
+  myReaction: ReactionType | keyof ReactionsBreakdownDto | null;
   reactionsCount: number;
-  reactionsBreakdown: { [key in ReactionType]?: number };
+  reactionsBreakdown: ReactionsBreakdownDto;
 }
-/**
- * Updates the reaction state of a given entity based on the new reaction type
- * and the previous reaction type (if any). It returns a new object with the
- * updated reaction state.
- *
- * @param entity The entity to be updated.
- * @param newReaction The new reaction type. If null, it means the user is
- * removing their reaction.
- * @param previousReaction The previous reaction type of the user. If null, it
- * means the user has not reacted before.
- * @returns The updated entity with the new reaction state.
- */
 export function getUpdatedReactionState<T extends Reactable>(
   entity: T,
   newReaction: ReactionType | null,
@@ -41,8 +29,7 @@ export function getUpdatedReactionState<T extends Reactable>(
 
   return {
     ...entity,
-    userReaction: newReaction ?? undefined,
-    myReaction: newReaction ?? undefined,
+    myReaction: newReaction,
     reactionsCount: Math.max(0, newReactionsCount),
     reactionsBreakdown: newBreakdown,
   };
