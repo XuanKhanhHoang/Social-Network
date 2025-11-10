@@ -13,13 +13,13 @@ import { Emoji } from '@/lib/editor/emoji-node';
 import { postService } from '@/services/post';
 import { PostMediaCreateRequestDto } from '@/lib/dtos';
 import { toast } from 'sonner';
-import PostEditorMedia from './MediaEditor';
 import _ from 'lodash';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMediaUpload } from '@/hooks/media/useMediaUpload';
 import { postKeys } from '@/hooks/post/usePost';
 import PostEditorToolbar from './Toolbars';
 import { PostInEditor } from './type';
+import PostEditorMedia from '../../media/create-post-editor/MediaEditor';
 
 export type PostEditorProps = {
   handleClose: () => void;

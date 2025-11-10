@@ -4,7 +4,7 @@ import { Post } from '@/lib/interfaces/post';
 import CommentItem from '../../comment/common/CommentItem';
 import { transformToCommentWithMyReaction } from '@/lib/interfaces/comment';
 
-export default function PostDetailCommentSection({
+export default function PostDetailCommentsSection({
   postId,
   post,
 }: {

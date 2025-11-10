@@ -325,6 +325,8 @@ export class CommentRepository extends ReactableRepository<CommentDocument> {
         repliesCount: '$topCommentDoc.repliesCount',
         reactionsBreakdown: '$topCommentDoc.reactionsBreakdown',
         createdAt: '$topCommentDoc.createdAt',
+        media: '$topCommentDoc.media',
+        mentionedUser: '$topCommentDoc.mentionedUser',
       },
     });
 

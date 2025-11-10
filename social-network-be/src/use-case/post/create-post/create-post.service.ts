@@ -61,6 +61,8 @@ export class CreatePostService extends BaseUseCaseService<
           order: mediaData?.order || 0,
           url: item.url,
           mediaType: item.mediaType as MediaType,
+          width: item.width,
+          height: item.height,
         };
       });
     }

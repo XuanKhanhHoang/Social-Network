@@ -25,6 +25,8 @@ export interface MediaBasicData<T = string | Types.ObjectId> {
   mediaId: T;
   mediaType: MediaType;
   url: string;
+  width?: number;
+  height?: number;
 }
 export interface MediaBasicDataWithCaption<T> extends MediaBasicData<T> {
   caption?: string;

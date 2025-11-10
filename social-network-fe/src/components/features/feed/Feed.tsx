@@ -1,5 +1,5 @@
-import PostCreatorManager from '../Post/create/Manager';
-import PostList from '../Post/list/List';
+import PostCreatorManager from '../post/create/Manager';
+import PostList from '../post/list/List';
 import StoriesContainer from '../story/StoryFeed';
 
 function Feed() {

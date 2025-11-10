@@ -1,7 +1,9 @@
 'use client';
 import { PostMedia } from '@/lib/interfaces/post';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
+import { ChevronLeftCircle, ChevronRightCircle } from 'lucide-react';
 
 export type MediaViewerProps = {
   media: PostMedia[];
@@ -9,10 +11,79 @@ export type MediaViewerProps = {
   onIndexChange: (index: number) => void;
   onClose: () => void;
 };
+
+type MediaItemProps = {
+  item: PostMedia;
+  isCurrent: boolean;
+};
+
+function MediaItem({ item, isCurrent }: MediaItemProps) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (isCurrent) {
+      videoRef.current?.play().catch((err) => {
+        if (err.name !== 'AbortError') {
+          console.error('Video play failed:', err);
+        }
+      });
+    } else {
+      videoRef.current?.pause();
+    }
+  }, [isCurrent]);
+
+  const hasDimensions =
+    typeof item?.width === 'number' && typeof item?.height === 'number';
+
+  return (
+    <div className="relative w-full h-full flex-shrink-0 flex items-center justify-center p-4">
+      {item.mediaType === 'image' ? (
+        hasDimensions ? (
+          <Image
+            src={item.url}
+            alt={item.caption || 'Post media'}
+            width={item.width}
+            height={item.height}
+            className="max-h-full max-w-full object-contain"
+            priority={isCurrent}
+            loading={isCurrent ? undefined : 'lazy'}
+            sizes="100vw"
+          />
+        ) : (
+          <Image
+            src={item.url}
+            alt={item.caption || 'Post media'}
+            fill
+            className="max-h-full max-w-full object-contain"
+            priority={isCurrent}
+            loading={isCurrent ? undefined : 'lazy'}
+            sizes="100vw"
+          />
+        )
+      ) : (
+        <video
+          ref={videoRef}
+          src={item.url}
+          {...(hasDimensions && {
+            width: item.width,
+            height: item.height,
+          })}
+          className="max-h-full max-w-full object-contain"
+          controls
+          playsInline
+          muted
+          loop
+        />
+      )}
+    </div>
+  );
+}
+
 export default function MediasViewer({
   media,
   currentIndex,
   onIndexChange,
+  onClose,
 }: MediaViewerProps) {
   const [expandedCaption, setExpandedCaption] = useState<number | null>(null);
 
@@ -28,115 +99,95 @@ export default function MediasViewer({
     }
   };
 
+  useEffect(() => {
+    setExpandedCaption(null);
+  }, [currentIndex]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') {
+        nextMedia();
+      } else if (e.key === 'ArrowLeft') {
+        prevMedia();
+      } else if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex, media.length]);
+
+  const currentMediaItem = media[currentIndex];
+
   return (
     <div className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden">
       <motion.div
         className="flex w-full h-full"
         animate={{ x: `-${currentIndex * 100}%` }}
-        transition={{ duration: 0.35, ease: 'easeInOut' }}
+        transition={{ duration: 0.3, ease: 'easeInOut' }}
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.1}
       >
         {media.map((item, index) => (
-          <div
+          <MediaItem
             key={item.mediaId}
-            className="relative w-full h-full flex-shrink-0 flex items-center justify-center"
-          >
-            {item.mediaType === 'image' ? (
-              <img
-                src={item.url}
-                alt=""
-                className="max-h-full max-w-full object-contain"
-              />
-            ) : (
-              <video
-                src={item.url}
-                className="max-h-full max-w-full object-contain"
-                controls
-                autoPlay
-                muted
-              />
-            )}
-            {item.caption && (
-              <div
-                className={`absolute bottom-6 left-0 right-0 px-4 bg-black/60 text-white text-sm py-2 ${
-                  expandedCaption === index
-                    ? 'whitespace-normal break-words'
-                    : 'truncate'
-                } cursor-pointer`}
-                onClick={() =>
-                  setExpandedCaption(expandedCaption === index ? null : index)
-                }
-                title="Click để xem đầy đủ"
-              >
-                {item.caption}
-              </div>
-            )}
-          </div>
+            item={item}
+            isCurrent={index === currentIndex}
+          />
         ))}
       </motion.div>
 
-      {/* Nút điều hướng trái */}
       {media.length > 1 && currentIndex > 0 && (
-        <svg
-          width="24"
-          height="24"
-          className="absolute left-4 top-1/2 -translate-y-1/2 cursor-pointer transition-all hover:opacity-80"
+        <button
+          aria-label="Previous media"
+          className="absolute left-3 top-1/2 -translate-y-1/2 z-20"
           onClick={prevMedia}
         >
-          <defs>
-            <mask id="chevronCutout">
-              <circle cx="12" cy="12" r="12" fill="white" />
-              <path
-                d="M14 8l-4 4 4 4"
-                stroke="black"
-                strokeWidth="3"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </mask>
-          </defs>
-          <circle
-            cx="12"
-            cy="12"
-            r="12"
-            fill="rgba(255,255,255,0.4)"
-            mask="url(#chevronCutout)"
+          <ChevronLeftCircle
+            size={32}
+            className="text-white/60 hover:text-white/90 transition-colors"
+            strokeWidth={1.5}
           />
-        </svg>
+        </button>
       )}
 
-      {/* Nút điều hướng phải */}
       {media.length > 1 && currentIndex < media.length - 1 && (
-        <svg
-          width="24"
-          height="24"
-          className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer transition-all hover:opacity-80"
+        <button
+          aria-label="Next media"
+          className="absolute right-3 top-1/2 -translate-y-1/2 z-20"
           onClick={nextMedia}
         >
-          <defs>
-            <mask id="chevronCutoutRight">
-              <circle cx="12" cy="12" r="12" fill="white" />
-              <path
-                d="M10 8l4 4-4 4"
-                stroke="black"
-                strokeWidth="3"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </mask>
-          </defs>
-          <circle
-            cx="12"
-            cy="12"
-            r="12"
-            fill="rgba(255,255,255,0.4)"
-            mask="url(#chevronCutoutRight)"
+          <ChevronRightCircle
+            size={32}
+            className="text-white/60 hover:text-white/90 transition-colors"
+            strokeWidth={1.5}
           />
-        </svg>
+        </button>
       )}
 
-      {/* Indicator chấm */}
+      {currentMediaItem?.caption && (
+        <div
+          className={`absolute bottom-12 left-4 right-4 text-center bg-black/60 text-white text-sm py-2 px-4 rounded-lg z-10 ${
+            expandedCaption === currentIndex
+              ? 'whitespace-normal break-words max-h-40 overflow-y-auto'
+              : 'truncate'
+          } cursor-pointer`}
+          onClick={() =>
+            setExpandedCaption(
+              expandedCaption === currentIndex ? null : currentIndex
+            )
+          }
+          title="Click để xem đầy đủ"
+        >
+          {currentMediaItem.caption}
+        </div>
+      )}
+
       {media.length > 1 && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1 z-10">
           {media.map((_, index) => (

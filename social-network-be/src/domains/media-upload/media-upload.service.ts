@@ -3,6 +3,7 @@ import {
   Inject,
   Logger,
   BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ClientSession, Model, Types } from 'mongoose';
@@ -11,6 +12,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { MediaType } from 'src/share/enums';
 import { MediaUploadDocument } from 'src/schemas';
 import { MediaUpload } from './interfaces/type';
+import { PassThrough } from 'stream';
 
 //TODO: Need to split repository and service
 @Injectable()
@@ -45,14 +47,38 @@ export class MediaUploadService {
       await this.mediaModel.find({ _id: { $in: mediaIdObjs } }).lean()
     ).map((item) => ({ ...item, _id: item._id.toString() }));
   }
+  private uploadStream(buffer: Buffer, options: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const stream = this.cloudinaryInstance.uploader.upload_stream(
+        options,
+        (error, result) => {
+          if (error) {
+            return reject(error);
+          }
+          if (result) {
+            return resolve(result);
+          }
+        },
+      );
+
+      const bufferStream = new PassThrough();
+      bufferStream.end(buffer);
+      bufferStream.pipe(stream);
+    });
+  }
+
   async uploadTemporary(
     file: Express.Multer.File,
     userId: string,
+    width?: number,
+    height?: number,
   ): Promise<{
     _id: string;
     url: string;
     mediaType: string;
     expiresAt: Date;
+    width?: number;
+    height?: number;
   }> {
     const mediaType = this.detectMediaType(file.mimetype);
     const maxSize =
@@ -67,24 +93,31 @@ export class MediaUploadService {
           : 'Max size of video is 200MB',
       );
     }
+
+    const imageTransform = {
+      transformation: [
+        { width: 1200, height: 1200, crop: 'limit' },
+        { quality: 'auto:good', fetch_format: 'auto' },
+      ],
+    };
+
+    const videoTransform = {
+      transformation: [
+        { width: 1280, crop: 'limit' },
+        { quality: 'auto:good', fetch_format: 'auto' },
+      ],
+    };
+
     try {
       const uploadFolder = 'uploads';
-      const uploadResult = await this.cloudinaryInstance.uploader.upload(
-        `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
-        {
-          resource_type: mediaType === 'video' ? 'video' : 'image',
-          folder: uploadFolder,
-          public_id: `${mediaType}_${Date.now()}_${userId}`,
-          ...(mediaType === 'image' && {
-            transformation: [
-              { width: 1200, height: 1200, crop: 'limit', quality: 'auto' },
-            ],
-          }),
-          ...(mediaType === 'video' && {
-            transformation: [{ quality: 'auto', width: 1280, crop: 'limit' }],
-          }),
-        },
-      );
+
+      const uploadResult = await this.uploadStream(file.buffer, {
+        resource_type: mediaType === 'video' ? 'video' : 'image',
+        folder: uploadFolder,
+        public_id: `${mediaType}_${Date.now()}_${userId}`,
+        ...(mediaType === 'image' && imageTransform),
+        ...(mediaType === 'video' && videoTransform),
+      });
 
       const tempMedia = new this.mediaModel({
         cloudinaryPublicId: uploadResult.public_id,
@@ -92,6 +125,8 @@ export class MediaUploadService {
         originalFilename: file.originalname,
         mediaType,
         userId,
+        width: uploadResult.width,
+        height: uploadResult.height,
       });
       const savedMedia = await tempMedia.save();
 
@@ -100,10 +135,12 @@ export class MediaUploadService {
         url: savedMedia.url,
         mediaType: savedMedia.mediaType,
         expiresAt: savedMedia.expiresAt,
+        width: savedMedia.width,
+        height: savedMedia.height,
       };
     } catch (error) {
       this.logger.error('Upload failed:', error);
-      throw new BadRequestException('Upload error, please try again.');
+      throw new InternalServerErrorException('Upload error, please try again.');
     }
   }
   async confirmUploads(mediaIds: string[], userId: string): Promise<void> {

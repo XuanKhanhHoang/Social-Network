@@ -48,32 +48,45 @@ export class UpdateCommentService extends BaseUseCaseService<
     try {
       const { newComment, deletedMedia } = await session.withTransaction(
         async () => {
-          const comment = await this.validateOwnershipAndReturnWithMedia(
-            commentId,
-            userId,
-            session,
-          );
+          const [comment, newMedia] = await Promise.all([
+            this.validateOwnershipAndReturnWithMedia(
+              commentId,
+              userId,
+              session,
+            ),
+            mediaId
+              ? this.mediaUploadService
+                  .findMedia([mediaId])
+                  .then((res) => (res?.length > 0 ? res[0] : null))
+              : undefined,
+          ]);
           const oldMedia = comment.media;
-          const oldMediaId = oldMedia?.mediaId;
-          const newMediaId = mediaId;
 
           let deletedMedia: MediaBasicData<string> | undefined = undefined;
 
-          if (oldMedia && oldMediaId !== newMediaId) {
+          if (mediaId && !newMedia)
+            throw new NotFoundException('Media not found');
+
+          if (oldMedia && newMedia && oldMedia.mediaId !== newMedia._id) {
             deletedMedia = oldMedia;
             await this.mediaUploadService.deleteFromDb(
               oldMedia.mediaId,
               session,
             );
           }
-
           const updateData: UpdateQuery<CommentDocument> = {};
 
           if (content) {
             updateData.$set.content = content;
           }
-          if (mediaId) {
-            updateData.$set.mediaId = mediaId;
+          if (newMedia) {
+            updateData.$set.media = {
+              mediaId: newMedia._id,
+              mediaType: newMedia.mediaType,
+              url: newMedia.url,
+              width: newMedia.width,
+              height: newMedia.height,
+            };
           }
 
           const updatedComment = await this.commentRepository.updateByIdAndGet(

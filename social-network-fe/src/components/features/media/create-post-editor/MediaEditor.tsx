@@ -13,9 +13,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { truncateFileName } from '@/lib/utils/string';
 import { formatFileSize } from '@/lib/utils/other';
-import { MediaItemWithHandlingStatus, UIMediaItem } from '../../media/type';
-import MediaUploadItem from '../../media/uploader/UploadItem';
-import MediaPreview from '../../media/common/MediaPreview';
+import { MediaItemWithHandlingStatus, UIMediaItem } from '../type';
+import MediaUploadItem from '../uploader/UploadItem';
+import { MediaGrid } from '../grid/Grid';
+import ContainedMedia from '../common/ContainedMedia';
 
 export type PostEditorMediaProps = {
   media: MediaItemWithHandlingStatus[];
@@ -76,7 +77,7 @@ export default function PostEditorMedia({
   return (
     <div className="relative w-full max-w-[500px] mx-auto mb-4">
       {(hasAnyUploading || hasAnyUploadError) && (
-        <div className="mb-2 p-2 rounded-lg bg-gray-50 border space-y-1">
+        <div className="mb-2 p-2 rounded-sm bg-gray-50 border space-y-1">
           {hasAnyUploading && (
             <div className="flex items-center gap-2 text-blue-600 text-sm">
               <Loader className="w-4 h-4 animate-spin" />
@@ -139,164 +140,44 @@ export default function PostEditorMedia({
           <X className=" cursor-pointer h-4 w-4 text-gray-600" />
         </Button>
       </div>
-
-      <div className="rounded-lg overflow-hidden">
-        {/* 1 ảnh - Hiển thị gần tỉ lệ gốc */}
-        {media.length === 1 && (
-          <div className="grid grid-cols-1 gap-0 rounded-lg overflow-hidden">
-            <MediaUploadItem
-              item={media[0]}
-              className={{ container: 'w-full h-96 ' }}
-              handle={{
-                onRetryUpload: () => onRetryUpload?.(0),
-              }}
-            />
-          </div>
-        )}
-
-        {/* 2 ảnh - Chia đều 2 cột */}
-        {media.length === 2 && (
-          <div className="grid grid-cols-2 gap-2 rounded-lg overflow-hidden">
-            <MediaUploadItem
-              item={media[0]}
-              className={{ container: 'w-full h-64' }}
-              handle={{
-                onRetryUpload: () => onRetryUpload?.(0),
-              }}
-            />
-            <MediaUploadItem
-              item={media[1]}
-              className={{ container: 'w-full h-64' }}
-              handle={{
-                onRetryUpload: () => onRetryUpload?.(1),
-              }}
-            />
-          </div>
-        )}
-
-        {/* 3 ảnh - 1 ảnh lớn + 2 ảnh nhỏ theo tỉ lệ vàng (3:2) */}
-        {media.length === 3 && (
-          <div className="grid grid-cols-5 gap-2 rounded-lg overflow-hidden h-80">
-            <div className="col-span-3">
+      {media.length === 1 ? (
+        (() => {
+          const item = media[0];
+          const aspectRatio =
+            item.width && item.height
+              ? `${item.width} / ${item.height}`
+              : '1 / 1';
+          return (
+            <div className="grid grid-cols-1 gap-0 rounded-sm ">
               <MediaUploadItem
-                item={media[0]}
-                className={{ container: 'w-full h-full' }}
+                item={item}
+                className={{ container: 'w-full' }}
+                style={{ aspectRatio }}
                 handle={{
                   onRetryUpload: () => onRetryUpload?.(0),
+                  onRemove: () => removeMedia(0),
                 }}
               />
             </div>
-            <div className="col-span-2 grid grid-rows-2 gap-2">
-              <MediaUploadItem
-                item={media[1]}
-                className={{ container: 'w-full h-full' }}
-                handle={{
-                  onRetryUpload: () => onRetryUpload?.(1),
-                }}
-              />
-              <MediaUploadItem
-                item={media[2]}
-                className={{ container: 'w-full h-full' }}
-                handle={{
-                  onRetryUpload: () => onRetryUpload?.(2),
-                }}
-              />
-            </div>
-          </div>
-        )}
+          );
+        })()
+      ) : (
+        <MediaGrid
+          media={media}
+          renderItem={(item, index, className) => (
+            <MediaUploadItem
+              key={index}
+              item={item}
+              className={{ container: className }}
+              handle={{
+                onRetryUpload: () => onRetryUpload?.(index),
+                onRemove: () => removeMedia(index),
+              }}
+            />
+          )}
+        />
+      )}
 
-        {/* 4 ảnh - Lưới 2×2 đều nhau */}
-        {media.length === 4 && (
-          <div className="grid grid-cols-2 gap-2 rounded-lg overflow-hidden">
-            {media.slice(0, 4).map((item, index) => (
-              <MediaUploadItem
-                key={index}
-                item={item}
-                className={{ container: 'w-full h-48' }}
-                handle={{
-                  onRetryUpload: () => onRetryUpload?.(index),
-                }}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* 5 ảnh - 2 ảnh lớn + 3 ảnh nhỏ theo tỉ lệ vàng */}
-        {media.length === 5 && (
-          <div className="rounded-lg overflow-hidden">
-            <div className="grid grid-cols-8 gap-2 h-80">
-              <div className="col-span-3">
-                <MediaUploadItem
-                  item={media[0]}
-                  className={{ container: 'w-full h-full' }}
-                  handle={{
-                    onRetryUpload: () => onRetryUpload?.(0),
-                  }}
-                />
-              </div>
-              <div className="col-span-3">
-                <MediaUploadItem
-                  item={media[1]}
-                  className={{ container: 'w-full h-full' }}
-                  handle={{
-                    onRetryUpload: () => onRetryUpload?.(1),
-                  }}
-                />
-              </div>
-              <div className="col-span-2 grid grid-rows-3 gap-2">
-                <MediaUploadItem
-                  item={media[2]}
-                  className={{ container: 'w-full h-full' }}
-                  handle={{
-                    onRetryUpload: () => onRetryUpload?.(2),
-                  }}
-                />
-                <MediaUploadItem
-                  item={media[3]}
-                  className={{ container: 'w-full h-full' }}
-                  handle={{
-                    onRetryUpload: () => onRetryUpload?.(3),
-                  }}
-                />
-                <MediaUploadItem
-                  item={media[4]}
-                  className={{ container: 'w-full h-full' }}
-                  handle={{
-                    onRetryUpload: () => onRetryUpload?.(4),
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {media.length >= 6 && (
-          <div className="rounded-lg overflow-hidden">
-            <div className="grid grid-cols-3 gap-2">
-              {media.slice(0, 6).map((item, index) => (
-                <div key={index} className="relative">
-                  <MediaUploadItem
-                    item={item}
-                    className={{ container: 'w-full h-32' }}
-                    handle={{
-                      onRetryUpload: () => onRetryUpload?.(index),
-                    }}
-                  />
-                  {index === 5 && remainingCount > 0 && (
-                    <div className="absolute inset-0 bg-black opacity-60 flex items-center justify-center rounded">
-                      <span className="text-white font-semibold text-xl">
-                        +{remainingCount}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Edit Modal */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
         <DialogContent
           className="max-w-2xl max-h-[90vh] flex flex-col"
@@ -346,7 +227,7 @@ export default function PostEditorMedia({
                         item.uploadError
                           ? 'bg-red-100 border-red-300'
                           : 'bg-orange-100 border-orange-300'
-                      } border rounded-lg p-2 flex items-center gap-2`}
+                      } border rounded-sm p-2 flex items-center gap-2`}
                     >
                       <AlertCircle
                         className={`w-4 h-4 ${
@@ -384,11 +265,12 @@ export default function PostEditorMedia({
                 )}
 
                 <div className="flex items-start gap-4">
-                  <div className="relative w-32 h-32 flex-shrink-0 bg-gray-100 rounded-lg overflow-visible">
-                    <MediaPreview
+                  <div className="relative w-32 h-32 flex-shrink-0 bg-gray-100 rounded-sm overflow-visible">
+                    <ContainedMedia
                       url={item.url}
                       mediaType={item.mediaType}
-                      alt={`edit-${i}`}
+                      width={item?.width || 200}
+                      height={item?.height || 200}
                       className="object-contain"
                     />
 

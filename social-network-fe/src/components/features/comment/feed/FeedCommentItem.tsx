@@ -6,7 +6,7 @@ import StarterKit from '@tiptap/starter-kit';
 import { Emoji } from '@/lib/editor/emoji-node';
 import { CommentReactionButton } from '@/components/wrappers/CommentReaction';
 import { CommentWithMyReaction } from '@/lib/interfaces/comment';
-import EmbeddedMedia from '../../media/embedded/EmbeddedMedia';
+import ContainedMedia from '../../media/common/ContainedMedia';
 export type FeedCommentItemProps = {
   comment: CommentWithMyReaction;
 };
@@ -34,21 +34,16 @@ export default function FeedCommentItem({ comment }: FeedCommentItemProps) {
               dangerouslySetInnerHTML={{ __html: contentHtml }}
             />
           )}
-          {comment.media?.mediaId && (
-            <div className="">
-              <EmbeddedMedia
-                //TODO Fix Media size
-                mediaType={comment.media.mediaType}
-                url={comment.media.url}
-                className={{
-                  container: 'relative min-h-30 ',
-                  media: '!w-auto',
-                }}
-              />
-            </div>
-          )}
         </div>
-
+        {comment.media?.mediaId && (
+          <ContainedMedia
+            height={comment?.media?.height || 200}
+            width={comment?.media?.width || 200}
+            mediaType={comment.media.mediaType}
+            url={comment.media.url}
+            className="max-h-20 w-auto rounded-sm"
+          />
+        )}
         <div className="flex items-center gap-2 text-xs text-gray-500 px-3 py-1">
           <span>{timeAgo(comment.createdAt)}</span>
           <CommentReactionButton

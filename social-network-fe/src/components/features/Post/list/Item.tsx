@@ -1,6 +1,5 @@
 import { MessageCircle, MoreHorizontal, Send } from 'lucide-react';
 import { memo } from 'react';
-import PostMedia from './Media';
 import { formatDisplayTime } from '@/lib/utils/time';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -13,8 +12,9 @@ import { generateHTML } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { PostReactionButton } from '@/components/wrappers/PostReaction';
 import { PostWithTopComment } from '@/lib/interfaces/post';
-import FeedCommentItem from './CommentItem';
 import CommentEditor from '../../comment/editor/Editor';
+import FeedCommentItem from '../../comment/feed/FeedCommentItem';
+import PostFeedMedia from '../../media/feed/FeedMedia';
 
 export type PostItemProps = {
   post: PostWithTopComment;
@@ -67,7 +67,7 @@ function PostItem({ post }: PostItemProps) {
       <div className="py-1"></div>
 
       {post.media && post.media.length > 0 && (
-        <PostMedia postId={post.id} media={post.media} />
+        <PostFeedMedia postId={post.id} media={post.media} />
       )}
 
       <div className="flex items-center space-x-6 text-gray-500 mt-0 py-1 border-t border-b border-gray-100">
@@ -93,7 +93,7 @@ function PostItem({ post }: PostItemProps) {
       </div>
 
       {post.topComment && (
-        <div className="my-2 p-3 ">
+        <div className="mt-2 pt-3 ">
           {<FeedCommentItem comment={post.topComment} />}
         </div>
       )}

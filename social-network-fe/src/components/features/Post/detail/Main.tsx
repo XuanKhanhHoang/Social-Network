@@ -15,9 +15,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageCircle, Send } from 'lucide-react';
 import { ExpandableContent } from '@/components/ui/ExpandableContent';
 import { PostReactionButton } from '@/components/wrappers/PostReaction';
-import PostDetailCommentSection from './CommentSection';
 import CommentEditor from '../../comment/editor/Editor';
 import { useReplyStore } from '@/store/reply-comments/reply.store';
+import { Color, TextStyle } from '@tiptap/extension-text-style';
+import TextAlign from '@tiptap/extension-text-align';
+import PostDetailCommentsSection from './CommentsSection';
 
 export type PostDetailProps = {
   post?: PostWithMyReaction;
@@ -51,7 +53,15 @@ export default function PostDetail({
 
   const hasMedia = Boolean(post.media && post.media.length > 0);
   const contentHtml = post.content
-    ? generateHTML(post.content, [StarterKit, Emoji])
+    ? generateHTML(post.content, [
+        StarterKit,
+        Emoji,
+        TextStyle,
+        Color,
+        TextAlign.configure({
+          types: ['heading', 'paragraph'],
+        }),
+      ])
     : '';
   const isReplying = !!replyingTo;
   const editorParentId = isReplying ? replyingTo.rootId : undefined;
@@ -134,7 +144,7 @@ export default function PostDetail({
                       </button>
                     </div>
                   </div>
-                  <PostDetailCommentSection postId={post.id} post={post} />
+                  <PostDetailCommentsSection postId={post.id} post={post} />
                 </ScrollArea>
               </div>
 

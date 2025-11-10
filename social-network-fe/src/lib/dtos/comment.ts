@@ -18,6 +18,8 @@ export interface CommentMediaDto {
   mediaId: string;
   mediaType: 'image' | 'video';
   url: string;
+  width?: number;
+  height?: number;
 }
 
 export interface CommentDto {
