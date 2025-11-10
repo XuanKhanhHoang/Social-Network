@@ -19,7 +19,7 @@ import { useMediaUpload } from '@/hooks/media/useMediaUpload';
 import { postKeys } from '@/hooks/post/usePost';
 import PostEditorToolbar from './Toolbars';
 import { PostInEditor } from './type';
-import PostEditorMedia from './MediaEditor';
+import PostEditorMedia from '../../media/create-post-editor/MediaEditor';
 
 export type PostEditorProps = {
   handleClose: () => void;

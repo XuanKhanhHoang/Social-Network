@@ -10,7 +10,6 @@ export default function PostDetailPage() {
   const id = params.id;
   const mediaIndex = Number(searchParams.get('m') ?? 0);
   const { data: post, isPending, isError } = usePost(id);
-  console.log(post?.media);
   return (
     <PostDetail
       post={post ? transformToPostWithMyReaction(post) : undefined}

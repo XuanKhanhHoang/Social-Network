@@ -13,7 +13,7 @@ import {
   transformToCommentWithMyReaction,
 } from '@/lib/interfaces/comment';
 import { useReplyStore } from '@/store/reply-comments/reply.store';
-import EmbeddedMedia from '../../media/embedded/EmbeddedMedia';
+import ContainedMedia from '../../media/common/ContainedMedia';
 
 type CommentItemProps = {
   comment: CommentWithMyReaction;
@@ -67,21 +67,15 @@ export default function CommentItem({
               dangerouslySetInnerHTML={{ __html: contentHtml }}
             />
           )}
-          {comment.media?.mediaId && (
-            <div className="">
-              <EmbeddedMedia
-                //TODO Fix Media size
-                mediaType={comment.media.mediaType}
-                url={comment.media.url}
-                className={{
-                  container: 'relative min-h-30 ',
-                  media: '!w-auto',
-                }}
-              />
-            </div>
-          )}
         </div>
-
+        {comment.media && (
+          <ContainedMedia
+            height={comment.media.height || 200}
+            mediaType={comment.media.mediaType}
+            url={comment.media.url}
+            width={comment.media.width || 200}
+          />
+        )}
         <div className="flex items-center gap-2 text-xs text-gray-500 px-3 py-1">
           <span>{timeAgo(comment.createdAt)}</span>
           <CommentReactionButton

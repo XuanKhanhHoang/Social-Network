@@ -5,6 +5,8 @@ export type UIMediaItem = {
   id?: string;
   mediaType: MediaType;
   url: string;
+  width?: number;
+  height?: number;
 };
 export type MediaItemWithHandlingStatus = UIMediaItem & {
   isUploading?: boolean;

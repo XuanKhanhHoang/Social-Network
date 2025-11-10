@@ -201,7 +201,7 @@ export default function CommentEditor({
                   <ImagePlus size={16} />
                   <Input
                     type="file"
-                    accept="image/*,video/*"
+                    accept="image/*"
                     onChange={onHookMediaUpload}
                     disabled={isSubmitting || media.length > 0}
                     className="hidden"

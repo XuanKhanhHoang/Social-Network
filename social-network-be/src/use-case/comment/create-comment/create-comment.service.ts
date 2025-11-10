@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { CommentRepository } from 'src/domains/comment/comment.repository';
@@ -71,9 +76,11 @@ export class CreateCommentService extends BaseUseCaseService<
             'Post or Author or Parent Comment not found',
           );
         }
+        if (mediaId && mediaItem.mediaType == MediaType.VIDEO)
+          throw new BadRequestException('Video are not allowed to comment');
 
-        const comment = (
-          await this.commentRepository.create(
+        let [res] = await Promise.all([
+          this.commentRepository.create(
             {
               author,
               content,
@@ -90,8 +97,12 @@ export class CreateCommentService extends BaseUseCaseService<
               postId,
             },
             session,
-          )
-        ).toObject() as Comment;
+          ),
+          mediaId
+            ? this.mediaUploadService.confirmUploads([mediaId], authorId)
+            : null,
+        ]);
+        const comment = res.toObject() as Comment;
         if (parentId) {
           await this.commentRepository.increaseReplyCount(parentId, session);
         }

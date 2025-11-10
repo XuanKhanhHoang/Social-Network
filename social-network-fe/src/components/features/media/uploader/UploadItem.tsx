@@ -3,8 +3,8 @@
 import { AlertCircle, Check, Loader, RefreshCw, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatFileSize } from '@/lib/utils/other';
-import MediaPreview from '../common/MediaPreview';
 import { MediaItemWithHandlingStatus } from '../type';
+import MediaThumbnail from '../thumbnail/Thumbnail';
 
 export type MediaUploadItemProps = {
   item: MediaItemWithHandlingStatus;
@@ -12,6 +12,7 @@ export type MediaUploadItemProps = {
     container?: string;
     media?: string;
   };
+  style?: React.CSSProperties;
   handle?: {
     onRetryUpload?: () => void;
     onRemove?: () => void;
@@ -98,23 +99,27 @@ const MediaUploadItem = ({
   item,
   className = {},
   handle,
+  style,
 }: MediaUploadItemProps) => {
   const { onRetryUpload, onRemove } = handle || {};
   const isUploading = !!item.isUploading;
 
   return (
     <div
-      className={`relative bg-gray-100 rounded-lg cursor-pointer group ${className.container}`}
+      className={`relative bg-gray-100 !rounded-xs cursor-pointer group ${className.container}`}
+      style={style}
     >
+      <MediaThumbnail
+        url={item.url}
+        mediaType={item.mediaType}
+        width={item.width}
+        height={item.height}
+        className="w-full h-full"
+      />
+
       {onRemove && (
         <MediaRemoveButton onRemove={onRemove} disabled={isUploading} />
       )}
-      <MediaPreview
-        url={item.url}
-        mediaType={item.mediaType}
-        alt={item.file?.name || 'upload-preview'}
-        className={className.media}
-      />
       <MediaUploadStatus item={item} onRetryUpload={onRetryUpload} />
     </div>
   );
