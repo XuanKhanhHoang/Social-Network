@@ -7,8 +7,25 @@ import {
   GetUserProfileResponseDto,
 } from '@/lib/dtos';
 import { ApiClient } from './api';
+import { CursorPaginationParams, RequestOptions } from './type';
 
 const USER_PREFIX = '/users';
+
+const buildEndpointWithParams = (
+  endpoint: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  params: Record<string, any>
+) => {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      searchParams.append(key, String(value));
+    }
+  });
+
+  const queryString = searchParams.toString();
+  return queryString ? `${endpoint}?${queryString}` : endpoint;
+};
 
 export const userService = {
   async getHeader(username: string): Promise<GetUserHeaderResponseDto> {
