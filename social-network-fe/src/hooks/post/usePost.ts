@@ -16,18 +16,22 @@ import {
 export const postKeys = {
   all: ['posts'] as const,
   lists: () => [...postKeys.all, 'list'] as const,
-  list: (cursor?: string) => [...postKeys.lists(), cursor] as const,
+  list: (username?: string) =>
+    username
+      ? ([...postKeys.lists(), 'user', username] as const)
+      : ([...postKeys.lists(), 'home'] as const),
   details: () => [...postKeys.all, 'detail'] as const,
   detail: (id: string) => [...postKeys.details(), id] as const,
 };
-
-export function useInfinitePosts(limit: number = 10) {
+export function useInfiniteHomeFeed({ limit }: { limit?: number }) {
   return useInfiniteQuery({
-    queryKey: postKeys.lists(),
+    queryKey: postKeys.list(),
     queryFn: ({ pageParam }) =>
-      postService.getPostsByCursor({
-        cursor: pageParam,
-        limit,
+      feedService.getHomeFeed({
+        queriesOptions: {
+          cursor: pageParam,
+          limit,
+        },
       }),
     getNextPageParam: (lastPage: GetPostsFeedResponseDto) => {
       return lastPage.pagination.hasMore && lastPage.pagination.nextCursor
@@ -35,6 +39,32 @@ export function useInfinitePosts(limit: number = 10) {
         : undefined;
     },
     initialPageParam: undefined as string | undefined,
+  });
+}
+export function useInfiniteUserPosts({
+  limit,
+  username,
+}: {
+  limit?: number;
+  username: string;
+}) {
+  return useInfiniteQuery({
+    queryKey: postKeys.list(username),
+    queryFn: ({ pageParam }) =>
+      userService.getUserPosts({
+        username,
+        queriesOptions: {
+          cursor: pageParam,
+          limit,
+        },
+      }),
+    getNextPageParam: (lastPage: GetPostsFeedResponseDto) => {
+      return lastPage.pagination.hasMore && lastPage.pagination.nextCursor
+        ? lastPage.pagination.nextCursor
+        : undefined;
+    },
+    initialPageParam: undefined as string | undefined,
+    enabled: !!username,
   });
 }
 
