@@ -11,9 +11,9 @@ export function useUpdatePostCache() {
   const queryClient = useQueryClient();
 
   const updatePostInAllCaches = (postId: string, updater: PostUpdater) => {
-    queryClient.setQueryData<
+    queryClient.setQueriesData<
       InfiniteData<GetPostsFeedResponseDto, string | undefined>
-    >(postKeys.lists(), (oldData) => {
+    >({ queryKey: postKeys.lists() }, (oldData) => {
       if (!oldData) return oldData;
 
       return {
