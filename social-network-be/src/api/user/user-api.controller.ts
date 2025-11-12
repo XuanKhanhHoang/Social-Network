@@ -9,7 +9,9 @@ import {
   GetUserProfileService,
   GetUserPhotosService,
   GetUserHeaderService,
+  GetUserPostsService,
 } from 'src/use-case/user';
+import { GetUserPostsQueryDto } from './dto/get-user-post.dto';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard)
@@ -21,6 +23,7 @@ export class UserApiController {
     private readonly getUserProfileService: GetUserProfileService,
     private readonly getUserPhotosPreviewService: GetUserPhotosService,
     private readonly getUserHeaderService: GetUserHeaderService,
+    private readonly getUserPostsService: GetUserPostsService,
   ) {}
 
   @Get('me')
@@ -83,6 +86,19 @@ export class UserApiController {
       requestingUserId,
       limit,
       page,
+    });
+  }
+  @Get(':username/posts')
+  @AllowSemiPublic()
+  async getPosts(
+    @Param('username') username: string,
+    @Query() query: GetUserPostsQueryDto,
+    @GetUserId() requestingUserId?: string,
+  ) {
+    return this.getUserPostsService.execute({
+      ...query,
+      userId: requestingUserId,
+      username,
     });
   }
 }

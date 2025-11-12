@@ -28,6 +28,7 @@ export interface ProfileAndRelationship {
   isOwner: boolean;
   isFriend: boolean;
   relationship: RelationshipType;
+  friendCount?: number;
 }
 
 export interface UserHeaderWithRelationship extends UserBasicProfile {
@@ -60,7 +61,8 @@ export interface FriendUserProfile extends PublicUserProfile {
 }
 export type OwnerUserProfile = UserProfile;
 
-export type UserProfileResponse =
+export type UserProfileResponse = { relationship: RelationshipType } & (
   | FriendUserProfile
   | OwnerUserProfile
-  | PublicUserProfile;
+  | PublicUserProfile
+);

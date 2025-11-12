@@ -17,7 +17,7 @@ export class GetUserProfileService extends BaseUseCaseService<
   }
   async execute(input: GetUserProfileInput): Promise<UserProfileResponse> {
     const { username, requestingUserId } = input;
-    const { profileUser, isOwner, isFriend } =
+    const { profileUser, isOwner, isFriend, relationship } =
       await this.userDomainService.getProfileAndRelationship(
         username,
         requestingUserId,
@@ -36,6 +36,7 @@ export class GetUserProfileService extends BaseUseCaseService<
       currentLocation: undefined,
       friendCount: undefined,
       privacySettings: profileUser.privacySettings,
+      relationship: relationship,
     };
 
     if (this.userDomainService.canView(settings.work, isOwner, isFriend)) {

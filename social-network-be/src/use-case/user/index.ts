@@ -4,3 +4,4 @@ export * from './get-user-friends-preview/get-user-friends-preview.service';
 export * from './get-user-header/get-user-header.service';
 export * from './get-user-photos/get-user-photos.service';
 export * from './get-user-profile/get-user-profile.service';
+export * from './get-user-posts/get-user-posts.service';
