@@ -3,7 +3,9 @@ import {
   GetPostsFeedResponseDto,
   PostWithMyReactionDto,
 } from '@/lib/dtos';
+import { feedService } from '@/services/feed';
 import { postService } from '@/services/post';
+import { userService } from '@/services/user';
 import {
   useQuery,
   useMutation,

@@ -1,7 +1,6 @@
 import {
   CreatePostRequestDto,
   CreatePostResponseDto,
-  GetPostsFeedResponseDto,
   PostWithMyReactionDto,
   UpdatePostRequestDto,
   UpdatePostResponseDto,
@@ -21,25 +20,7 @@ export const postService = {
   ): Promise<UpdatePostResponseDto> {
     return ApiClient.patch(`${POST_PREFIX}/${id}`, data);
   },
-  async getPostsByCursor({
-    cursor,
-    limit,
-    options,
-  }: {
-    cursor?: string;
-    limit?: number;
-    options?: RequestOptions;
-  }): Promise<GetPostsFeedResponseDto> {
-    const queries = new URLSearchParams();
-    if (cursor) queries.set('cursor', cursor);
-    if (limit) queries.set('limit', limit.toString());
 
-    const queryString = queries.toString();
-    return ApiClient.get(
-      `${POST_PREFIX}/gets${queryString ? `?${queryString}` : ''}`,
-      options
-    );
-  },
   async getPost(
     postId: string,
     options?: RequestOptions

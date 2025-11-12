@@ -1,4 +1,5 @@
 import {
+  GetPostsFeedResponseDto,
   GetUserBioResponseDto,
   GetUserFriendsPreviewResponseDto,
   GetUserHeaderResponseDto,
@@ -23,12 +24,53 @@ export const userService = {
   },
 
   async getFriendsPreview(
-    username: string
+    username: string,
+    page?: number,
+    limit?: number
   ): Promise<GetUserFriendsPreviewResponseDto> {
-    return ApiClient.get(`${USER_PREFIX}/${username}/friends-preview`);
+    const endpoint = buildEndpointWithParams(
+      `${USER_PREFIX}/${username}/friends-preview`,
+      {
+        page,
+        limit,
+      }
+    );
+    return ApiClient.get(endpoint);
   },
 
-  async getPhotosPreview(username: string): Promise<GetUserPhotosResponseDto> {
-    return ApiClient.get(`${USER_PREFIX}/${username}/photos-preview`);
+  async getPhotosPreview(
+    username: string,
+    page?: number,
+    limit?: number
+  ): Promise<GetUserPhotosResponseDto> {
+    const endpoint = buildEndpointWithParams(
+      `${USER_PREFIX}/${username}/photos-preview`,
+      {
+        page,
+        limit,
+      }
+    );
+    return ApiClient.get(endpoint);
+  },
+  async getUserPosts({
+    username,
+    queriesOptions,
+    options,
+  }: {
+    username: string;
+    queriesOptions: CursorPaginationParams;
+    options?: RequestOptions;
+  }): Promise<GetPostsFeedResponseDto> {
+    const queries = new URLSearchParams();
+    const { cursor, limit } = queriesOptions;
+
+    if (cursor) queries.set('cursor', cursor);
+    if (limit) queries.set('limit', limit.toString());
+
+    const queryString = queries.toString();
+    return ApiClient.get(
+      `${USER_PREFIX}/${username}/posts${queryString ? `?${queryString}` : ''}`,
+      options
+    );
   },
 };
