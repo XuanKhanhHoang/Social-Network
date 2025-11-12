@@ -5,16 +5,14 @@ import {
   Param,
   Patch,
   Post,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ParseMongoIdPipe } from 'src/share/pipe/parse-mongo-id-pipe';
 import { GetUserId } from 'src/share/decorators/user.decorator';
 import { CreatePostService } from 'src/use-case/post/create-post/create-post.service';
 import { UpdatePostService } from 'src/use-case/post/update-post/update-post.service';
-import { GetPostsFeedService } from 'src/use-case/post/get-posts-feed/get-posts-feed.service';
 import { GetPostFullService } from 'src/use-case/post/get-post-full/get-post-full.service';
-import { CreatePostDto, UpdatePostDto, GetPostsByCursorDto } from './dto';
+import { CreatePostDto, UpdatePostDto } from './dto';
 import { JwtAuthGuard } from 'src/domains/auth/jwt-auth.guard';
 
 @UseGuards(JwtAuthGuard)
@@ -23,7 +21,6 @@ export class PostController {
   constructor(
     private readonly createPostService: CreatePostService,
     private readonly updatePostService: UpdatePostService,
-    private readonly getPostFeedService: GetPostsFeedService,
     private readonly getPostFullService: GetPostFullService,
   ) {}
 
@@ -48,13 +45,6 @@ export class PostController {
       userId,
       data: updatePostDto,
     });
-  }
-  @Get('gets')
-  async getPosts(
-    @Query() query: GetPostsByCursorDto,
-    @GetUserId() userId: string,
-  ) {
-    return await this.getPostFeedService.execute({ ...query, userId });
   }
 
   @Get(':id')
