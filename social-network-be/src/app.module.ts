@@ -8,6 +8,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ApiModule } from './api/api.module';
 import { RankingUseCaseModule } from './use-case/ranking/ranking-use-case.module';
+import { FeedUseCaseModule } from './use-case/feed/feed-use-case.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -23,7 +24,7 @@ import { RankingUseCaseModule } from './use-case/ranking/ranking-use-case.module
     MailModule,
     ApiModule,
     RankingUseCaseModule,
+    FeedUseCaseModule,
   ],
-  providers: [],
 })
 export class AppModule {}

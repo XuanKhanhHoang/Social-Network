@@ -7,6 +7,7 @@ import {
   MediaUploadApiModule,
 } from './';
 import { ReactionApiModule } from './reaction/reaction-api.module';
+import { FeedApiModule } from './feed/feed-api.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { ReactionApiModule } from './reaction/reaction-api.module';
     UserApiModule,
     MediaUploadApiModule,
     ReactionApiModule,
+    FeedApiModule,
   ],
 })
 export class ApiModule {}
