@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types, FilterQuery } from 'mongoose';
 import {
@@ -10,7 +10,6 @@ import {
   PopulatedFriend,
   UserBasicData,
   UserFriendsContextData,
-  UserFriendsData,
   UserProfile,
 } from './interfaces';
 import { UserDocument } from 'src/schemas';
@@ -43,6 +42,16 @@ export class UserRepository extends BaseRepository<UserDocument> {
     options?: BaseQueryOptions<UserDocument>,
   ): Promise<UserDocument | null> {
     return this.findOne({ username }, options);
+  }
+  async getIdBysUsername(
+    username: string,
+    options?: BaseQueryOptions<UserDocument>,
+  ): Promise<Types.ObjectId | null> {
+    const user = await this.findOne(
+      { username },
+      { projection: '_id', ...options },
+    );
+    return (user?._id || null) as Types.ObjectId | null;
   }
   async findByEmailAndVerified(email: string): Promise<UserDocument | null> {
     return this.findOne(
