@@ -42,13 +42,13 @@ export const userService = {
 
   async getFriendsPreview(
     username: string,
-    page?: number,
+    cursor?: string,
     limit?: number
   ): Promise<GetUserFriendsPreviewResponseDto> {
     const endpoint = buildEndpointWithParams(
       `${USER_PREFIX}/${username}/friends-preview`,
       {
-        page,
+        cursor,
         limit,
       }
     );
@@ -57,13 +57,13 @@ export const userService = {
 
   async getPhotosPreview(
     username: string,
-    page?: number,
+    cursor?: string,
     limit?: number
   ): Promise<GetUserPhotosResponseDto> {
     const endpoint = buildEndpointWithParams(
       `${USER_PREFIX}/${username}/photos-preview`,
       {
-        page,
+        cursor,
         limit,
       }
     );
