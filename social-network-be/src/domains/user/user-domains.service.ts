@@ -21,6 +21,15 @@ export class UserDomainsService {
 
     const profileUserIdStr = profileUser._id.toString();
     const isOwner = requestingUserId && profileUserIdStr === requestingUserId;
+    if (isOwner) {
+      return {
+        profileUser,
+        isOwner,
+        isFriend: false,
+        relationship: 'OWNER',
+        friendCount: profileUser.friendCount,
+      };
+    }
     const isFriend =
       !isOwner &&
       requestingUserId &&

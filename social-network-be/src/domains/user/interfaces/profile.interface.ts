@@ -34,6 +34,7 @@ export interface ProfileAndRelationship {
 export interface UserHeaderWithRelationship extends UserBasicProfile {
   relationship: RelationshipType;
   coverPhoto: string;
+  friendCount?: number;
 }
 
 export interface UserBio {
