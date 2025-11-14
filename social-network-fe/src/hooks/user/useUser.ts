@@ -49,28 +49,27 @@ export const useUserBio = (username: string) => {
   });
 };
 
-export const useUserFriendsPreview = (username: string) => {
-  return useInfiniteQuery({
-    queryKey: userKeys.friend(username),
-    queryFn: ({ pageParam = 1 }) =>
-      userService.getFriendsPreview(username, pageParam),
-    getNextPageParam: (lastPage, _, lastPageParam) => {
-      return lastPage.pagination.hasNextPage ? lastPageParam + 1 : undefined;
-    },
-    initialPageParam: 1,
-    enabled: !!username,
-  });
-};
-
 export const useUserPhotosPreview = (username: string) => {
   return useInfiniteQuery({
     queryKey: userKeys.photo(username),
-    queryFn: ({ pageParam = 1 }) =>
-      userService.getPhotosPreview(username, pageParam),
-    getNextPageParam: (lastPage, _, lastPageParam) => {
-      return lastPage.pagination.hasNextPage ? lastPageParam + 1 : undefined;
+    queryFn: ({ pageParam }: { pageParam?: string }) =>
+      userService.getPhotosPreview(username, pageParam as string | undefined),
+    getNextPageParam: (lastPage) => {
+      return lastPage.pagination.nextCursor ?? undefined;
     },
-    initialPageParam: 1,
+    initialPageParam: undefined,
+    enabled: !!username,
+  });
+};
+export const useUserFriendsPreview = (username: string) => {
+  return useInfiniteQuery({
+    queryKey: userKeys.friend(username),
+    queryFn: ({ pageParam }: { pageParam?: string }) =>
+      userService.getFriendsPreview(username, pageParam as string | undefined),
+    getNextPageParam: (lastPage) => {
+      return lastPage.pagination.nextCursor ?? undefined;
+    },
+    initialPageParam: undefined,
     enabled: !!username,
   });
 };
