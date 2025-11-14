@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { PaginatedPhotos } from 'src/domains/post/interfaces/post.type';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PhotoPreview } from 'src/domains/post/interfaces/post.type';
 import { PostRepository } from 'src/domains/post/post.repository';
 import { UserRepository } from 'src/domains/user/user.repository';
+import { BeCursorPaginated } from 'src/share/dto/res/be-paginated.dto';
 import { UserPrivacy } from 'src/share/enums';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 
@@ -9,13 +10,15 @@ export interface GetUserPhotosInput {
   username: string;
   requestingUserId?: string;
   limit?: number;
-  page?: number;
+  cursor?: number;
 }
+
+export interface GetUserPhotosOutput extends BeCursorPaginated<PhotoPreview> {}
 
 @Injectable()
 export class GetUserPhotosService extends BaseUseCaseService<
   GetUserPhotosInput,
-  PaginatedPhotos
+  GetUserPhotosOutput
 > {
   constructor(
     private readonly userRepo: UserRepository,
@@ -24,30 +27,34 @@ export class GetUserPhotosService extends BaseUseCaseService<
     super();
   }
 
-  async execute(input: GetUserPhotosInput): Promise<PaginatedPhotos> {
-    const { username, requestingUserId } = input;
+  async execute(input: GetUserPhotosInput): Promise<GetUserPhotosOutput> {
+    const { username, requestingUserId, limit = 9, cursor } = input;
     const userPrivacies: UserPrivacy[] = [UserPrivacy.PUBLIC];
+    let userId: string | undefined;
     if (requestingUserId) {
-      const profileUser = (
-        await this.userRepo.findByUsername(username)
-      ).toObject();
-      if (requestingUserId == profileUser._id) {
+      userId = (await this.userRepo.getIdBysUsername(username)).toString();
+      if (!userId) throw new NotFoundException('User not found');
+      if (requestingUserId == userId) {
         userPrivacies.push(UserPrivacy.PRIVATE, UserPrivacy.FRIENDS);
       } else if (
-        await this.userRepo.areFriends(
-          profileUser._id as string,
-          requestingUserId,
-        )
+        await this.userRepo.areFriends(userId as string, requestingUserId)
       ) {
         userPrivacies.push(UserPrivacy.FRIENDS);
       }
     }
 
-    return this.postRepo.findPhotosForUser(
-      username,
+    const res = await this.postRepo.findPhotosForUser(
+      userId,
       userPrivacies,
-      input.limit,
-      input.page,
+      limit,
+      cursor,
     );
+    return {
+      data: res.photos,
+      pagination: {
+        hasMore: res.nextCursor !== null,
+        nextCursor: res.nextCursor + '',
+      },
+    };
   }
 }

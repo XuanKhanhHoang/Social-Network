@@ -57,5 +57,5 @@ export interface PhotoPreview {
 }
 export interface PaginatedPhotos {
   photos: PhotoPreview[];
-  hasNextPage: boolean;
+  nextCursor: number | null;
 }

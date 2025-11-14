@@ -67,31 +67,61 @@ export class UserRepository extends BaseRepository<UserDocument> {
     );
   }
 
-  async findFriendsListById(
-    userId: Types.ObjectId | string,
-    limit: number,
-    page = 1,
-  ): Promise<{ friends: PopulatedFriend[]; hasNextPage: boolean }> {
-    const user = (await this.model
-      .findById(userId)
-      .populate({
-        path: 'friends',
-        select: 'firstName lastName username avatar',
-        options: {
-          limit: limit,
-          skip: (page - 1) * limit,
-        },
-      })
-      .select('friends friendCount')
-      .lean()
-      .exec()) as unknown as UserFriendsData;
+  async findFriendsList({
+    userId,
+    limit,
+    cursor,
+  }: {
+    userId: string;
+    limit: number;
+    cursor?: number;
+  }): Promise<{
+    data: PopulatedFriend[];
+    nextCursor: number | null;
+  }> {
+    const skip = cursor || 0;
 
-    if (user.friends.length == 0) {
-      return { friends: [], hasNextPage: false };
+    const userWithPartialFriends = await this.model
+      .findById(userId)
+      .select({
+        friends: { $slice: [skip, limit] },
+      })
+      .lean()
+      .exec();
+
+    if (!userWithPartialFriends) {
+      throw new NotFoundException('User not found');
     }
 
-    const hasNextPage = page * limit < user.friendCount;
-    return { friends: user.friends, hasNextPage };
+    const friendIdsToFetch = userWithPartialFriends.friends || [];
+
+    if (friendIdsToFetch.length === 0) {
+      return { data: [], nextCursor: null };
+    }
+
+    const friendsData = (await this.model
+      .find({
+        _id: { $in: friendIdsToFetch },
+      })
+      .select('firstName lastName username avatar')
+      .lean()
+      .exec()) as unknown as PopulatedFriend[];
+
+    const friendMap = new Map<string, PopulatedFriend>();
+    friendsData.forEach((friend) =>
+      friendMap.set(friend._id.toString(), friend),
+    );
+
+    const orderedFriends = friendIdsToFetch
+      .map((id) => friendMap.get(id.toString()))
+      .filter((f) => f) as PopulatedFriend[];
+
+    const nextCursor = orderedFriends.length === limit ? skip + limit : null;
+
+    return {
+      data: orderedFriends,
+      nextCursor: nextCursor,
+    };
   }
 
   async findUserFriendsContextByUsername(

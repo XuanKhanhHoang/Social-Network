@@ -248,14 +248,15 @@ export class PostRepository extends ReactableRepository<PostDocument> {
     userId: string,
     privacy: UserPrivacy[],
     limit: number,
-    page = 1,
+    cursor?: number,
   ): Promise<PaginatedPhotos> {
+    const skipAmount = cursor || 0;
+
     const pipeline: PipelineStage[] = [];
-    const skipAmount = (page - 1) * limit;
 
     pipeline.push({
       $match: {
-        author: new Types.ObjectId(userId),
+        'author._id': new Types.ObjectId(userId),
         status: PostStatus.ACTIVE,
         visibility: { $in: privacy },
         'media.0': { $exists: true },
@@ -284,20 +285,21 @@ export class PostRepository extends ReactableRepository<PostDocument> {
         postId: '$_id',
         caption: '$media.caption',
         order: '$media.order',
-        url: '$mediaDetail.url',
-        mediaType: '$mediaDetail.mediaType',
+        url: '$media.url',
+        mediaType: '$media.mediaType',
       },
     });
 
     const results = await this.model.aggregate<PhotoPreview>(pipeline).exec();
 
-    const hasNextPage = results.length > limit;
-
+    const hasMore = results.length > limit;
     const photos = results.slice(0, limit);
+
+    const nextCursor = hasMore ? skipAmount + photos.length : null;
 
     return {
       photos,
-      hasNextPage,
+      nextCursor,
     };
   }
 }
