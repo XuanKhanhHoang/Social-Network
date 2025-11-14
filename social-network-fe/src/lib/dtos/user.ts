@@ -1,5 +1,5 @@
-import { UserRelationship } from '../constants/enums/user-relationship';
 import { VisibilityPrivacy } from '../constants/enums/visibility-privacy';
+import { CursorPaginationResponse } from './common/pagination';
 
 export interface UserSummaryDto {
   _id: string;
@@ -15,7 +15,8 @@ export interface GetUserHeaderResponseDto {
   username: string;
   avatar?: string;
   coverPhoto?: string;
-  relationship: UserRelationship;
+  relationship: 'PUBLIC' | 'FRIEND' | 'OWNER';
+  friendCount?: number;
 }
 
 export interface PrivacySettingsDto {
@@ -35,6 +36,7 @@ export interface GetUserProfileResponseDto {
   currentLocation?: string;
   friendCount?: number;
   privacySettings: PrivacySettingsDto;
+  relationship: 'PUBLIC' | 'FRIEND' | 'OWNER';
 }
 
 export interface GetUserBioResponseDto {
@@ -43,24 +45,15 @@ export interface GetUserBioResponseDto {
   currentLocation?: string;
 }
 
-export interface GetUserFriendsPreviewResponseDto {
+export interface GetUserFriendsPreviewResponseDto
+  extends CursorPaginationResponse<UserSummaryDto> {
   total: number;
-  data: UserSummaryDto[];
-  pagination: {
-    hasNextPage: boolean;
-  };
 }
 
-interface PhotoDto {
-  mediaId: string;
+export interface PhotoDto {
+  _id: string;
   mediaType: string;
   url: string;
 }
 
-export interface GetUserPhotosResponseDto {
-  total: number;
-  data: PhotoDto[];
-  pagination: {
-    hasNextPage: boolean;
-  };
-}
+export type GetUserPhotosResponseDto = CursorPaginationResponse<PhotoDto>;
