@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 import _ from 'lodash';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMediaUpload } from '@/hooks/media/useMediaUpload';
-import { postKeys } from '@/hooks/post/usePost';
+import { postKeys, useCreatePost } from '@/hooks/post/usePost';
 import PostEditorToolbar from './Toolbars';
 import { PostInEditor } from './type';
 import PostEditorMedia from '../../media/create-post-editor/MediaEditor';
@@ -42,6 +42,8 @@ const usePostEditor = ({
   const [showTextColorPicker, setShowTextColorPicker] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPendingDebounce, setIsPendingDebounce] = useState(false);
+
+  const create = useCreatePost();
 
   const {
     media,
@@ -184,12 +186,11 @@ const usePostEditor = ({
         });
         queryClient.invalidateQueries({ queryKey: postKeys.detail(post!.id) });
       } else {
-        await postService.createPost({
+        await create.mutateAsync({
           content: editor!.getJSON(),
           backgroundValue: bg,
           media: mediaInfo,
         });
-        queryClient.invalidateQueries({ queryKey: postKeys.lists() });
       }
 
       toast.success(
