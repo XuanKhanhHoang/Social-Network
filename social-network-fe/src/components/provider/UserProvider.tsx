@@ -2,18 +2,19 @@
 
 import { useEffect } from 'react';
 import { useStore } from '@/store';
-import { User } from '@/lib/dtos';
+import { StoreUser } from '@/store/slices/authSlice';
 
 export function UserProvider({
   initialUser,
   children,
 }: {
-  initialUser?: User;
+  initialUser?: StoreUser;
   children: React.ReactNode;
 }) {
   const setUser = useStore((s) => s.setUser);
 
   useEffect(() => {
+    console.log('initialUser', initialUser);
     if (initialUser) setUser(initialUser);
   }, [initialUser, setUser]);
 
