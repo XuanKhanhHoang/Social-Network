@@ -33,7 +33,7 @@ const NAV_ITEMS = [
   },
   { id: 'notifications', label: 'Thông báo', icon: Bell, href: '#', badge: 5 },
   { id: 'friends', label: 'Bạn bè', icon: Users, href: '#' },
-  { id: 'profile', label: 'Trang cá nhân', icon: User, href: '/user' },
+  { id: 'profile', label: 'Trang cá nhân', icon: User, href: '/user/' },
 ];
 
 const VibeLogo = () => (
@@ -102,7 +102,9 @@ const LeftSidebar = () => {
           return (
             <Link
               key={item.id}
-              href={item.href}
+              href={
+                item.id === 'profile' ? `/user/${user?.username}` : item.href
+              }
               onClick={() => setActiveItem(item.id)}
               className={`flex items-center gap-4 py-3 px-6 text-sm font-medium transition-colors relative 
                                 ${
