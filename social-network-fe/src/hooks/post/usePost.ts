@@ -1,6 +1,8 @@
 import {
   CreatePostRequestDto,
+  CreatePostResponseDto,
   GetPostsFeedResponseDto,
+  GetUserPhotosResponseDto,
   PostWithMyReactionDto,
 } from '@/lib/dtos';
 import { feedService } from '@/services/feed';
@@ -11,7 +13,10 @@ import {
   useMutation,
   useQueryClient,
   useInfiniteQuery,
+  InfiniteData,
 } from '@tanstack/react-query';
+import { userKeys } from '../user/useUser';
+import { MediaType } from '@/lib/constants/enums';
 
 export const postKeys = {
   all: ['posts'] as const,
@@ -82,8 +87,44 @@ export function useCreatePost() {
 
   return useMutation({
     mutationFn: (data: CreatePostRequestDto) => postService.createPost(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: postKeys.lists() });
+    onSuccess: (res: CreatePostResponseDto) => {
+      const username = res.author.username;
+      if (!username) return;
+
+      queryClient.setQueryData(
+        postKeys.list(username),
+        (oldData: InfiniteData<GetPostsFeedResponseDto> | undefined) => {
+          if (!oldData || !oldData.pages.length) return oldData;
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page, index) =>
+              index === 0 ? { ...page, data: [res, ...page.data] } : page
+            ),
+          };
+        }
+      );
+      console.log(res.media);
+      if (!res.media || res.media.length == 0) return;
+      const newPhotos = res.media.filter(
+        (m) => m.mediaType === MediaType.IMAGE
+      );
+      console.log(newPhotos);
+      if (newPhotos.length > 0) {
+        queryClient.setQueryData(
+          userKeys.photo(username),
+          (oldData: InfiniteData<GetUserPhotosResponseDto> | undefined) => {
+            if (!oldData || !oldData.pages.length) return oldData;
+            return {
+              ...oldData,
+              pages: oldData.pages.map((page, index) =>
+                index === 0
+                  ? { ...page, data: [...newPhotos, ...page.data] }
+                  : page
+              ),
+            };
+          }
+        );
+      }
     },
   });
 }
