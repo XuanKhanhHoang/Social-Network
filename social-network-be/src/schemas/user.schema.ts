@@ -47,7 +47,7 @@ export class UserDocument extends Document {
   @Prop({ required: true, unique: true, index: true })
   email: string;
 
-  @Prop({ required: false, unique: true, sparse: true, default: null })
+  @Prop({ required: false, default: null, type: String })
   phoneNumber: string;
 
   @Prop({ required: true, select: false })
@@ -95,3 +95,12 @@ export class UserDocument extends Document {
 }
 
 export const UserSchema = SchemaFactory.createForClass(UserDocument);
+UserSchema.index(
+  { phoneNumber: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      phoneNumber: { $ne: null },
+    },
+  },
+);
