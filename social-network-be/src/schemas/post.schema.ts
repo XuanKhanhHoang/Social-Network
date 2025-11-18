@@ -66,3 +66,9 @@ export class PostDocument extends Document {
 }
 
 export const PostSchema = SchemaFactory.createForClass(PostDocument);
+PostSchema.index({ 'author._id': 1 });
+PostSchema.index({ 'author._id': 1, status: 1, visibility: 1 });
+PostSchema.index({ parentPost: 1 });
+PostSchema.index({ tags: 1 });
+PostSchema.index({ hashtags: 1 });
+PostSchema.index({ hotScore: -1, _id: -1 });

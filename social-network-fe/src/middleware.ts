@@ -21,36 +21,37 @@ export function middleware(request: NextRequest) {
     return res;
   }
 
-  let isPublic = false;
-  const allPublicLikePaths = [
-    ...authRoutes,
-    ...publicPaths,
-    ...semiPublicPaths,
-  ];
+  let isPublic = false,
+    isSemiPublic = false;
+
+  const trulyPublicPaths = [...authRoutes, ...publicPaths];
 
   if (
-    allPublicLikePaths.some(
+    trulyPublicPaths.some(
       (path) => pathname === path || pathname.startsWith(path + '/')
     )
   ) {
     isPublic = true;
   }
 
+  if (
+    semiPublicPaths.some(
+      (path) => pathname.startsWith(path + '/') || pathname == path
+    )
+  ) {
+    isSemiPublic = true;
+  }
+
   const res = NextResponse.next();
   res.headers.set('x-route-public', isPublic ? 'true' : 'false');
+  res.headers.set('x-route-semi-public', isSemiPublic ? 'true' : 'false');
   res.headers.set(
     'x-route-url',
     `${pathname}${searchParams ? '?' + searchParams : ''}`
   );
 
-  if (authRoutes.includes(pathname) && accessToken) {
-    return NextResponse.redirect(new URL('/', request.url));
-  }
-
-  if (!isPublic) {
-    if (!accessToken && !refreshToken) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
+  if (!isPublic && !isSemiPublic && !accessToken && !refreshToken) {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
   return res;

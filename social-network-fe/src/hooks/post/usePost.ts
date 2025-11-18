@@ -1,31 +1,42 @@
 import {
   CreatePostRequestDto,
+  CreatePostResponseDto,
   GetPostsFeedResponseDto,
+  GetUserPhotosResponseDto,
   PostWithMyReactionDto,
 } from '@/lib/dtos';
+import { feedService } from '@/services/feed';
 import { postService } from '@/services/post';
+import { userService } from '@/services/user';
 import {
   useQuery,
   useMutation,
   useQueryClient,
   useInfiniteQuery,
+  InfiniteData,
 } from '@tanstack/react-query';
+import { userKeys } from '../user/useUser';
+import { MediaType } from '@/lib/constants/enums';
 
 export const postKeys = {
   all: ['posts'] as const,
   lists: () => [...postKeys.all, 'list'] as const,
-  list: (cursor?: string) => [...postKeys.lists(), cursor] as const,
+  list: (username?: string) =>
+    username
+      ? ([...postKeys.lists(), 'user', username] as const)
+      : ([...postKeys.lists(), 'home'] as const),
   details: () => [...postKeys.all, 'detail'] as const,
   detail: (id: string) => [...postKeys.details(), id] as const,
 };
-
-export function useInfinitePosts(limit: number = 10) {
+export function useInfiniteHomeFeed({ limit }: { limit?: number }) {
   return useInfiniteQuery({
-    queryKey: postKeys.lists(),
+    queryKey: postKeys.list(),
     queryFn: ({ pageParam }) =>
-      postService.getPostsByCursor({
-        cursor: pageParam,
-        limit,
+      feedService.getHomeFeed({
+        queriesOptions: {
+          cursor: pageParam,
+          limit,
+        },
       }),
     getNextPageParam: (lastPage: GetPostsFeedResponseDto) => {
       return lastPage.pagination.hasMore && lastPage.pagination.nextCursor
@@ -33,6 +44,32 @@ export function useInfinitePosts(limit: number = 10) {
         : undefined;
     },
     initialPageParam: undefined as string | undefined,
+  });
+}
+export function useInfiniteUserPosts({
+  limit,
+  username,
+}: {
+  limit?: number;
+  username: string;
+}) {
+  return useInfiniteQuery({
+    queryKey: postKeys.list(username),
+    queryFn: ({ pageParam }) =>
+      userService.getUserPosts({
+        username,
+        queriesOptions: {
+          cursor: pageParam,
+          limit,
+        },
+      }),
+    getNextPageParam: (lastPage: GetPostsFeedResponseDto) => {
+      return lastPage.pagination.hasMore && lastPage.pagination.nextCursor
+        ? lastPage.pagination.nextCursor
+        : undefined;
+    },
+    initialPageParam: undefined as string | undefined,
+    enabled: !!username,
   });
 }
 
@@ -50,8 +87,44 @@ export function useCreatePost() {
 
   return useMutation({
     mutationFn: (data: CreatePostRequestDto) => postService.createPost(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: postKeys.lists() });
+    onSuccess: (res: CreatePostResponseDto) => {
+      const username = res.author.username;
+      if (!username) return;
+
+      queryClient.setQueryData(
+        postKeys.list(username),
+        (oldData: InfiniteData<GetPostsFeedResponseDto> | undefined) => {
+          if (!oldData || !oldData.pages.length) return oldData;
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page, index) =>
+              index === 0 ? { ...page, data: [res, ...page.data] } : page
+            ),
+          };
+        }
+      );
+      console.log(res.media);
+      if (!res.media || res.media.length == 0) return;
+      const newPhotos = res.media.filter(
+        (m) => m.mediaType === MediaType.IMAGE
+      );
+      console.log(newPhotos);
+      if (newPhotos.length > 0) {
+        queryClient.setQueryData(
+          userKeys.photo(username),
+          (oldData: InfiniteData<GetUserPhotosResponseDto> | undefined) => {
+            if (!oldData || !oldData.pages.length) return oldData;
+            return {
+              ...oldData,
+              pages: oldData.pages.map((page, index) =>
+                index === 0
+                  ? { ...page, data: [...newPhotos, ...page.data] }
+                  : page
+              ),
+            };
+          }
+        );
+      }
     },
   });
 }

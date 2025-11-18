@@ -10,7 +10,9 @@ import { redirect } from 'next/navigation';
 import { AppInitializer } from '@/components/features/layout/AppInitializer';
 import LeftSidebar from '@/components/features/layout/LeftSideBar';
 import { CreatePostProvider } from '@/components/features/feed/FeedContext';
-import { UserSummaryDto } from '@/lib/dtos';
+import { UserSummaryWithEmailDto } from '@/lib/dtos';
+import { transformToStoreUser } from '@/store/slices/authSlice';
+import { ImageViewerProvider } from '@/components/provider/ImageViewerProvider';
 
 export const metadata: Metadata = {
   title: 'Vibe',
@@ -26,10 +28,14 @@ export default async function RootLayout({
 }>) {
   const hdrs = await headers();
   const isPublic = hdrs.get('x-route-public') != 'false';
-  let user: UserSummaryDto | undefined;
+  const isSemiPublic = hdrs.get('x-route-semi-public') != 'false';
+
+  let user: UserSummaryWithEmailDto | undefined;
 
   if (typeof window == 'undefined') {
-    if (!isPublic) {
+    if (isPublic) {
+      user = undefined;
+    } else {
       const cookieStore = await cookies();
       const accessToken = cookieStore.get('accessToken')?.value;
       const refreshToken = cookieStore.get('refreshToken')?.value;
@@ -43,14 +49,15 @@ export default async function RootLayout({
           });
           if (!user) throw new Error('Service return null/undefined user!');
         } catch (error) {
-          console.log(error);
           redirect('/login?session_expired=true');
         }
       } else {
-        redirect('/login');
+        if (isSemiPublic) {
+          user = undefined;
+        } else {
+          redirect('/login');
+        }
       }
-    } else {
-      user = undefined;
     }
   }
 
@@ -58,25 +65,27 @@ export default async function RootLayout({
     <html lang="en">
       <body className={`antialiased`}>
         <AppInitializer>
-          <UserProvider initialUser={user}>
+          <UserProvider initialUser={user && transformToStoreUser(user)}>
             <QueryProvider>
               <EmojiPickerProvider>
-                <CreatePostProvider>
-                  {isPublic ? (
-                    <>
-                      {children}
-                      {modal}
-                    </>
-                  ) : (
-                    <div className="min-h-screen bg-white">
-                      <div className="max-w-screen mx-auto flex">
-                        <LeftSidebar />
+                <ImageViewerProvider>
+                  <CreatePostProvider>
+                    {user != undefined ? (
+                      <div className="min-h-screen bg-white">
+                        <div className="max-w-screen mx-auto flex">
+                          <LeftSidebar />
+                          {children}
+                          {modal}
+                        </div>
+                      </div>
+                    ) : (
+                      <>
                         {children}
                         {modal}
-                      </div>
-                    </div>
-                  )}
-                </CreatePostProvider>
+                      </>
+                    )}
+                  </CreatePostProvider>
+                </ImageViewerProvider>
               </EmojiPickerProvider>
               <Toaster position="top-right" expand />
             </QueryProvider>

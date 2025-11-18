@@ -19,4 +19,13 @@ export class SubPostMedia {
 
   @Prop({ type: Number, default: 0 })
   order: number;
+
+  @Prop({ type: Number })
+  width?: number;
+
+  @Prop({ type: Number })
+  height?: number;
+
+  @Prop({ type: Date })
+  createdAt: Date;
 }

@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CommentRepository } from 'src/domains/comment/comment.repository';
 import {
   PostCursorData,
@@ -6,44 +11,61 @@ import {
   PostWithTopCommentAndUserReaction,
 } from 'src/domains/post/interfaces/post.type';
 import { PostRepository } from 'src/domains/post/post.repository';
+import { UserRepository } from 'src/domains/user/user.repository';
 import { BeCursorPaginated } from 'src/share/dto/res/be-paginated.dto';
 import {
   decodeCursor,
   encodeCursor,
 } from 'src/share/utils/cursor-encode-handling';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
-export interface GetPostsFeedInput {
+
+export interface GetHomeFeedInput {
   cursor?: string;
   limit?: number;
   userId: string;
 }
 
-export interface GetPostsFeedOutput
+export interface GetHomeFeedOutput
   extends BeCursorPaginated<PostWithTopCommentAndUserReaction> {}
+
 @Injectable()
-export class GetPostsFeedService extends BaseUseCaseService<
-  GetPostsFeedInput,
-  GetPostsFeedOutput
+export class GetHomeFeedService extends BaseUseCaseService<
+  GetHomeFeedInput,
+  GetHomeFeedOutput
 > {
-  private readonly logger = new Logger(GetPostsFeedService.name);
+  private readonly logger = new Logger(GetHomeFeedService.name);
   constructor(
     private readonly commentRepository: CommentRepository,
     private readonly postRepository: PostRepository,
+    private readonly userRepository: UserRepository,
   ) {
     super();
   }
-  async execute(input: GetPostsFeedInput) {
+  async execute(input: GetHomeFeedInput) {
     const { userId, cursor, limit = 10 } = input;
     try {
       const decodedCursor = cursor
         ? decodeCursor<PostCursorData>(cursor)
         : undefined;
 
-      const posts = await this.postRepository.findByCursor(
-        limit + 1,
+      const requestingUser = await this.userRepository.findById(userId, {
+        friends: 1,
+      });
+      if (!requestingUser) {
+        throw new NotFoundException('User not found');
+      }
+
+      const authorIds = [
         userId,
-        decodedCursor,
-      );
+        ...requestingUser.friends.map((id) => id.toString()),
+      ];
+
+      const posts = await this.postRepository.findForHomeFeed({
+        limit: limit + 1,
+        requestingUserId: userId,
+        cursor: decodedCursor,
+        authorIds: authorIds,
+      });
 
       const hasMore = posts.length > limit;
 
@@ -65,12 +87,13 @@ export class GetPostsFeedService extends BaseUseCaseService<
       };
     } catch (error) {
       this.logger.error(
-        `Failed to get posts feed for user ${userId}: ${error.message}`,
+        `Failed to get home feed for user ${userId}: ${error.message}`,
         error.stack,
       );
       throw new BadRequestException('Failed to retrieve posts');
     }
   }
+
   private async enrichPostsWithComments(
     posts: PostWithMyReaction[],
     userId: string,

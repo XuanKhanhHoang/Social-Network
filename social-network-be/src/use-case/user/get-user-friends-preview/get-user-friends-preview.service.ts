@@ -6,20 +6,18 @@ import {
 import { PopulatedFriend } from 'src/domains/user/interfaces';
 import { UserDomainsService } from 'src/domains/user/user-domains.service';
 import { UserRepository } from 'src/domains/user/user.repository';
+import { BeCursorPaginated } from 'src/share/dto/res/be-paginated.dto';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 
 export interface GetUserFriendsPreviewInput {
   username: string;
   requestingUserId?: string;
   limit?: number;
-  page?: number;
+  cursor?: number;
 }
-export interface GetUserFriendsPreviewOutput {
+export interface GetUserFriendsPreviewOutput
+  extends BeCursorPaginated<PopulatedFriend> {
   total: number;
-  data: PopulatedFriend[];
-  pagination: {
-    hasNextPage: boolean;
-  };
 }
 
 @Injectable()
@@ -36,7 +34,7 @@ export class GetUserFriendsPreviewService extends BaseUseCaseService<
   async execute(
     input: GetUserFriendsPreviewInput,
   ): Promise<GetUserFriendsPreviewOutput> {
-    const { username, requestingUserId, limit, page } = input;
+    const { username, requestingUserId, limit = 9, cursor } = input;
     const profileUser =
       await this.userRepository.findUserFriendsContextByUsername(username);
 
@@ -65,17 +63,18 @@ export class GetUserFriendsPreviewService extends BaseUseCaseService<
       throw new ForbiddenException("You cannot view this user's friend list");
     }
 
-    const userWithFriends = await this.userRepository.findFriendsListById(
-      profileUser._id,
+    const userWithFriends = await this.userRepository.findFriendsList({
+      userId: profileUserIdStr,
       limit,
-      page,
-    );
+      cursor,
+    });
 
     return {
       total: profileUser.friendCount,
-      data: userWithFriends.friends,
+      data: userWithFriends.data,
       pagination: {
-        hasNextPage: userWithFriends.hasNextPage,
+        hasMore: userWithFriends.nextCursor !== null,
+        nextCursor: userWithFriends.nextCursor + '',
       },
     };
   }

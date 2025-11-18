@@ -31,3 +31,5 @@ export const EmailVerificationSchema = SchemaFactory.createForClass(
   EmailVerificationDocument,
 );
 EmailVerificationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+EmailVerificationSchema.index({ userId: 1 });
+EmailVerificationSchema.index({ email: 1 });

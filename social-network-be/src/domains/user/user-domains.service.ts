@@ -21,7 +21,15 @@ export class UserDomainsService {
 
     const profileUserIdStr = profileUser._id.toString();
     const isOwner = requestingUserId && profileUserIdStr === requestingUserId;
-
+    if (isOwner) {
+      return {
+        profileUser,
+        isOwner,
+        isFriend: false,
+        relationship: 'OWNER',
+        friendCount: profileUser.friendCount,
+      };
+    }
     const isFriend =
       !isOwner &&
       requestingUserId &&
@@ -35,7 +43,17 @@ export class UserDomainsService {
       : isFriend
         ? 'FRIEND'
         : 'PUBLIC';
-
+    if (
+      relationship === 'FRIEND' &&
+      this.canView(profileUser.privacySettings.friendList, isOwner, isFriend)
+    )
+      return {
+        profileUser,
+        isOwner,
+        isFriend,
+        relationship,
+        friendCount: profileUser.friendCount,
+      };
     return { profileUser, isOwner, isFriend, relationship };
   }
 

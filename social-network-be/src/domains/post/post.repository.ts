@@ -28,28 +28,6 @@ export class PostRepository extends ReactableRepository<PostDocument> {
   private readonly logger = new Logger(PostRepository.name);
 
   //* PIPELINE REUSABLE STAGES
-  private getAuthorLookupStage(): PipelineStage[] {
-    return [
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'author',
-          foreignField: '_id',
-          as: 'author',
-          pipeline: [
-            {
-              $project: {
-                firstName: 1,
-                lastName: 1,
-                avatar: 1,
-              },
-            },
-          ],
-        },
-      },
-      { $unwind: '$author' },
-    ];
-  }
 
   private getUserReactionStage(userId: string): PipelineStage[] {
     const userObjectId = new Types.ObjectId(userId);
@@ -99,13 +77,45 @@ export class PostRepository extends ReactableRepository<PostDocument> {
     });
     return createdPost;
   }
-  async findByCursor(
-    limit: number,
-    userId: string,
-    cursor?: PostCursorData,
-  ): Promise<PostWithMyReaction[]> {
+  async findForHomeFeed({
+    limit,
+    requestingUserId,
+    cursor,
+    authorIds,
+  }: {
+    limit: number;
+    requestingUserId: string;
+    cursor?: PostCursorData;
+    authorIds: string[];
+  }): Promise<PostWithMyReaction[]> {
     const pipeline: PipelineStage[] = [];
+
+    const requestingUserObjId = new Types.ObjectId(requestingUserId);
+
     pipeline.push({ $match: { status: PostStatus.ACTIVE } });
+
+    if (authorIds && authorIds.length > 0) {
+      pipeline.push({
+        $match: {
+          'author._id': {
+            $in: authorIds.map((id) => new Types.ObjectId(id)),
+          },
+        },
+      });
+    }
+
+    pipeline.push({
+      $match: {
+        $or: [
+          { 'author._id': requestingUserObjId },
+          {
+            'author._id': { $ne: requestingUserObjId },
+            visibility: { $in: [UserPrivacy.PUBLIC, UserPrivacy.FRIENDS] },
+          },
+        ],
+      },
+    });
+
     if (cursor) {
       pipeline.push({
         $match: {
@@ -121,14 +131,77 @@ export class PostRepository extends ReactableRepository<PostDocument> {
         },
       });
     }
+
     pipeline.push({
       $sort: {
         hotScore: -1,
         _id: -1,
       },
     });
-    pipeline.push({ $limit: limit + 1 });
-    pipeline.push(...this.getUserReactionStage(userId));
+
+    pipeline.push({ $limit: limit });
+    pipeline.push(...this.getUserReactionStage(requestingUserId));
+
+    return this.model.aggregate<PostWithMyReaction>(pipeline);
+  }
+
+  async findForUserProfile({
+    limit,
+    requestingUserId,
+    cursor,
+    authorId,
+    visibilities,
+  }: {
+    limit: number;
+    requestingUserId?: string;
+    cursor?: PostCursorData;
+    authorId: string;
+    visibilities: UserPrivacy[];
+  }): Promise<PostWithMyReaction[]> {
+    const pipeline: PipelineStage[] = [];
+
+    const authorObjId = new Types.ObjectId(authorId);
+
+    pipeline.push({ $match: { status: PostStatus.ACTIVE } });
+    pipeline.push({ $match: { 'author._id': authorObjId } });
+
+    if (visibilities && visibilities.length > 0) {
+      pipeline.push({
+        $match: {
+          visibility: { $in: visibilities },
+        },
+      });
+    }
+
+    if (cursor) {
+      pipeline.push({
+        $match: {
+          $or: [
+            { hotScore: { $lt: cursor.lastHotScore } },
+            {
+              $and: [
+                { hotScore: { $eq: cursor.lastHotScore } },
+                { _id: { $lt: new Types.ObjectId(cursor.lastId) } },
+              ],
+            },
+          ],
+        },
+      });
+    }
+
+    pipeline.push({
+      $sort: {
+        hotScore: -1,
+        _id: -1,
+      },
+    });
+
+    pipeline.push({ $limit: limit });
+
+    if (requestingUserId) {
+      pipeline.push(...this.getUserReactionStage(requestingUserId));
+    }
+
     return this.model.aggregate<PostWithMyReaction>(pipeline);
   }
   async findFullPostById(
@@ -175,14 +248,15 @@ export class PostRepository extends ReactableRepository<PostDocument> {
     userId: string,
     privacy: UserPrivacy[],
     limit: number,
-    page = 1,
+    cursor?: number,
   ): Promise<PaginatedPhotos> {
+    const skipAmount = cursor || 0;
+
     const pipeline: PipelineStage[] = [];
-    const skipAmount = (page - 1) * limit;
 
     pipeline.push({
       $match: {
-        author: new Types.ObjectId(userId),
+        'author._id': new Types.ObjectId(userId),
         status: PostStatus.ACTIVE,
         visibility: { $in: privacy },
         'media.0': { $exists: true },
@@ -211,20 +285,23 @@ export class PostRepository extends ReactableRepository<PostDocument> {
         postId: '$_id',
         caption: '$media.caption',
         order: '$media.order',
-        url: '$mediaDetail.url',
-        mediaType: '$mediaDetail.mediaType',
+        url: '$media.url',
+        mediaType: '$media.mediaType',
+        createAt: '$createdAt',
+        width: '$media.width',
+        height: '$media.height',
       },
     });
 
     const results = await this.model.aggregate<PhotoPreview>(pipeline).exec();
 
-    const hasNextPage = results.length > limit;
-
+    const hasMore = results.length > limit;
     const photos = results.slice(0, limit);
 
+    const nextCursor = hasMore ? skipAmount + photos.length : null;
     return {
       photos,
-      hasNextPage,
+      nextCursor,
     };
   }
 }

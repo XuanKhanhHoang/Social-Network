@@ -9,7 +9,10 @@ import {
   GetUserProfileService,
   GetUserPhotosService,
   GetUserHeaderService,
+  GetUserPostsService,
 } from 'src/use-case/user';
+import { GetUserPostsQueryDto } from './dto/get-user-post.dto';
+import { CursorPaginationQueryDto } from 'src/share/dto/req/cursor-pagination-query.dto';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard)
@@ -21,6 +24,7 @@ export class UserApiController {
     private readonly getUserProfileService: GetUserProfileService,
     private readonly getUserPhotosPreviewService: GetUserPhotosService,
     private readonly getUserHeaderService: GetUserHeaderService,
+    private readonly getUserPostsService: GetUserPostsService,
   ) {}
 
   @Get('me')
@@ -50,15 +54,17 @@ export class UserApiController {
   @AllowSemiPublic()
   async getFriendsPreview(
     @Param('username') username: string,
+    @Query() query: CursorPaginationQueryDto,
     @GetUserId() requestingUserId?: string,
-    @Query('limit') limit?: number,
-    @Query('page') page?: number,
   ) {
+    const { limit, cursor: cursorStr } = query;
+    const cursorN = cursorStr ? Number(cursorStr) : undefined;
+    const cursor = isNaN(cursorN) ? undefined : cursorN;
     return this.getUserFriendsPreviewService.execute({
       username,
       requestingUserId: requestingUserId,
       limit,
-      page,
+      cursor,
     });
   }
 
@@ -71,18 +77,32 @@ export class UserApiController {
     return this.getUserProfileService.execute({ username, requestingUserId });
   }
   @Get(':username/photos-preview')
-  @AllowSemiPublic()
   async getPhotosPreview(
     @Param('username') username: string,
-    @GetUserId() requestingUserId?: string,
-    @Query('limit') limit?: number,
-    @Query('page') page?: number,
+    @Query() query: CursorPaginationQueryDto,
+    @GetUserId() requestingUserId: string,
   ) {
+    const { limit, cursor: cursorStr } = query;
+    const cursorN = cursorStr ? Number(cursorStr) : undefined;
+    const cursor = isNaN(cursorN) ? undefined : cursorN;
     return this.getUserPhotosPreviewService.execute({
       username,
       requestingUserId,
       limit,
-      page,
+      cursor,
+    });
+  }
+  @Get(':username/posts')
+  @AllowSemiPublic()
+  async getPosts(
+    @Param('username') username: string,
+    @Query() query: GetUserPostsQueryDto,
+    @GetUserId() requestingUserId?: string,
+  ) {
+    return this.getUserPostsService.execute({
+      ...query,
+      userId: requestingUserId,
+      username,
     });
   }
 }

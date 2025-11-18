@@ -19,12 +19,22 @@ export class GetUserHeaderService extends BaseUseCaseService<
     input: GetUserHeaderInput,
   ): Promise<UserHeaderWithRelationship> {
     const { username, requestingUserId } = input;
-    const { profileUser, relationship } =
+    const { profileUser, relationship, friendCount } =
       await this.userDomainService.getProfileAndRelationship(
         username,
         requestingUserId,
       );
-
+    if (friendCount != undefined) {
+      return {
+        firstName: profileUser.firstName,
+        lastName: profileUser.lastName,
+        username: profileUser.username,
+        avatar: profileUser.avatar,
+        coverPhoto: profileUser.coverPhoto,
+        relationship: relationship,
+        friendCount: friendCount,
+      };
+    }
     return {
       firstName: profileUser.firstName,
       lastName: profileUser.lastName,

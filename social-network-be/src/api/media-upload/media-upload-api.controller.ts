@@ -6,6 +6,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/domains/auth/jwt-auth.guard';
@@ -30,10 +31,15 @@ export class MediaUploadApiController {
         fileSize: 200 * 1024 * 1024,
       },
       fileFilter: (req, file, cb) => {
-        if (file.mimetype.match(/\/(jpg|jpeg|png|gif|mp4|avi|mov|webm)$/)) {
+        if (
+          file.mimetype.match(/\/(jpg|jpeg|png|gif|mp4|avi|mov|webm|webp)$/)
+        ) {
           cb(null, true);
         } else {
-          cb(new Error('Only images and videos are allowed'), false);
+          cb(
+            new BadRequestException('Only images and videos are allowed'),
+            false,
+          );
         }
       },
     }),

@@ -8,9 +8,11 @@ import { GetUserPhotosService } from './get-user-photos/get-user-photos.service'
 import { UserModule } from 'src/domains/user/user.module';
 import { PostModule } from 'src/domains/post/post.module';
 import { CleanupUnverifiedAccountsListenerService } from './listeners/listeners.service';
+import { GetUserPostsService } from './get-user-posts/get-user-posts.service';
+import { CommentModule } from 'src/domains/comment/comment.module';
 
 @Module({
-  imports: [UserModule, PostModule],
+  imports: [UserModule, PostModule, CommentModule],
   providers: [
     GetMePreviewProfileService,
     GetUserHeaderService,
@@ -19,6 +21,7 @@ import { CleanupUnverifiedAccountsListenerService } from './listeners/listeners.
     GetUserProfileService,
     GetUserPhotosService,
     CleanupUnverifiedAccountsListenerService,
+    GetUserPostsService,
   ],
   exports: [
     GetMePreviewProfileService,
@@ -27,6 +30,7 @@ import { CleanupUnverifiedAccountsListenerService } from './listeners/listeners.
     GetUserFriendsPreviewService,
     GetUserProfileService,
     GetUserPhotosService,
+    GetUserPostsService,
   ],
 })
 export class UserUseCaseModule {}

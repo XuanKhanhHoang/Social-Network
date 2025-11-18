@@ -2,7 +2,7 @@ import {
   LoginResponseDto,
   RegisterRequestDto,
   RegisterResponseDto,
-  UserSummaryDto,
+  UserSummaryWithEmailDto,
   VerifyEmailResponseDto,
 } from '@/lib/dtos';
 import { ApiClient } from './api';
@@ -30,7 +30,7 @@ export const authService = {
       token,
     });
   },
-  async verifyUser(options?: RequestOptions): Promise<UserSummaryDto> {
+  async verifyUser(options?: RequestOptions): Promise<UserSummaryWithEmailDto> {
     return ApiClient.get(`${USER_PREFIX}/me`, options);
   },
 };

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types, FilterQuery } from 'mongoose';
 import {
@@ -10,7 +10,6 @@ import {
   PopulatedFriend,
   UserBasicData,
   UserFriendsContextData,
-  UserFriendsData,
   UserProfile,
 } from './interfaces';
 import { UserDocument } from 'src/schemas';
@@ -44,6 +43,16 @@ export class UserRepository extends BaseRepository<UserDocument> {
   ): Promise<UserDocument | null> {
     return this.findOne({ username }, options);
   }
+  async getIdBysUsername(
+    username: string,
+    options?: BaseQueryOptions<UserDocument>,
+  ): Promise<Types.ObjectId | null> {
+    const user = await this.findOne(
+      { username },
+      { projection: '_id', ...options },
+    );
+    return (user?._id || null) as Types.ObjectId | null;
+  }
   async findByEmailAndVerified(email: string): Promise<UserDocument | null> {
     return this.findOne(
       { email, isVerified: true },
@@ -67,31 +76,61 @@ export class UserRepository extends BaseRepository<UserDocument> {
     );
   }
 
-  async findFriendsListById(
-    userId: Types.ObjectId | string,
-    limit: number,
-    page = 1,
-  ): Promise<{ friends: PopulatedFriend[]; hasNextPage: boolean }> {
-    const user = (await this.model
-      .findById(userId)
-      .populate({
-        path: 'friends',
-        select: 'firstName lastName username avatar',
-        options: {
-          limit: limit,
-          skip: (page - 1) * limit,
-        },
-      })
-      .select('friends friendCount')
-      .lean()
-      .exec()) as unknown as UserFriendsData;
+  async findFriendsList({
+    userId,
+    limit,
+    cursor,
+  }: {
+    userId: string;
+    limit: number;
+    cursor?: number;
+  }): Promise<{
+    data: PopulatedFriend[];
+    nextCursor: number | null;
+  }> {
+    const skip = cursor || 0;
 
-    if (user.friends.length == 0) {
-      return { friends: [], hasNextPage: false };
+    const userWithPartialFriends = await this.model
+      .findById(userId)
+      .select({
+        friends: { $slice: [skip, limit] },
+      })
+      .lean()
+      .exec();
+
+    if (!userWithPartialFriends) {
+      throw new NotFoundException('User not found');
     }
 
-    const hasNextPage = page * limit < user.friendCount;
-    return { friends: user.friends, hasNextPage };
+    const friendIdsToFetch = userWithPartialFriends.friends || [];
+
+    if (friendIdsToFetch.length === 0) {
+      return { data: [], nextCursor: null };
+    }
+
+    const friendsData = (await this.model
+      .find({
+        _id: { $in: friendIdsToFetch },
+      })
+      .select('firstName lastName username avatar')
+      .lean()
+      .exec()) as unknown as PopulatedFriend[];
+
+    const friendMap = new Map<string, PopulatedFriend>();
+    friendsData.forEach((friend) =>
+      friendMap.set(friend._id.toString(), friend),
+    );
+
+    const orderedFriends = friendIdsToFetch
+      .map((id) => friendMap.get(id.toString()))
+      .filter((f) => f) as PopulatedFriend[];
+
+    const nextCursor = orderedFriends.length === limit ? skip + limit : null;
+
+    return {
+      data: orderedFriends,
+      nextCursor: nextCursor,
+    };
   }
 
   async findUserFriendsContextByUsername(

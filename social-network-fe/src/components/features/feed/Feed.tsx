@@ -1,13 +1,13 @@
 import PostCreatorManager from '../post/create/Manager';
-import PostList from '../post/list/List';
 import StoriesContainer from '../story/StoryFeed';
+import HomeFeed from './HomeFeed';
 
 function Feed() {
   return (
     <div className="bg-white w-[720px] mx-auto">
       <StoriesContainer />
       <PostCreatorManager />
-      <PostList />
+      <HomeFeed />
     </div>
   );
 }
