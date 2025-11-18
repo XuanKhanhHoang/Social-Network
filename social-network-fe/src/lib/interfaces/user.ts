@@ -134,10 +134,16 @@ export function transformToUserPreviewPhoto(photo: PhotoDto): UserPhoto {
     mediaId: photo._id,
     mediaType: photo.mediaType,
     url: photo.url,
+    width: photo.width,
+    height: photo.height,
+    createAt: photo.createdAt,
   };
 }
 export type UserPhoto = {
   mediaId: string;
   mediaType: string;
   url: string;
+  width?: number;
+  height?: number;
+  createAt: string;
 };

@@ -8,7 +8,9 @@ export interface UserSummaryDto {
   firstName: string;
   lastName: string;
 }
-
+export interface UserSummaryWithEmailDto extends UserSummaryDto {
+  email: string;
+}
 export interface GetUserHeaderResponseDto {
   firstName: string;
   lastName: string;
@@ -54,6 +56,9 @@ export interface PhotoDto {
   _id: string;
   mediaType: string;
   url: string;
+  width?: number;
+  height?: number;
+  createdAt: string;
 }
 
 export type GetUserPhotosResponseDto = CursorPaginationResponse<PhotoDto>;
