@@ -1,15 +1,26 @@
 'use client';
 import { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { useInfinitePosts } from '@/hooks/post/usePost';
 import SkeletonPostItems from './SkeletonItems';
 import PostItem from './Item';
 import { transformToPostWithTopComment } from '@/lib/interfaces/post';
+import { PostWithTopCommentDto } from '@/lib/dtos';
 
-function PostList() {
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } =
-    useInfinitePosts();
-  const posts = data?.pages.flatMap((page) => page.data) ?? [];
+interface PostListProps {
+  posts: PostWithTopCommentDto[];
+  fetchNextPage: () => void;
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  isPending: boolean;
+}
+
+function PostList({
+  posts,
+  fetchNextPage,
+  hasNextPage,
+  isFetchingNextPage,
+  isPending,
+}: PostListProps) {
   const { ref, inView } = useInView();
 
   useEffect(() => {
