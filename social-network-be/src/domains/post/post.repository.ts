@@ -287,6 +287,9 @@ export class PostRepository extends ReactableRepository<PostDocument> {
         order: '$media.order',
         url: '$media.url',
         mediaType: '$media.mediaType',
+        createAt: '$createdAt',
+        width: '$media.width',
+        height: '$media.height',
       },
     });
 
@@ -296,7 +299,6 @@ export class PostRepository extends ReactableRepository<PostDocument> {
     const photos = results.slice(0, limit);
 
     const nextCursor = hasMore ? skipAmount + photos.length : null;
-
     return {
       photos,
       nextCursor,

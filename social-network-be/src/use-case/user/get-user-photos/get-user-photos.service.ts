@@ -8,7 +8,7 @@ import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 
 export interface GetUserPhotosInput {
   username: string;
-  requestingUserId?: string;
+  requestingUserId: string;
   limit?: number;
   cursor?: number;
 }
@@ -30,17 +30,15 @@ export class GetUserPhotosService extends BaseUseCaseService<
   async execute(input: GetUserPhotosInput): Promise<GetUserPhotosOutput> {
     const { username, requestingUserId, limit = 9, cursor } = input;
     const userPrivacies: UserPrivacy[] = [UserPrivacy.PUBLIC];
-    let userId: string | undefined;
-    if (requestingUserId) {
-      userId = (await this.userRepo.getIdBysUsername(username)).toString();
-      if (!userId) throw new NotFoundException('User not found');
-      if (requestingUserId == userId) {
-        userPrivacies.push(UserPrivacy.PRIVATE, UserPrivacy.FRIENDS);
-      } else if (
-        await this.userRepo.areFriends(userId as string, requestingUserId)
-      ) {
-        userPrivacies.push(UserPrivacy.FRIENDS);
-      }
+    let userId = (await this.userRepo.getIdBysUsername(username)).toString();
+    if (!userId) throw new NotFoundException('User not found');
+
+    if (requestingUserId == userId) {
+      userPrivacies.push(UserPrivacy.PRIVATE, UserPrivacy.FRIENDS);
+    } else if (
+      await this.userRepo.areFriends(userId as string, requestingUserId)
+    ) {
+      userPrivacies.push(UserPrivacy.FRIENDS);
     }
 
     const res = await this.postRepo.findPhotosForUser(

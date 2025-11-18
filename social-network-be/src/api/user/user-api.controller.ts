@@ -77,11 +77,10 @@ export class UserApiController {
     return this.getUserProfileService.execute({ username, requestingUserId });
   }
   @Get(':username/photos-preview')
-  @AllowSemiPublic()
   async getPhotosPreview(
     @Param('username') username: string,
     @Query() query: CursorPaginationQueryDto,
-    @GetUserId() requestingUserId?: string,
+    @GetUserId() requestingUserId: string,
   ) {
     const { limit, cursor: cursorStr } = query;
     const cursorN = cursorStr ? Number(cursorStr) : undefined;

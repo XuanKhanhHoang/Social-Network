@@ -54,6 +54,9 @@ export interface PhotoPreview {
   order: number;
   url: string;
   mediaType: string;
+  createAt: Date;
+  width: number;
+  height: number;
 }
 export interface PaginatedPhotos {
   photos: PhotoPreview[];
