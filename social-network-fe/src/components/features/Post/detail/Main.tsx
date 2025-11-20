@@ -20,6 +20,7 @@ import { useReplyStore } from '@/store/reply-comments/reply.store';
 import { Color, TextStyle } from '@tiptap/extension-text-style';
 import TextAlign from '@tiptap/extension-text-align';
 import PostDetailCommentsSection from './CommentsSection';
+import { cn } from '@/lib/utils';
 
 export type PostDetailProps = {
   post?: PostWithMyReaction;
@@ -68,6 +69,27 @@ export default function PostDetail({
   const editorPlaceholder = isReplying
     ? `Trả lời ${replyingTo.comment.author.firstName}...`
     : 'Viết bình luận...';
+
+  const dialogContentClasses = cn(
+    'p-0 gap-0 border-0 data-[state=open]:animate-none data-[state=closed]:animate-none overflow-hidden outline-none',
+    hasMedia
+      ? [
+          'w-[100vw] h-[100dvh] max-w-none rounded-none',
+          'md:w-[95vw] md:h-[90vh] md:max-w-[1600px] md:rounded-lg',
+        ]
+      : 'w-full max-w-2xl h-fit max-h-[90vh] rounded-lg'
+  );
+
+  const sidebarClasses = cn(
+    'bg-white flex flex-col border-l flex-shrink-0 h-full overflow-hidden',
+    hasMedia ? 'w-full h-[60%] md:h-full md:w-[400px] lg:w-[450px]' : 'w-full'
+  );
+
+  const mainLayoutClasses = cn(
+    'flex w-full h-full overflow-hidden',
+    hasMedia ? 'flex-col md:flex-row' : ''
+  );
+
   return (
     <>
       {createPortal(
@@ -81,9 +103,7 @@ export default function PostDetail({
       )}
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
         <DialogContent
-          className={`${
-            hasMedia ? '!max-w-7xl w-[90vw]' : '!max-w-2xl w-full'
-          } !h-[90vh] !max-h-[90vh] p-0 gap-0 border-0 data-[state=open]:animate-none data-[state=closed]:animate-none overflow-hidden`}
+          className={dialogContentClasses}
           showCloseButton={false}
           onInteractOutside={(e) => {
             if (
@@ -96,9 +116,10 @@ export default function PostDetail({
           <DialogTitle className="sr-only">
             Post by {post.author.firstName}
           </DialogTitle>
-          <div className="flex w-full h-full overflow-hidden">
+
+          <div className={mainLayoutClasses}>
             {hasMedia && (
-              <div className="flex-1 bg-black flex items-center justify-center">
+              <div className="bg-black flex items-center justify-center flex-shrink-0 relative overflow-hidden w-full h-[40%] md:h-full md:flex-1">
                 <MediasViewer
                   media={post.media!}
                   currentIndex={currentMediaIndex}
@@ -108,11 +129,7 @@ export default function PostDetail({
               </div>
             )}
 
-            <div
-              className={`${
-                hasMedia ? 'w-96' : 'w-full'
-              } bg-white flex flex-col border-l flex-shrink-0 h-full overflow-hidden`}
-            >
+            <div className={sidebarClasses}>
               <PostDetailHeader post={post} />
 
               <div className="flex-1 flex flex-col min-h-0">
@@ -122,6 +139,7 @@ export default function PostDetail({
                       <ExpandableContent html={contentHtml} maxHeight={320} />
                     )}
                   </div>
+
                   <div className="border-y flex-shrink-0 px-4 py-2">
                     <div className="flex items-center space-x-6 text-gray-500 ">
                       <PostReactionButton
@@ -144,6 +162,7 @@ export default function PostDetail({
                       </button>
                     </div>
                   </div>
+
                   <PostDetailCommentsSection postId={post.id} post={post} />
                 </ScrollArea>
               </div>
