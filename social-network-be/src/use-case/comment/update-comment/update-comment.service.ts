@@ -117,7 +117,7 @@ export class UpdateCommentService extends BaseUseCaseService<
       this.eventEmitter.emit(CommentEvents.updated, newComment);
       if (deletedMedia)
         this.mediaUploadService
-          .deleteFromCloudByMediaId(deletedMedia.mediaId)
+          .deleteFromCloudByMediaId(deletedMedia.mediaId.toString())
           .catch((error) => {
             this.logger.error('Unexpected error in cloud cleanup', error);
           });
