@@ -8,19 +8,20 @@ import {
   UpdateResult,
 } from 'mongoose';
 import { ReactableRepository } from 'src/share/base-class/reactable-repository.service';
-import {
-  CreatePostData,
-  PaginatedPhotos,
-  PhotoPreview,
-  PostCursorData,
-  PostWithMyReaction,
-} from './interfaces/post.type';
 import { PostStatus, UserPrivacy } from 'src/share/enums';
 import { PostDocument } from 'src/schemas';
+import {
+  CreatePostData,
+  FindPhotosForUserResults,
+  FindPostForHomeFeedData,
+  PostCursorData,
+  PostPhotoModel,
+  PostWithMyReactionModel,
+} from './interfaces';
 @Injectable()
 export class PostRepository extends ReactableRepository<PostDocument> {
   constructor(
-    @InjectModel(PostDocument.name)
+    @InjectModel('Post')
     protected readonly model: Model<PostDocument>,
   ) {
     super(model);

@@ -6,7 +6,7 @@ import { ReactionDocument, ReactionSchema } from 'src/schemas';
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: ReactionDocument.name, schema: ReactionSchema },
+      { name: 'Reaction', schema: ReactionSchema },
     ]),
   ],
   providers: [ReactionService],

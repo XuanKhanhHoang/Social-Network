@@ -21,7 +21,7 @@ export class MediaUploadService {
 
   constructor(
     @Inject('CLOUDINARY') private cloudinaryInstance: typeof cloudinary,
-    @InjectModel(MediaUploadDocument.name)
+    @InjectModel('MediaUpload')
     private mediaModel: Model<MediaUploadDocument>,
   ) {}
 

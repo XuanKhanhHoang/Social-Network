@@ -8,21 +8,22 @@ import {
   UpdateQuery,
 } from 'mongoose';
 import { ReactionTargetType } from 'src/share/enums';
-import {
-  Comment,
-  CommentCursorData,
-  CreateCommentData,
-  ReplyComment,
-  ReplyCursorData,
-  UpdateCommentData,
-} from './interfaces/comment.type';
+
 import { ReactableRepository } from 'src/share/base-class/reactable-repository.service';
 import { CommentDocument } from 'src/schemas';
+import {
+  CommentCursorData,
+  CommentWithMyReactionAndPriorityModel,
+  CommentWithMyReactionModel,
+  CreateCommentData,
+  ReplyCursorData,
+  UpdateCommentData,
+} from './interfaces';
 
 @Injectable()
 export class CommentRepository extends ReactableRepository<CommentDocument> {
   constructor(
-    @InjectModel(CommentDocument.name)
+    @InjectModel('Comment')
     protected readonly model: Model<CommentDocument>,
   ) {
     super(model);
