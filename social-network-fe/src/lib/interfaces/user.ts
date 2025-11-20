@@ -1,16 +1,23 @@
-import { VisibilityPrivacy } from '../constants/enums';
+import { Gender, VisibilityPrivacy } from '../constants/enums';
 import {
+  GetAccountResponseDto,
   GetUserBioResponseDto,
   GetUserHeaderResponseDto,
   GetUserProfileResponseDto,
   PhotoDto,
+  UserSummaryWithAvatarUrlDto,
 } from '../dtos';
 
 export function transformToUserSummary(
   user: unknown & {
     _id: string;
     username: string;
-    avatar?: string;
+    avatar?: {
+      url: string;
+      width?: number;
+      height?: number;
+      mediaId?: string;
+    };
     firstName: string;
     lastName: string;
   }
@@ -28,7 +35,12 @@ export function transformToUserSummaryWithEmail(
   user: unknown & {
     _id: string;
     username: string;
-    avatar?: string;
+    avatar?: {
+      url: string;
+      width?: number;
+      height?: number;
+      mediaId?: string;
+    };
     firstName: string;
     lastName: string;
     email: string;
@@ -42,10 +54,26 @@ export function transformToUserSummaryWithEmail(
 export interface UserSummary {
   id: string;
   username: string;
-  avatar?: string;
+  avatar?: {
+    url: string;
+    width?: number;
+    height?: number;
+    mediaId?: string;
+  };
   firstName: string;
   lastName: string;
   fullName: string;
+}
+export type UserSummaryWidthAvatarUrl = Omit<UserSummary, 'avatar'> & {
+  avatar?: string;
+};
+export function transformToUserSummaryWidthAvatarUrl(
+  user: UserSummaryWithAvatarUrlDto
+): UserSummaryWidthAvatarUrl {
+  return {
+    ...transformToUserSummary({ ...user, avatar: undefined }),
+    avatar: user.avatar,
+  };
 }
 export interface UserSummaryWithEmail extends UserSummary {
   email: string;
@@ -68,8 +96,18 @@ export interface UserHeader {
   firstName: string;
   lastName: string;
   username: string;
-  avatar?: string;
-  coverPhoto?: string;
+  avatar?: {
+    url: string;
+    width?: number;
+    height?: number;
+    mediaId?: string;
+  };
+  coverPhoto?: {
+    url: string;
+    width?: number;
+    height?: number;
+    mediaId?: string;
+  };
   headerType: 'PUBLIC' | 'FRIEND' | 'OWNER';
   friendCount?: number;
 }
@@ -105,8 +143,18 @@ export type UserProfile = {
   firstName: string;
   lastName: string;
   username: string;
-  avatar?: string;
-  coverPhoto?: string;
+  avatar?: {
+    url: string;
+    width?: number;
+    height?: number;
+    mediaId?: string;
+  };
+  coverPhoto?: {
+    url: string;
+    width?: number;
+    height?: number;
+    mediaId?: string;
+  };
   bio?: string;
   work?: string;
   currentLocation?: string;

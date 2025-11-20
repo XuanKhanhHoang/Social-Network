@@ -1,5 +1,8 @@
 import { ReactionsBreakdown } from './reaction';
-import { transformToUserSummary, UserSummary } from './user';
+import {
+  transformToUserSummaryWidthAvatarUrl,
+  UserSummaryWidthAvatarUrl,
+} from './user';
 import { MediaType, ReactionType } from '../constants/enums';
 import { JSONContent } from '@tiptap/react';
 import { CommentDto, CommentWithMyReactionDto } from '../dtos';
@@ -15,7 +18,7 @@ export function transformToComment(comment: CommentDto): Comment {
   return {
     id: comment._id,
     postId: comment.postId,
-    author: transformToUserSummary(comment.author),
+    author: transformToUserSummaryWidthAvatarUrl(comment.author),
     content: comment.content,
     media,
     parentId: comment.parentId,
@@ -38,7 +41,7 @@ export function transformToCommentWithMyReaction(
 export interface Comment {
   id: string;
   postId: string;
-  author: UserSummary;
+  author: UserSummaryWidthAvatarUrl;
   content: JSONContent;
   media?: CommentMedia;
   parentId?: string;

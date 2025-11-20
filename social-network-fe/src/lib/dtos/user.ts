@@ -1,22 +1,43 @@
+import { Gender } from '../constants/enums';
 import { VisibilityPrivacy } from '../constants/enums/visibility-privacy';
+import { PrivacySettings } from '../interfaces/user';
 import { CursorPaginationResponse } from './common/pagination';
 
 export interface UserSummaryDto {
   _id: string;
   username: string;
-  avatar?: string;
+  avatar?: {
+    url: string;
+    width?: number;
+    height?: number;
+    mediaId?: string;
+  };
   firstName: string;
   lastName: string;
 }
 export interface UserSummaryWithEmailDto extends UserSummaryDto {
   email: string;
 }
+export type UserSummaryWithAvatarUrlDto = Omit<UserSummaryDto, 'avatar'> & {
+  avatar?: string;
+};
+
 export interface GetUserHeaderResponseDto {
   firstName: string;
   lastName: string;
   username: string;
-  avatar?: string;
-  coverPhoto?: string;
+  avatar?: {
+    url: string;
+    width?: number;
+    height?: number;
+    mediaId?: string;
+  };
+  coverPhoto?: {
+    url: string;
+    width?: number;
+    height?: number;
+    mediaId?: string;
+  };
   relationship: 'PUBLIC' | 'FRIEND' | 'OWNER';
   friendCount?: number;
 }
@@ -31,8 +52,18 @@ export interface GetUserProfileResponseDto {
   firstName: string;
   lastName: string;
   username: string;
-  avatar?: string;
-  coverPhoto?: string;
+  avatar?: {
+    url: string;
+    width?: number;
+    height?: number;
+    mediaId?: string;
+  };
+  coverPhoto?: {
+    url: string;
+    width?: number;
+    height?: number;
+    mediaId?: string;
+  };
   bio?: string;
   work?: string;
   currentLocation?: string;

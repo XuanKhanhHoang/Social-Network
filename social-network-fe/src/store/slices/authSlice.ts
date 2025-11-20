@@ -5,7 +5,12 @@ export interface StoreUser {
   firstName: string;
   lastName: string;
   email: string;
-  avatar?: string;
+  avatar?: {
+    url: string;
+    width?: number;
+    height?: number;
+    mediaId?: string;
+  };
   username: string;
 }
 export function transformToStoreUser(
@@ -14,7 +19,12 @@ export function transformToStoreUser(
     firstName: string;
     lastName: string;
     email: string;
-    avatar?: string;
+    avatar?: {
+      url: string;
+      width?: number;
+      height?: number;
+      mediaId?: string;
+    };
     username: string;
   }
 ): StoreUser {
