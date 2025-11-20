@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { UserHeaderWithRelationship } from 'src/domains/user/interfaces';
 import { UserDomainsService } from 'src/domains/user/user-domains.service';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 
@@ -7,17 +6,16 @@ export interface GetUserHeaderInput {
   username: string;
   requestingUserId?: string;
 }
+export interface GetUserHeaderOutput {}
 @Injectable()
 export class GetUserHeaderService extends BaseUseCaseService<
   GetUserHeaderInput,
-  UserHeaderWithRelationship
+  GetUserHeaderOutput
 > {
   constructor(private readonly userDomainService: UserDomainsService) {
     super();
   }
-  async execute(
-    input: GetUserHeaderInput,
-  ): Promise<UserHeaderWithRelationship> {
+  async execute(input: GetUserHeaderInput): Promise<GetUserHeaderOutput> {
     const { username, requestingUserId } = input;
     const { profileUser, relationship, friendCount } =
       await this.userDomainService.getProfileAndRelationship(

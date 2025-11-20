@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UserBio } from 'src/domains/user/interfaces';
+import { UserBioModel } from 'src/domains/user/interfaces';
 import { UserDomainsService } from 'src/domains/user/user-domains.service';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 
@@ -7,7 +7,11 @@ export interface GetUserBioInput {
   username: string;
   requestingUserId?: string;
 }
-export interface GetUserBioOutput extends UserBio {}
+export interface GetUserBioOutput {
+  bio?: string;
+  work?: string;
+  currentLocation?: string;
+}
 
 @Injectable()
 export class GetUserBioService extends BaseUseCaseService<
@@ -26,7 +30,7 @@ export class GetUserBioService extends BaseUseCaseService<
       );
 
     const settings = profileUser.privacySettings;
-    const response: UserBio = {
+    const response: Partial<UserBioModel> = {
       bio: profileUser.bio,
     };
 
