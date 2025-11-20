@@ -49,13 +49,13 @@ const SidebarFooter = () => {
   return (
     <div className="border-t border-gray-100 px-6 py-4">
       <div className="flex gap-4 text-xs">
-        <a
-          href="#"
+        <Link
+          href="/settings/profile"
           className="text-gray-400 hover:text-indigo-500 transition-colors flex items-center"
         >
           <Settings className="w-4 h-4 mr-1" />
           Cài đặt
-        </a>
+        </Link>
         <button
           onClick={() => logout()}
           className="text-gray-400 hover:text-indigo-500 transition-colors flex items-center cursor-pointer"
