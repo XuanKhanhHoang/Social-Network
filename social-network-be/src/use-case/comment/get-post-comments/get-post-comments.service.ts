@@ -1,9 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { Types } from 'mongoose';
 import { CommentRepository } from 'src/domains/comment/comment.repository';
 import {
-  Comment,
   CommentCursorData,
-} from 'src/domains/comment/interfaces/comment.type';
+  CommentWithMyReactionAndPriorityModel,
+} from 'src/domains/comment/interfaces';
+
 import { BeCursorPaginated } from 'src/share/dto/res/be-paginated.dto';
 import {
   decodeCursor,
@@ -17,7 +19,9 @@ export type GetPostCommentsInput = {
   limit?: number;
   cursor?: string;
 };
-export type GetPostCommentsOutput = BeCursorPaginated<Comment>;
+export type GetPostCommentsOutput = BeCursorPaginated<
+  CommentWithMyReactionAndPriorityModel<Types.ObjectId, string>
+>;
 @Injectable()
 export class GetPostCommentsService
   implements BaseUseCaseService<GetPostCommentsInput, GetPostCommentsOutput>
