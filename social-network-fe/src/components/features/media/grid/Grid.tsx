@@ -1,11 +1,15 @@
-// components/media/common/MediaGrid.tsx
 'use client';
 
 import React from 'react';
 
 type MediaGridProps<T> = {
   media: T[];
-  renderItem: (item: T, index: number, className: string) => React.ReactNode;
+  renderItem: (
+    item: T,
+    index: number,
+    className: string,
+    sizes: string
+  ) => React.ReactNode;
 };
 
 export function MediaGrid<T>({ media, renderItem }: MediaGridProps<T>) {
@@ -17,15 +21,22 @@ export function MediaGrid<T>({ media, renderItem }: MediaGridProps<T>) {
   switch (media.length) {
     case 1:
       return (
-        <div className=" rounded-xs">{renderItem(media[0], 0, 'w-full')}</div>
+        <div className="rounded-xs">
+          {renderItem(media[0], 0, 'w-full', '(max-width: 768px) 100vw, 60vw')}
+        </div>
       );
 
     case 2:
       return (
-        <div className="grid grid-cols-2 gap-0.5  rounded-xs">
+        <div className="grid grid-cols-2 gap-0.5 rounded-xs">
           {displayMedia.map((item, index) => (
             <div key={index} className="w-full aspect-square">
-              {renderItem(item, index, 'w-full h-full')}
+              {renderItem(
+                item,
+                index,
+                'w-full h-full',
+                '(max-width: 768px) 50vw, 30vw'
+              )}
             </div>
           ))}
         </div>
@@ -33,23 +44,43 @@ export function MediaGrid<T>({ media, renderItem }: MediaGridProps<T>) {
 
     case 3:
       return (
-        <div className="grid grid-cols-5 gap-0.5  rounded-xs aspect-[4/3]">
+        <div className="grid grid-cols-5 gap-0.5 rounded-xs aspect-[4/3]">
           <div className="col-span-3">
-            {renderItem(displayMedia[0], 0, 'w-full h-full')}
+            {renderItem(
+              displayMedia[0],
+              0,
+              'w-full h-full',
+              '(max-width: 768px) 100vw, 40vw'
+            )}
           </div>
           <div className="col-span-2 grid grid-rows-2 gap-0.5">
-            {renderItem(displayMedia[1], 1, 'w-full h-full')}
-            {renderItem(displayMedia[2], 2, 'w-full h-full')}
+            {renderItem(
+              displayMedia[1],
+              1,
+              'w-full h-full',
+              '(max-width: 768px) 50vw, 20vw'
+            )}
+            {renderItem(
+              displayMedia[2],
+              2,
+              'w-full h-full',
+              '(max-width: 768px) 50vw, 20vw'
+            )}
           </div>
         </div>
       );
 
     case 4:
       return (
-        <div className="grid grid-cols-2 gap-0.5  rounded-xs">
+        <div className="grid grid-cols-2 gap-0.5 rounded-xs">
           {displayMedia.map((item, index) => (
             <div key={index} className="w-full aspect-square">
-              {renderItem(item, index, 'w-full h-full')}
+              {renderItem(
+                item,
+                index,
+                'w-full h-full',
+                '(max-width: 768px) 50vw, 25vw'
+              )}
             </div>
           ))}
         </div>
@@ -57,18 +88,43 @@ export function MediaGrid<T>({ media, renderItem }: MediaGridProps<T>) {
 
     case 5:
       return (
-        <div className=" rounded-xs aspect-[3/2]">
+        <div className="rounded-xs aspect-[3/2]">
           <div className="grid grid-cols-8 gap-0.5 h-full">
             <div className="col-span-3">
-              {renderItem(displayMedia[0], 0, 'w-full h-full')}
+              {renderItem(
+                displayMedia[0],
+                0,
+                'w-full h-full',
+                '(max-width: 768px) 50vw, 25vw'
+              )}
             </div>
             <div className="col-span-3">
-              {renderItem(displayMedia[1], 1, 'w-full h-full')}
+              {renderItem(
+                displayMedia[1],
+                1,
+                'w-full h-full',
+                '(max-width: 768px) 50vw, 25vw'
+              )}
             </div>
             <div className="col-span-2 grid grid-rows-3 gap-0.5">
-              {renderItem(displayMedia[2], 2, 'w-full h-full')}
-              {renderItem(displayMedia[3], 3, 'w-full h-full')}
-              {renderItem(displayMedia[4], 4, 'w-full h-full')}
+              {renderItem(
+                displayMedia[2],
+                2,
+                'w-full h-full',
+                '(max-width: 768px) 33vw, 15vw'
+              )}
+              {renderItem(
+                displayMedia[3],
+                3,
+                'w-full h-full',
+                '(max-width: 768px) 33vw, 15vw'
+              )}
+              {renderItem(
+                displayMedia[4],
+                4,
+                'w-full h-full',
+                '(max-width: 768px) 33vw, 15vw'
+              )}
             </div>
           </div>
         </div>
@@ -76,15 +132,25 @@ export function MediaGrid<T>({ media, renderItem }: MediaGridProps<T>) {
 
     default:
       return (
-        <div className=" rounded-xs">
+        <div className="rounded-xs">
           <div className="grid grid-cols-3 gap-0.5">
             {displayMedia.slice(0, 5).map((item, index) => (
               <div key={index} className="w-full aspect-square">
-                {renderItem(item, index, 'w-full h-full')}
+                {renderItem(
+                  item,
+                  index,
+                  'w-full h-full',
+                  '(max-width: 768px) 33vw, 20vw'
+                )}
               </div>
             ))}
             <div className="relative w-full aspect-square">
-              {renderItem(displayMedia[5], 5, 'w-full h-full')}
+              {renderItem(
+                displayMedia[5],
+                5,
+                'w-full h-full',
+                '(max-width: 768px) 33vw, 20vw'
+              )}
               {remainingCount > 0 && (
                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center cursor-pointer">
                   <span className="text-white font-semibold text-xl">
