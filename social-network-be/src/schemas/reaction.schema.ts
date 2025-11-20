@@ -1,11 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { ReactionTargetType, ReactionType } from 'src/share/enums';
-import { UserDocument } from './user.schema';
 
 @Schema({ timestamps: true, collection: 'reactions' })
 export class ReactionDocument extends Document {
-  @Prop({ type: Types.ObjectId, ref: UserDocument.name, required: true })
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   user: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, required: true })
