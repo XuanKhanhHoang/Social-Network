@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { SubMediaModel } from 'src/domains/media-upload/interfaces/media';
 import { UserRepository } from 'src/domains/user/user.repository';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 
@@ -9,7 +10,7 @@ export interface GetMePreviewProfileOutput {
   firstName: string;
   lastName: string;
   username: string;
-  avatar: string;
+  avatar: SubMediaModel<string> | null;
 }
 
 @Injectable()
@@ -24,6 +25,18 @@ export class GetMePreviewProfileService extends BaseUseCaseService<
     input: GetMePreviewProfileInput,
   ): Promise<GetMePreviewProfileOutput> {
     const { userId } = input;
-    return this.userRepository.findByIdBasic(userId);
+    const res = await this.userRepository.findByIdBasic(userId);
+    return {
+      firstName: res.firstName,
+      lastName: res.lastName,
+      username: res.username,
+      avatar: {
+        mediaId: res.avatar?.mediaId.toString(),
+        url: res.avatar?.url,
+        width: res.avatar?.width,
+        height: res.avatar?.height,
+        mediaType: res.avatar?.mediaType,
+      },
+    };
   }
 }
