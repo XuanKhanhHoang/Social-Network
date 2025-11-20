@@ -195,3 +195,29 @@ export type UserPhoto = {
   height?: number;
   createAt: string;
 };
+export function transformToUserAccount(
+  user: GetAccountResponseDto
+): UserAccount {
+  return {
+    id: user._id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    username: user.username,
+    email: user.email,
+    phoneNumber: user.phoneNumber,
+    birthDate: user.birthDate,
+    gender: user.gender,
+    privacy: user.privacy,
+  };
+}
+export type UserAccount = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+  phoneNumber: string | null;
+  birthDate: Date;
+  gender: Gender;
+  privacy: PrivacySettings;
+};

@@ -93,3 +93,51 @@ export interface PhotoDto {
 }
 
 export type GetUserPhotosResponseDto = CursorPaginationResponse<PhotoDto>;
+
+export interface UpdateProfileRequestDto {
+  avatar?: string | null;
+  coverPhoto?: string | null;
+  bio?: string;
+  work?: string;
+  currentLocation?: string;
+}
+
+export interface UpdateProfileResponseDto {
+  _id: string;
+  avatar?: string | null;
+  coverPhoto?: string | null;
+  bio?: string;
+  work?: string;
+  currentLocation?: string;
+  username: string;
+}
+export interface GetAccountResponseDto {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+  phoneNumber: string | null;
+  birthDate: Date;
+  gender: Gender;
+  privacy: PrivacySettings;
+}
+export interface UpdateAccountResponseDto {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+  phoneNumber: string | null;
+  birthDate: Date;
+  gender: Gender;
+  privacy: PrivacySettings;
+}
+export interface UpdateAccountRequestDto {
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string | null;
+  birthDate?: Date;
+  gender?: Gender;
+  privacy?: Partial<PrivacySettings>;
+}

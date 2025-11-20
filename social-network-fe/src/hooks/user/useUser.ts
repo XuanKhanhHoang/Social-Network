@@ -1,11 +1,24 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { userService } from '@/services/user';
 import { QUERY_KEY } from '@/lib/constants/query-key';
 import {
   transformAndGetUserProfile,
-  transformToUserBio,
+  transformToUserAccount,
   transformToUserHeader,
 } from '@/lib/interfaces/user';
+import {
+  GetUserHeaderResponseDto,
+  GetUserProfileResponseDto,
+  UpdateAccountRequestDto,
+  UpdateAccountResponseDto,
+  UpdateProfileRequestDto,
+  UpdateProfileResponseDto,
+} from '@/lib/dtos';
 
 export const userKeys = {
   all: [QUERY_KEY.USER] as const,
@@ -14,12 +27,11 @@ export const userKeys = {
   header: (username: string) => [...userKeys.headers(), username] as const,
   profiles: () => [...userKeys.all, 'profile'] as const,
   profile: (username: string) => [...userKeys.profiles(), username] as const,
-  bios: () => [...userKeys.all, 'bio'] as const,
-  bio: (username: string) => [...userKeys.bios(), username] as const,
   friends: () => [...userKeys.all, 'friends'] as const,
   friend: (username: string) => [...userKeys.friends(), username] as const,
   photos: () => [...userKeys.all, 'photos'] as const,
   photo: (username: string) => [...userKeys.photos(), username] as const,
+  account: () => [...userKeys.all, 'account'] as const,
 };
 
 export const useUserHeader = (username: string) => {
@@ -36,15 +48,6 @@ export const useUserProfile = (username: string) => {
     queryKey: userKeys.profile(username),
     queryFn: () => userService.getProfile(username),
     select: (res) => transformAndGetUserProfile(res),
-    enabled: !!username,
-  });
-};
-
-export const useUserBio = (username: string) => {
-  return useQuery({
-    queryKey: userKeys.bio(username),
-    queryFn: () => userService.getBio(username),
-    select: (res) => transformToUserBio(res),
     enabled: !!username,
   });
 };
@@ -71,5 +74,86 @@ export const useUserFriendsPreview = (username: string) => {
     },
     initialPageParam: undefined,
     enabled: !!username,
+  });
+};
+export const useGetAccount = () => {
+  return useQuery({
+    queryKey: userKeys.account(),
+    queryFn: () => userService.getAccount(),
+    select: (r) => transformToUserAccount(r),
+  });
+};
+export const useUpdateAccount = (username: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: UpdateAccountRequestDto) =>
+      userService.updateAccount(data),
+    onSuccess: (data: UpdateAccountResponseDto) => {
+      queryClient.setQueryData(
+        userKeys.account(),
+        transformToUserAccount(data)
+      );
+      queryClient.setQueryData(
+        userKeys.header(username),
+        (oldData: GetUserHeaderResponseDto) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            firstName: data.firstName,
+            lastName: data.lastName,
+          } as GetUserHeaderResponseDto;
+        }
+      );
+      queryClient.setQueryData(
+        userKeys.profile(username),
+        (oldData: GetUserProfileResponseDto) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            firstName: data.firstName,
+            lastName: data.lastName,
+          } as GetUserProfileResponseDto;
+        }
+      );
+    },
+  });
+};
+export const useUpdateUserProfile = (username: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: UpdateProfileRequestDto) =>
+      userService.updateUserProfile(username, data),
+    onSuccess: (data: UpdateProfileResponseDto) => {
+      const { _id, avatar, coverPhoto, bio, work, currentLocation, username } =
+        data;
+      queryClient.setQueryData(
+        userKeys.header(username),
+        (oldData: GetUserHeaderResponseDto) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            avatar,
+            coverPhoto,
+            bio,
+            work,
+            currentLocation,
+          } as GetUserHeaderResponseDto;
+        }
+      );
+      queryClient.setQueryData(
+        userKeys.profile(username),
+        (oldData: GetUserProfileResponseDto) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            avatar,
+            coverPhoto,
+            bio,
+            work,
+            currentLocation,
+          } as GetUserProfileResponseDto;
+        }
+      );
+    },
   });
 };
