@@ -9,7 +9,7 @@ export abstract class ReactableRepository<
     id: string,
     reactionType: ReactionType,
     session?: ClientSession,
-  ): Promise<T | null> {
+  ): Promise<T | Pick<T, keyof T> | null> {
     return this.updateByIdAndGet(
       id,
       {
@@ -26,7 +26,7 @@ export abstract class ReactableRepository<
     oldReactionType: ReactionType,
     newReactionType: ReactionType,
     session?: ClientSession,
-  ): Promise<T | null> {
+  ): Promise<T | Pick<T, keyof T> | null> {
     const oldReactionFieldKey = `reactionsBreakdown.${oldReactionType}`;
     const oldReactionFieldRef = `$${oldReactionFieldKey}`;
     const newReactionFieldKey = `reactionsBreakdown.${newReactionType}`;
@@ -50,7 +50,7 @@ export abstract class ReactableRepository<
     id: string,
     reactionType: ReactionType,
     session?: ClientSession,
-  ): Promise<T | null> {
+  ): Promise<T | Pick<T, keyof T> | null> {
     const reactionFieldKey = `reactionsBreakdown.${reactionType}`;
     const reactionFieldRef = `$${reactionFieldKey}`;
     const updatePipeline = [
