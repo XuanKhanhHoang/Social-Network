@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import mongoose, { Document, Types } from 'mongoose';
 import { Gender, UserPrivacy } from 'src/share/enums';
+import { SubMedia } from './sub-comment-media.schema';
 
 @Schema({ _id: false })
 export class PrivacySettings {
@@ -27,6 +28,7 @@ export class PrivacySettings {
 }
 
 const PrivacySettingsSchema = SchemaFactory.createForClass(PrivacySettings);
+
 @Schema({ timestamps: true, collection: 'users' })
 export class UserDocument extends Document {
   @Prop({ required: true })
@@ -59,11 +61,11 @@ export class UserDocument extends Document {
   @Prop({ required: true, enum: Gender })
   gender: Gender;
 
-  @Prop({ default: '' })
-  avatar: string;
+  @Prop({ default: null, type: SubMedia })
+  avatar: SubMedia;
 
-  @Prop({ default: '' })
-  coverPhoto: string;
+  @Prop({ default: null, type: SubMedia })
+  coverPhoto: SubMedia;
 
   @Prop({ default: false })
   isVerified: boolean;
@@ -78,7 +80,7 @@ export class UserDocument extends Document {
   currentLocation: string;
 
   @Prop({
-    type: [{ type: Types.ObjectId, ref: UserDocument.name }],
+    type: [{ type: Types.ObjectId, ref: 'User' }],
     default: [],
   })
   friends: Types.ObjectId[];
@@ -104,3 +106,5 @@ UserSchema.index(
     },
   },
 );
+
+mongoose.model('User', UserSchema);
