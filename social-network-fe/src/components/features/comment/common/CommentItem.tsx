@@ -1,6 +1,5 @@
 'use-client';
 import { useState } from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { timeAgo } from '@/lib/utils/time';
 import { generateHTML } from '@tiptap/react';
@@ -14,6 +13,7 @@ import {
 } from '@/lib/interfaces/comment';
 import { useReplyStore } from '@/store/reply-comments/reply.store';
 import ContainedMedia from '../../media/common/ContainedMedia';
+import { UserAvatar } from '@/components/ui/user-avatar';
 
 type CommentItemProps = {
   comment: CommentWithMyReaction;
@@ -48,16 +48,14 @@ export default function CommentItem({
   return (
     <div className="flex gap-3 mb-0">
       <div style={indentationStyle}>
-        <Avatar className="w-8 h-8">
-          <AvatarImage src={comment.author.avatar} />
-          <AvatarFallback>
-            {comment.author.firstName[0]?.toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+        <UserAvatar
+          name={comment.author.firstName}
+          src={comment.author.avatar}
+        />
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className="bg-gray-100 rounded-lg px-3 py-2">
+        <div className="bg-gray-100 rounded-lg px-3 py-2 ">
           <span className="font-semibold text-sm">
             {comment.author.firstName}
           </span>

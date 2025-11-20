@@ -6,10 +6,10 @@ import {
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectConnection } from '@nestjs/mongoose';
-import { ClientSession, Connection, UpdateQuery } from 'mongoose';
+import { ClientSession, Connection, Types, UpdateQuery } from 'mongoose';
 import { CommentRepository } from 'src/domains/comment/comment.repository';
-import { Comment } from 'src/domains/comment/interfaces/comment.type';
-import { MediaBasicData } from 'src/domains/media-upload/interfaces/type';
+import { CommentModel } from 'src/domains/comment/interfaces';
+import { SubMediaModel } from 'src/domains/media-upload/interfaces/media';
 import { MediaUploadService } from 'src/domains/media-upload/media-upload.service';
 import { CommentDocument } from 'src/schemas';
 import { TiptapDocument } from 'src/share/dto/req/tiptap-content.dto';
@@ -22,7 +22,8 @@ export interface UpdateCommentInput {
   commentId: string;
   userId: string;
 }
-export interface UpdateCommentOutput extends Comment {}
+export interface UpdateCommentOutput
+  extends CommentModel<Types.ObjectId, Types.ObjectId> {}
 @Injectable()
 export class UpdateCommentService extends BaseUseCaseService<
   UpdateCommentInput,
@@ -62,15 +63,20 @@ export class UpdateCommentService extends BaseUseCaseService<
           ]);
           const oldMedia = comment.media;
 
-          let deletedMedia: MediaBasicData<string> | undefined = undefined;
+          let deletedMedia: SubMediaModel<Types.ObjectId> | undefined =
+            undefined;
 
           if (mediaId && !newMedia)
             throw new NotFoundException('Media not found');
 
-          if (oldMedia && newMedia && oldMedia.mediaId !== newMedia._id) {
+          if (
+            oldMedia &&
+            newMedia &&
+            oldMedia.mediaId.toString() !== newMedia._id
+          ) {
             deletedMedia = oldMedia;
             await this.mediaUploadService.deleteFromDb(
-              oldMedia.mediaId,
+              oldMedia.mediaId.toString(),
               session,
             );
           }
@@ -100,7 +106,10 @@ export class UpdateCommentService extends BaseUseCaseService<
           }
 
           return {
-            newComment: updatedComment.toObject() as Comment,
+            newComment: updatedComment.toObject() as CommentModel<
+              Types.ObjectId,
+              Types.ObjectId
+            >,
             deletedMedia,
           };
         },
@@ -108,7 +117,7 @@ export class UpdateCommentService extends BaseUseCaseService<
       this.eventEmitter.emit(CommentEvents.updated, newComment);
       if (deletedMedia)
         this.mediaUploadService
-          .deleteFromCloudByMediaId(deletedMedia.mediaId)
+          .deleteFromCloudByMediaId(deletedMedia.mediaId.toString())
           .catch((error) => {
             this.logger.error('Unexpected error in cloud cleanup', error);
           });
@@ -130,17 +139,16 @@ export class UpdateCommentService extends BaseUseCaseService<
     commentId: string,
     userId: string,
     session?: ClientSession,
-  ): Promise<Comment> {
-    const comment = await this.commentRepository.findLeanedById<Comment>(
-      commentId,
-      session,
-    );
+  ): Promise<CommentModel<Types.ObjectId, Types.ObjectId>> {
+    const comment = await this.commentRepository.findLeanedById<
+      CommentModel<Types.ObjectId, Types.ObjectId>
+    >(commentId, session);
 
     if (!comment) {
       throw new NotFoundException('Post not found');
     }
 
-    if (comment.author._id !== userId) {
+    if (comment.author._id.toString() !== userId) {
       throw new ForbiddenException('You are not allowed to update this post');
     }
 

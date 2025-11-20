@@ -5,9 +5,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
-import { Connection } from 'mongoose';
+import { Connection, Types } from 'mongoose';
 import { CommentRepository } from 'src/domains/comment/comment.repository';
-import { Comment } from 'src/domains/comment/interfaces/comment.type';
+import { CommentModel } from 'src/domains/comment/interfaces';
 import { MediaUploadService } from 'src/domains/media-upload/media-upload.service';
 import { PostRepository } from 'src/domains/post/post.repository';
 import { UserRepository } from 'src/domains/user/user.repository';
@@ -22,7 +22,8 @@ export interface CreateCommentInput {
   parentId?: string;
   authorId: string;
 }
-export interface CreateCommentOutput extends Comment {}
+export interface CreateCommentOutput
+  extends CommentModel<Types.ObjectId, Types.ObjectId> {}
 @Injectable()
 export class CreateCommentService extends BaseUseCaseService<
   CreateCommentInput,
@@ -82,7 +83,13 @@ export class CreateCommentService extends BaseUseCaseService<
         let [res] = await Promise.all([
           this.commentRepository.create(
             {
-              author,
+              author: {
+                _id: author._id.toString(),
+                username: author.username,
+                firstName: author.firstName,
+                lastName: author.lastName,
+                avatar: author.avatar.mediaId.toString(),
+              },
               content,
               media: mediaId
                 ? {
@@ -102,11 +109,17 @@ export class CreateCommentService extends BaseUseCaseService<
             ? this.mediaUploadService.confirmUploads([mediaId], authorId)
             : null,
         ]);
-        const comment = res.toObject() as Comment;
+        const comment = res.toObject() as CommentModel<
+          Types.ObjectId,
+          Types.ObjectId
+        >;
         if (parentId) {
           await this.commentRepository.increaseReplyCount(parentId, session);
         }
-        await this.postRepository.increaseCommentCount(comment.postId, session);
+        await this.postRepository.increaseCommentCount(
+          comment.postId.toString(),
+          session,
+        );
 
         return comment;
       });

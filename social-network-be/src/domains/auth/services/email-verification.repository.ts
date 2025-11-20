@@ -13,7 +13,7 @@ type CreateVerificationData = {
 @Injectable()
 export class EmailVerificationRepository {
   constructor(
-    @InjectModel(EmailVerificationDocument.name)
+    @InjectModel('EmailVerification')
     private emailVerificationModel: Model<EmailVerificationDocument>,
   ) {}
 

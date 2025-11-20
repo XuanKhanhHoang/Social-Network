@@ -2,7 +2,6 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { UserPrivacy, ReactionType } from 'src/share/enums';
 import { PostStatus } from 'src/share/enums';
-import { UserDocument } from './user.schema';
 import { SubUser } from './sub-user.schema';
 import { SubPostMedia } from './sub-post-media.schema';
 
@@ -32,7 +31,7 @@ export class PostDocument extends Document {
   @Prop({ type: Number, default: 0 })
   sharesCount: number;
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: UserDocument.name }] })
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }] })
   tags: Types.ObjectId[];
 
   @Prop({ type: [String] })
@@ -41,7 +40,7 @@ export class PostDocument extends Document {
   @Prop({ type: String })
   location: string;
 
-  @Prop({ type: Types.ObjectId, ref: PostDocument.name })
+  @Prop({ type: Types.ObjectId, ref: 'Post' })
   parentPost?: Types.ObjectId;
 
   @Prop({

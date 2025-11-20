@@ -1,6 +1,6 @@
 import { MediaType } from '@/lib/constants/enums';
 import { JSONContent } from '@tiptap/react';
-import { UserSummaryDto } from './user';
+import { UserSummaryWithAvatarUrlDto } from './user';
 import { ReactionsBreakdownDto } from './reaction';
 import { PostStatus } from '../constants/enums/post-status';
 import { CursorPaginationResponse } from './common/pagination';
@@ -46,7 +46,7 @@ export interface PostMediaDto {
 
 export interface PostDto {
   _id: string;
-  author: UserSummaryDto;
+  author: UserSummaryWithAvatarUrlDto;
   content: JSONContent;
   backgroundValue?: string;
   media?: PostMediaDto[];

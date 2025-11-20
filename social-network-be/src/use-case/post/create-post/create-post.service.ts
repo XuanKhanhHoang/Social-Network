@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MediaBasicDataWithCaption } from 'src/domains/media-upload/interfaces/type';
 import { MediaUploadService } from 'src/domains/media-upload/media-upload.service';
-import { CreatePostData } from 'src/domains/post/interfaces/post.type';
+import { CreatePostData } from 'src/domains/post/interfaces';
 import { PostRepository } from 'src/domains/post/post.repository';
 import { UserRepository } from 'src/domains/user/user.repository';
 import { PostDocument } from 'src/schemas';
@@ -71,7 +71,13 @@ export class CreatePostService extends BaseUseCaseService<
       throw new BadRequestException();
 
     const newData: CreatePostData = {
-      author,
+      author: {
+        _id: author._id.toString(),
+        username: author.username,
+        firstName: author.firstName,
+        lastName: author.lastName,
+        avatar: author.avatar.mediaId.toString(),
+      },
       media,
       content: data.content,
       visibility: data.visibility,

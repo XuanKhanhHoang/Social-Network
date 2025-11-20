@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PhotoPreview } from 'src/domains/post/interfaces/post.type';
+import { Types } from 'mongoose';
+import { PostPhotoModel } from 'src/domains/post/interfaces';
 import { PostRepository } from 'src/domains/post/post.repository';
 import { UserRepository } from 'src/domains/user/user.repository';
 import { BeCursorPaginated } from 'src/share/dto/res/be-paginated.dto';
@@ -13,7 +14,8 @@ export interface GetUserPhotosInput {
   cursor?: number;
 }
 
-export interface GetUserPhotosOutput extends BeCursorPaginated<PhotoPreview> {}
+export interface GetUserPhotosOutput
+  extends BeCursorPaginated<PostPhotoModel<Types.ObjectId, Types.ObjectId>> {}
 
 @Injectable()
 export class GetUserPhotosService extends BaseUseCaseService<

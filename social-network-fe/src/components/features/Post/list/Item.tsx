@@ -3,7 +3,6 @@ import { memo } from 'react';
 import { formatDisplayTime } from '@/lib/utils/time';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
 import { ExpandableContent } from '@/components/ui/ExpandableContent';
 import { Color, TextStyle } from '@tiptap/extension-text-style';
 import TextAlign from '@tiptap/extension-text-align';
@@ -15,6 +14,7 @@ import { PostWithTopComment } from '@/lib/interfaces/post';
 import CommentEditor from '../../comment/editor/Editor';
 import FeedCommentItem from '../../comment/feed/FeedCommentItem';
 import PostFeedMedia from '../../media/feed/FeedMedia';
+import { UserAvatar } from '@/components/ui/user-avatar';
 
 export type PostItemProps = {
   post: PostWithTopComment;
@@ -28,19 +28,15 @@ function PostItem({ post }: PostItemProps) {
     TextAlign.configure({ types: ['heading', 'paragraph'] }),
     Emoji,
   ]);
-
   return (
     <div className="bg-white rounded-sm shadow-sm p-0 mb-4 border border-gray-100">
       <div className="flex items-start justify-between mb-3 p-3">
         <div className="flex items-center">
-          <Avatar className="w-12 h-12 border-2 border-white bg-gray-100 rounded-full flex-shrink-0 me-2">
-            <div className="flex items-center justify-center w-full h-full relative">
-              <AvatarImage src="" alt="" />
-              <AvatarFallback className=" text-sm">
-                {post.author.firstName.charAt(0)}
-              </AvatarFallback>
-            </div>
-          </Avatar>
+          <UserAvatar
+            name={post.author.firstName}
+            src={post.author.avatar}
+            className="me-2"
+          />
 
           <div>
             <h3 className="font-semibold text-gray-900 text-sm">
@@ -93,7 +89,7 @@ function PostItem({ post }: PostItemProps) {
       </div>
 
       {post.topComment && (
-        <div className="mt-2 pt-3 ">
+        <div className="mt-2 pt-3 px-2">
           {<FeedCommentItem comment={post.topComment} />}
         </div>
       )}

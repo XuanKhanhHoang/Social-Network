@@ -10,7 +10,7 @@ import { AuthService } from './services/auth.service';
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: EmailVerificationDocument.name, schema: EmailVerificationSchema },
+      { name: 'EmailVerification', schema: EmailVerificationSchema },
     ]),
   ],
   providers: [AuthService, EmailVerificationRepository],

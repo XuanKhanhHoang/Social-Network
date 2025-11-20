@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { formatFileSize } from '@/lib/utils/other';
 import { MediaItemWithHandlingStatus } from '../type';
 import MediaThumbnail from '../thumbnail/Thumbnail';
+import { cn } from '@/lib/utils';
 
 export type MediaUploadItemProps = {
   item: MediaItemWithHandlingStatus;
@@ -17,6 +18,7 @@ export type MediaUploadItemProps = {
     onRetryUpload?: () => void;
     onRemove?: () => void;
   };
+  showSize?: boolean;
 };
 
 type MediaRemoveButtonProps = {
@@ -27,6 +29,7 @@ type MediaRemoveButtonProps = {
 type MediaUploadStatusProps = {
   item: MediaItemWithHandlingStatus;
   onRetryUpload?: () => void;
+  showSize?: boolean;
 };
 
 const MediaRemoveButton = ({ onRemove, disabled }: MediaRemoveButtonProps) => (
@@ -41,7 +44,11 @@ const MediaRemoveButton = ({ onRemove, disabled }: MediaRemoveButtonProps) => (
   </Button>
 );
 
-const MediaUploadStatus = ({ item, onRetryUpload }: MediaUploadStatusProps) => {
+const MediaUploadStatus = ({
+  item,
+  onRetryUpload,
+  showSize,
+}: MediaUploadStatusProps) => {
   const hasUploadError = !!item.uploadError;
   const isUploading = !!item.isUploading;
   const isSuccess = !!item.id && !hasUploadError && !isUploading;
@@ -80,9 +87,11 @@ const MediaUploadStatus = ({ item, onRetryUpload }: MediaUploadStatusProps) => {
           </div>
         </div>
       )}
-      <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-        {formatFileSize(item.file?.size || 0)}
-      </div>
+      {showSize && (
+        <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+          {formatFileSize(item.file?.size || 0)}
+        </div>
+      )}
       {isUploading && (
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/20">
           <div
@@ -100,13 +109,17 @@ const MediaUploadItem = ({
   className = {},
   handle,
   style,
+  showSize = true,
 }: MediaUploadItemProps) => {
   const { onRetryUpload, onRemove } = handle || {};
   const isUploading = !!item.isUploading;
 
   return (
     <div
-      className={`relative bg-gray-100 !rounded-xs cursor-pointer group ${className.container}`}
+      className={cn(
+        `relative bg-gray-100  cursor-pointer group rounded-xs `,
+        className.container
+      )}
       style={style}
     >
       <MediaThumbnail
@@ -114,13 +127,17 @@ const MediaUploadItem = ({
         mediaType={item.mediaType}
         width={item.width}
         height={item.height}
-        className="w-full h-full"
+        className={cn('w-full h-full', className.media)}
       />
 
       {onRemove && (
         <MediaRemoveButton onRemove={onRemove} disabled={isUploading} />
       )}
-      <MediaUploadStatus item={item} onRetryUpload={onRetryUpload} />
+      <MediaUploadStatus
+        item={item}
+        onRetryUpload={onRetryUpload}
+        showSize={showSize}
+      />
     </div>
   );
 };

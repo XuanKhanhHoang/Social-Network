@@ -1,5 +1,5 @@
 import { JSONContent } from '@tiptap/react';
-import { UserSummaryDto } from './user';
+import { UserSummaryWithAvatarUrlDto } from './user';
 import { ReactionsBreakdownDto } from './reaction';
 import { CursorPaginationResponse } from './common/pagination';
 
@@ -25,7 +25,7 @@ export interface CommentMediaDto {
 export interface CommentDto {
   _id: string;
   postId: string;
-  author: UserSummaryDto;
+  author: UserSummaryWithAvatarUrlDto;
   content: JSONContent;
   media?: CommentMediaDto;
   parentId?: string;

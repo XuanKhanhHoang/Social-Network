@@ -1,10 +1,10 @@
 'use client';
 import { Image, Smile, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
 import PostEditor from '../editor/Editor';
 import { useCreatePostContext } from '../../feed/FeedContext';
 import { useStore } from '@/store';
+import { UserAvatar } from '@/components/ui/user-avatar';
 
 export default (function PostCreator() {
   const user = useStore((state) => state.user);
@@ -14,15 +14,12 @@ export default (function PostCreator() {
     <>
       <div className="bg-white rounded-sm shadow-xs p-4 mb-5 border border-gray-100">
         <div className="flex items-center space-x-3">
-          <Avatar className="w-10 h-10 border-2 border-white bg-gray-100 rounded-full flex-shrink-0">
-            <div className="flex items-center justify-center w-full h-full relative">
-              <AvatarImage src="" alt="User" />
-              <AvatarFallback className=" text-sm">
-                {user!.firstName.charAt(0)}
-              </AvatarFallback>
-            </div>
-          </Avatar>
-
+          <UserAvatar
+            name={user!.firstName}
+            src={user!.avatar?.url}
+            className="w-10 h-10"
+            size={128}
+          />
           <Button
             onClick={openCreate}
             variant="secondary"

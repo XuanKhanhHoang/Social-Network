@@ -1,11 +1,10 @@
 import { Prop, Schema } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
-import { MediaUploadDocument } from './media-upload.schema';
 import { MediaType } from 'src/share/enums';
 
 @Schema({ _id: true })
 export class SubPostMedia {
-  @Prop({ type: Types.ObjectId, ref: MediaUploadDocument.name, required: true })
+  @Prop({ type: Types.ObjectId, ref: 'MediaUpload', required: true })
   mediaId: Types.ObjectId;
 
   @Prop({ type: String, enum: MediaType, default: MediaType.IMAGE })

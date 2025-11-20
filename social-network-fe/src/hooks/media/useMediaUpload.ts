@@ -1,3 +1,4 @@
+// hooks/media/useMediaUpload.ts
 import { MediaItemWithHandlingStatus } from '@/components/features/media/type';
 import { MediaType } from '@/lib/constants/enums';
 import { mediaService } from '@/services/media';
@@ -73,7 +74,7 @@ export function useMediaUpload(
           isUploading: true,
           uploadError: undefined,
         });
-        console.log(file);
+
         const response = await mediaService.uploadMedia(file);
 
         updateMediaItem(index, {
@@ -98,9 +99,20 @@ export function useMediaUpload(
 
       const files = Array.from(e.target.files);
 
-      if (media.length + files.length > maxFiles) {
-        alert(`Bạn chỉ có thể chọn tối đa ${maxFiles} ảnh`);
-        return;
+      // Xác định chế độ: Ghi đè (Single) hay Nối thêm (Multi)
+      const isSingleMode = maxFiles === 1;
+
+      // Validate số lượng file
+      if (isSingleMode) {
+        if (files.length > 1) {
+          alert(`Bạn chỉ có thể chọn tối đa 1 ảnh`);
+          return;
+        }
+      } else {
+        if (media.length + files.length > maxFiles) {
+          alert(`Bạn chỉ có thể chọn tối đa ${maxFiles} ảnh`);
+          return;
+        }
       }
 
       const validFiles: File[] = [];
@@ -127,12 +139,24 @@ export function useMediaUpload(
         })
       );
 
-      const startIndex = media.length;
-      setMedia((prev) => [...prev, ...newMediaItems]);
+      if (isSingleMode) {
+        media.forEach((item) => {
+          if (item.url.startsWith('blob:')) {
+            URL.revokeObjectURL(item.url);
+          }
+        });
+        setMedia(newMediaItems);
+        validFiles.forEach((file, index) => {
+          uploadFileToTemp(index, file);
+        });
+      } else {
+        const startIndex = media.length;
+        setMedia((prev) => [...prev, ...newMediaItems]);
 
-      validFiles.forEach((file, index) => {
-        uploadFileToTemp(startIndex + index, file);
-      });
+        validFiles.forEach((file, index) => {
+          uploadFileToTemp(startIndex + index, file);
+        });
+      }
 
       e.target.value = '';
     },

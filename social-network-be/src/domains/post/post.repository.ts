@@ -8,19 +8,20 @@ import {
   UpdateResult,
 } from 'mongoose';
 import { ReactableRepository } from 'src/share/base-class/reactable-repository.service';
-import {
-  CreatePostData,
-  PaginatedPhotos,
-  PhotoPreview,
-  PostCursorData,
-  PostWithMyReaction,
-} from './interfaces/post.type';
 import { PostStatus, UserPrivacy } from 'src/share/enums';
 import { PostDocument } from 'src/schemas';
+import {
+  CreatePostData,
+  FindPhotosForUserResults,
+  FindPostForHomeFeedData,
+  PostCursorData,
+  PostPhotoModel,
+  PostWithMyReactionModel,
+} from './interfaces';
 @Injectable()
 export class PostRepository extends ReactableRepository<PostDocument> {
   constructor(
-    @InjectModel(PostDocument.name)
+    @InjectModel('Post')
     protected readonly model: Model<PostDocument>,
   ) {
     super(model);
@@ -82,12 +83,9 @@ export class PostRepository extends ReactableRepository<PostDocument> {
     requestingUserId,
     cursor,
     authorIds,
-  }: {
-    limit: number;
-    requestingUserId: string;
-    cursor?: PostCursorData;
-    authorIds: string[];
-  }): Promise<PostWithMyReaction[]> {
+  }: FindPostForHomeFeedData): Promise<
+    PostWithMyReactionModel<Types.ObjectId>[]
+  > {
     const pipeline: PipelineStage[] = [];
 
     const requestingUserObjId = new Types.ObjectId(requestingUserId);
@@ -142,7 +140,9 @@ export class PostRepository extends ReactableRepository<PostDocument> {
     pipeline.push({ $limit: limit });
     pipeline.push(...this.getUserReactionStage(requestingUserId));
 
-    return this.model.aggregate<PostWithMyReaction>(pipeline);
+    return this.model.aggregate<PostWithMyReactionModel<Types.ObjectId>>(
+      pipeline,
+    );
   }
 
   async findForUserProfile({
@@ -157,7 +157,7 @@ export class PostRepository extends ReactableRepository<PostDocument> {
     cursor?: PostCursorData;
     authorId: string;
     visibilities: UserPrivacy[];
-  }): Promise<PostWithMyReaction[]> {
+  }): Promise<PostWithMyReactionModel<Types.ObjectId>[]> {
     const pipeline: PipelineStage[] = [];
 
     const authorObjId = new Types.ObjectId(authorId);
@@ -202,12 +202,14 @@ export class PostRepository extends ReactableRepository<PostDocument> {
       pipeline.push(...this.getUserReactionStage(requestingUserId));
     }
 
-    return this.model.aggregate<PostWithMyReaction>(pipeline);
+    return this.model.aggregate<PostWithMyReactionModel<Types.ObjectId>>(
+      pipeline,
+    );
   }
   async findFullPostById(
     postId: string,
     userId: string,
-  ): Promise<PostWithMyReaction | null> {
+  ): Promise<PostWithMyReactionModel<Types.ObjectId> | null> {
     const aggregationPipeline: PipelineStage[] = [
       {
         $match: {
@@ -219,7 +221,7 @@ export class PostRepository extends ReactableRepository<PostDocument> {
     ];
 
     const [post] = await this.model
-      .aggregate<PostWithMyReaction>(aggregationPipeline)
+      .aggregate<PostWithMyReactionModel<Types.ObjectId>>(aggregationPipeline)
       .exec();
 
     return post || null;
@@ -249,7 +251,7 @@ export class PostRepository extends ReactableRepository<PostDocument> {
     privacy: UserPrivacy[],
     limit: number,
     cursor?: number,
-  ): Promise<PaginatedPhotos> {
+  ): Promise<FindPhotosForUserResults> {
     const skipAmount = cursor || 0;
 
     const pipeline: PipelineStage[] = [];
@@ -293,7 +295,9 @@ export class PostRepository extends ReactableRepository<PostDocument> {
       },
     });
 
-    const results = await this.model.aggregate<PhotoPreview>(pipeline).exec();
+    const results = await this.model
+      .aggregate<PostPhotoModel<Types.ObjectId, Types.ObjectId>>(pipeline)
+      .exec();
 
     const hasMore = results.length > limit;
     const photos = results.slice(0, limit);

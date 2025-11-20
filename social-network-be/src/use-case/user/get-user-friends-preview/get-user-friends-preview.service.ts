@@ -3,7 +3,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PopulatedFriend } from 'src/domains/user/interfaces';
+import { Types } from 'mongoose';
+import { UserMinimalModel } from 'src/domains/user/interfaces';
 import { UserDomainsService } from 'src/domains/user/user-domains.service';
 import { UserRepository } from 'src/domains/user/user.repository';
 import { BeCursorPaginated } from 'src/share/dto/res/be-paginated.dto';
@@ -16,7 +17,7 @@ export interface GetUserFriendsPreviewInput {
   cursor?: number;
 }
 export interface GetUserFriendsPreviewOutput
-  extends BeCursorPaginated<PopulatedFriend> {
+  extends BeCursorPaginated<UserMinimalModel<Types.ObjectId>> {
   total: number;
 }
 

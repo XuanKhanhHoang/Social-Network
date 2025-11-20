@@ -1,10 +1,15 @@
 import {
+  GetAccountResponseDto,
   GetPostsFeedResponseDto,
   GetUserBioResponseDto,
   GetUserFriendsPreviewResponseDto,
   GetUserHeaderResponseDto,
   GetUserPhotosResponseDto,
   GetUserProfileResponseDto,
+  UpdateAccountRequestDto,
+  UpdateAccountResponseDto,
+  UpdateProfileRequestDto,
+  UpdateProfileResponseDto,
 } from '@/lib/dtos';
 import { ApiClient } from './api';
 import { CursorPaginationParams, RequestOptions } from './type';
@@ -89,5 +94,19 @@ export const userService = {
       `${USER_PREFIX}/${username}/posts${queryString ? `?${queryString}` : ''}`,
       options
     );
+  },
+  async updateUserProfile(
+    username: string,
+    input: UpdateProfileRequestDto
+  ): Promise<UpdateProfileResponseDto> {
+    return ApiClient.patch(`${USER_PREFIX}/${username}/profile`, input);
+  },
+  async getAccount(): Promise<GetAccountResponseDto> {
+    return ApiClient.get(`${USER_PREFIX}/account`);
+  },
+  async updateAccount(
+    input: UpdateAccountRequestDto
+  ): Promise<UpdateAccountResponseDto> {
+    return ApiClient.patch(`${USER_PREFIX}/account`, input);
   },
 };

@@ -1,4 +1,5 @@
 'use client';
+
 import { PostMedia } from '@/lib/interfaces/post';
 import { motion } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
@@ -15,66 +16,74 @@ export type MediaViewerProps = {
 type MediaItemProps = {
   item: PostMedia;
   isCurrent: boolean;
+  shouldLoad: boolean;
 };
 
-function MediaItem({ item, isCurrent }: MediaItemProps) {
+function MediaItem({ item, isCurrent, shouldLoad }: MediaItemProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
+    if (item.mediaType !== 'video' || !videoRef.current) return;
+
     if (isCurrent) {
-      videoRef.current?.play().catch((err) => {
+      videoRef.current.play().catch((err) => {
         if (err.name !== 'AbortError') {
           console.error('Video play failed:', err);
         }
       });
     } else {
-      videoRef.current?.pause();
+      videoRef.current.pause();
     }
-  }, [isCurrent]);
+  }, [isCurrent, item.mediaType]);
 
   const hasDimensions =
     typeof item?.width === 'number' && typeof item?.height === 'number';
 
   return (
-    <div className="relative w-full h-full flex-shrink-0 flex items-center justify-center p-4">
-      {item.mediaType === 'image' ? (
-        hasDimensions ? (
-          <Image
-            src={item.url}
-            alt={item.caption || 'Post media'}
-            width={item.width}
-            height={item.height}
-            className="max-h-full max-w-full object-contain"
-            priority={isCurrent}
-            loading={isCurrent ? undefined : 'lazy'}
-            sizes="100vw"
-          />
-        ) : (
-          <Image
-            src={item.url}
-            alt={item.caption || 'Post media'}
-            fill
-            className="max-h-full max-w-full object-contain"
-            priority={isCurrent}
-            loading={isCurrent ? undefined : 'lazy'}
-            sizes="100vw"
-          />
-        )
-      ) : (
-        <video
-          ref={videoRef}
-          src={item.url}
-          {...(hasDimensions && {
-            width: item.width,
-            height: item.height,
-          })}
-          className="max-h-full max-w-full object-contain"
-          controls
-          playsInline
-          muted
-          loop
-        />
-      )}
+    <div className="relative w-full h-full flex-shrink-0 flex items-center justify-center ">
+      {shouldLoad ? (
+        <>
+          {item.mediaType === 'image' ? (
+            hasDimensions ? (
+              <Image
+                src={item.url}
+                alt={item.caption || 'Post media'}
+                width={item.width}
+                height={item.height}
+                className="max-h-full max-w-full object-contain"
+                priority={isCurrent}
+                loading={isCurrent ? undefined : 'lazy'}
+                sizes="100vw"
+              />
+            ) : (
+              <Image
+                src={item.url}
+                alt={item.caption || 'Post media'}
+                fill
+                className="max-h-full max-w-full object-contain"
+                priority={isCurrent}
+                loading={isCurrent ? undefined : 'lazy'}
+                sizes="100vw"
+              />
+            )
+          ) : (
+            <video
+              ref={videoRef}
+              src={item.url}
+              {...(hasDimensions && {
+                width: item.width,
+                height: item.height,
+              })}
+              className="max-h-full max-w-full object-contain"
+              controls
+              playsInline
+              muted
+              loop
+              preload="metadata"
+            />
+          )}
+        </>
+      ) : null}
     </div>
   );
 }
@@ -129,17 +138,21 @@ export default function MediasViewer({
         className="flex w-full h-full"
         animate={{ x: `-${currentIndex * 100}%` }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}
-        drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.1}
+        // Đã xóa các props drag, dragConstraints, dragElastic ở đây
       >
-        {media.map((item, index) => (
-          <MediaItem
-            key={item.mediaId}
-            item={item}
-            isCurrent={index === currentIndex}
-          />
-        ))}
+        {media.map((item, index) => {
+          // Logic tính toán: Chỉ render item hiện tại và 1 item trước/sau nó
+          const shouldLoad = Math.abs(currentIndex - index) <= 1;
+
+          return (
+            <MediaItem
+              key={item.mediaId}
+              item={item}
+              isCurrent={index === currentIndex}
+              shouldLoad={shouldLoad}
+            />
+          );
+        })}
       </motion.div>
 
       {media.length > 1 && currentIndex > 0 && (

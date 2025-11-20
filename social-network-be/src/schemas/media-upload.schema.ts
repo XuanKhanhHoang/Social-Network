@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { MediaType } from 'src/share/enums';
-import { UserDocument } from './user.schema';
 
 @Schema({
   timestamps: true,
@@ -29,7 +28,7 @@ export class MediaUploadDocument extends Document {
   @Prop({ default: false })
   isConfirmed: boolean;
 
-  @Prop({ required: true, ref: UserDocument.name })
+  @Prop({ required: true, ref: 'User' })
   userId: string;
 
   @Prop({ type: Date, default: () => new Date(Date.now() + 15 * 60 * 1000) })

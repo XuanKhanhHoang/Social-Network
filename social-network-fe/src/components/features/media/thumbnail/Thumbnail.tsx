@@ -10,6 +10,7 @@ type MediaThumbnailProps = {
   className?: string;
   onClick?: () => void;
   autoPlay?: boolean;
+  sizes?: string;
 };
 
 function MediaThumbnail({
@@ -20,6 +21,7 @@ function MediaThumbnail({
   className,
   onClick,
   autoPlay = false,
+  sizes = '(max-width: 768px) 100vw, 50vw',
 }: MediaThumbnailProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -41,7 +43,7 @@ function MediaThumbnail({
           src={url}
           alt=""
           fill
-          sizes="100vw"
+          sizes={sizes}
           className="object-cover cursor-pointer hover:opacity-90 transition-opacity"
         />
       </div>
@@ -78,7 +80,7 @@ function MediaThumbnail({
           src={thumb}
           alt="video thumbnail"
           fill
-          sizes="100vw"
+          sizes={sizes}
           className="object-cover"
         />
         <span className="absolute inset-0 flex items-center justify-center text-white">

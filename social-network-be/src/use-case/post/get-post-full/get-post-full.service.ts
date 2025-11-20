@@ -5,7 +5,8 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { PostWithMyReaction } from 'src/domains/post/interfaces/post.type';
+import { Types } from 'mongoose';
+import { PostWithMyReactionModel } from 'src/domains/post/interfaces';
 import { PostRepository } from 'src/domains/post/post.repository';
 import { UserPrivacy } from 'src/share/enums';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
@@ -14,7 +15,8 @@ interface GetPostFullInput {
   postId: string;
   userId: string;
 }
-export interface GetPostFullOutput extends PostWithMyReaction {}
+export interface GetPostFullOutput
+  extends PostWithMyReactionModel<Types.ObjectId> {}
 @Injectable()
 export class GetPostFullService extends BaseUseCaseService<
   GetPostFullInput,

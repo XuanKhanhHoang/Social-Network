@@ -14,7 +14,7 @@ import { ReactionDocument } from 'src/schemas/reaction.schema';
 @Injectable()
 export class ReactionService {
   constructor(
-    @InjectModel(ReactionDocument.name)
+    @InjectModel('Reaction')
     private reactionModel: Model<ReactionDocument>,
     private eventEmitter: EventEmitter2,
   ) {}

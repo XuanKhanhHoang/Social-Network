@@ -106,18 +106,18 @@ export abstract class BaseRepository<T extends Document> {
       .exec();
   }
 
-  async updateByIdAndGet(
+  async updateByIdAndGet<P extends keyof T = keyof T>(
     id: string,
     updateData: UpdateQuery<T>,
     options?: BaseQueryOptions<T>,
-  ): Promise<T | null> {
+  ): Promise<T | Pick<T, P> | null> {
     return this.model
       .findByIdAndUpdate(id, updateData, {
         new: true,
         runValidators: true,
         ...options,
       })
-      .exec();
+      .exec() as Promise<T | Pick<T, P> | null>;
   }
   async updateMany(
     filter: FilterQuery<T>,

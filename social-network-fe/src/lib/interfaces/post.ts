@@ -5,7 +5,10 @@ import {
   ReactionType,
   VisibilityPrivacy,
 } from '../constants/enums';
-import { transformToUserSummary, UserSummary } from './user';
+import {
+  transformToUserSummaryWidthAvatarUrl,
+  UserSummaryWidthAvatarUrl,
+} from './user';
 import { ReactionsBreakdown } from './reaction';
 import { PostDto, PostWithMyReactionDto, PostWithTopCommentDto } from '../dtos';
 import {
@@ -16,7 +19,7 @@ import {
 export function transformToPost(post: PostDto): Post {
   return {
     id: post._id,
-    author: transformToUserSummary(post.author),
+    author: transformToUserSummaryWidthAvatarUrl(post.author),
     content: post.content,
     backgroundValue: post.backgroundValue,
     sharesCount: post.sharesCount,
@@ -63,7 +66,7 @@ export interface PostMedia {
 }
 export interface Post {
   id: string;
-  author: UserSummary;
+  author: UserSummaryWidthAvatarUrl;
   content: JSONContent;
   backgroundValue?: string;
   media?: PostMedia[];

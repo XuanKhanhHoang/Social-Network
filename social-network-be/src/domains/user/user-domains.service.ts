@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ProfileAndRelationship } from './interfaces';
 import { RelationshipType } from './interfaces/relationship.type';
 import { UserPrivacy } from 'src/share/enums';
 import { UserRepository } from './user.repository';
+import { GetProfileAndRelationshipResult } from './interfaces/get-profile-and-relationship-results';
 
 @Injectable()
 export class UserDomainsService {
@@ -11,7 +11,7 @@ export class UserDomainsService {
   async getProfileAndRelationship(
     username: string,
     requestingUserId: string | null,
-  ): Promise<ProfileAndRelationship> {
+  ): Promise<GetProfileAndRelationshipResult> {
     const profileUser =
       await this.userRepository.findProfileByUsername(username);
 

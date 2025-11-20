@@ -10,9 +10,13 @@ import { PostModule } from 'src/domains/post/post.module';
 import { CleanupUnverifiedAccountsListenerService } from './listeners/listeners.service';
 import { GetUserPostsService } from './get-user-posts/get-user-posts.service';
 import { CommentModule } from 'src/domains/comment/comment.module';
+import { UpdateProfileService } from './update-profile/update-profile.service';
+import { MediaUploadModule } from 'src/domains/media-upload/media-upload.module';
+import { GetAccountService } from './get-account/get-account.service';
+import { UpdateAccountService } from './update-account/update-account.service';
 
 @Module({
-  imports: [UserModule, PostModule, CommentModule],
+  imports: [UserModule, PostModule, CommentModule, MediaUploadModule],
   providers: [
     GetMePreviewProfileService,
     GetUserHeaderService,
@@ -22,6 +26,9 @@ import { CommentModule } from 'src/domains/comment/comment.module';
     GetUserPhotosService,
     CleanupUnverifiedAccountsListenerService,
     GetUserPostsService,
+    UpdateProfileService,
+    GetAccountService,
+    UpdateAccountService,
   ],
   exports: [
     GetMePreviewProfileService,
@@ -30,7 +37,10 @@ import { CommentModule } from 'src/domains/comment/comment.module';
     GetUserFriendsPreviewService,
     GetUserProfileService,
     GetUserPhotosService,
+    UpdateProfileService,
     GetUserPostsService,
+    GetAccountService,
+    UpdateAccountService,
   ],
 })
 export class UserUseCaseModule {}

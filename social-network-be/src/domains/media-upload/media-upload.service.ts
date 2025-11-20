@@ -21,7 +21,7 @@ export class MediaUploadService {
 
   constructor(
     @Inject('CLOUDINARY') private cloudinaryInstance: typeof cloudinary,
-    @InjectModel(MediaUploadDocument.name)
+    @InjectModel('MediaUpload')
     private mediaModel: Model<MediaUploadDocument>,
   ) {}
 
@@ -43,9 +43,21 @@ export class MediaUploadService {
   async findMedia(mediaIds: string[]) {
     if (mediaIds.length === 0) return [];
     const mediaIdObjs = mediaIds.map((id) => new Types.ObjectId(id));
-    return (
+    const unorderedMedia = (
       await this.mediaModel.find({ _id: { $in: mediaIdObjs } }).lean()
     ).map((item) => ({ ...item, _id: item._id.toString() }));
+    const mediaMap = new Map<string, MediaUploadDocument & { _id: string }>();
+    for (const item of unorderedMedia) {
+      mediaMap.set(item._id, item as any);
+    }
+    const orderedMedia = mediaIds
+      .map((id) => mediaMap.get(id))
+      .filter(
+        (item): item is MediaUploadDocument & { _id: string } =>
+          item !== undefined,
+      );
+
+    return orderedMedia;
   }
   private uploadStream(buffer: Buffer, options: any): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -173,6 +185,42 @@ export class MediaUploadService {
     } catch (error) {
       this.logger.error(
         `Failed to confirm media batch: ${mediaIds.join(',')}`,
+        error,
+      );
+    }
+  }
+  async cancelConfirmUploads(
+    mediaIds: string[],
+    userId: string,
+  ): Promise<void> {
+    if (!mediaIds || mediaIds.length === 0) {
+      return;
+    }
+
+    const objectIds = mediaIds.map(
+      (id) => new Types.ObjectId(String(id).trim()),
+    );
+
+    try {
+      const result = await this.mediaModel.updateMany(
+        {
+          _id: { $in: objectIds },
+          userId,
+          isConfirmed: true,
+        },
+        {
+          $set: { isConfirmed: false },
+        },
+      );
+
+      if (result.matchedCount !== mediaIds.length) {
+        this.logger.warn(
+          `Potential media confirmation to cancel mismatch. Expected ${mediaIds.length}, found ${result.matchedCount}`,
+        );
+      }
+    } catch (error) {
+      this.logger.error(
+        `Failed to cancel confirm media batch: ${mediaIds.join(',')}`,
         error,
       );
     }

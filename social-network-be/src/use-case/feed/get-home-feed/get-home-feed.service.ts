@@ -4,12 +4,14 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { Types } from 'mongoose';
 import { CommentRepository } from 'src/domains/comment/comment.repository';
 import {
   PostCursorData,
-  PostWithMyReaction,
-  PostWithTopCommentAndUserReaction,
-} from 'src/domains/post/interfaces/post.type';
+  PostWithMyReactionModel,
+  PostWithTopCommentAndUserReactionModel,
+} from 'src/domains/post/interfaces';
+
 import { PostRepository } from 'src/domains/post/post.repository';
 import { UserRepository } from 'src/domains/user/user.repository';
 import { BeCursorPaginated } from 'src/share/dto/res/be-paginated.dto';
@@ -26,7 +28,9 @@ export interface GetHomeFeedInput {
 }
 
 export interface GetHomeFeedOutput
-  extends BeCursorPaginated<PostWithTopCommentAndUserReaction> {}
+  extends BeCursorPaginated<
+    PostWithTopCommentAndUserReactionModel<Types.ObjectId>
+  > {}
 
 @Injectable()
 export class GetHomeFeedService extends BaseUseCaseService<
@@ -95,9 +99,9 @@ export class GetHomeFeedService extends BaseUseCaseService<
   }
 
   private async enrichPostsWithComments(
-    posts: PostWithMyReaction[],
+    posts: PostWithMyReactionModel<Types.ObjectId>[],
     userId: string,
-  ): Promise<PostWithTopCommentAndUserReaction[]> {
+  ): Promise<PostWithTopCommentAndUserReactionModel<Types.ObjectId>[]> {
     if (posts.length === 0) {
       return [];
     }

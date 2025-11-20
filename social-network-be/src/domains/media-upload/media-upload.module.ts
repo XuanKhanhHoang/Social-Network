@@ -9,7 +9,7 @@ import { CloudinaryProvider } from './cloudinary.config';
   imports: [
     ConfigModule,
     MongooseModule.forFeature([
-      { name: MediaUploadDocument.name, schema: MediaUploadSchema },
+      { name: 'MediaUpload', schema: MediaUploadSchema },
     ]),
     ScheduleModule.forRoot(),
   ],
