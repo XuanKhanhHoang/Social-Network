@@ -177,6 +177,42 @@ export class MediaUploadService {
       );
     }
   }
+  async cancelConfirmUploads(
+    mediaIds: string[],
+    userId: string,
+  ): Promise<void> {
+    if (!mediaIds || mediaIds.length === 0) {
+      return;
+    }
+
+    const objectIds = mediaIds.map(
+      (id) => new Types.ObjectId(String(id).trim()),
+    );
+
+    try {
+      const result = await this.mediaModel.updateMany(
+        {
+          _id: { $in: objectIds },
+          userId,
+          isConfirmed: true,
+        },
+        {
+          $set: { isConfirmed: false },
+        },
+      );
+
+      if (result.matchedCount !== mediaIds.length) {
+        this.logger.warn(
+          `Potential media confirmation to cancel mismatch. Expected ${mediaIds.length}, found ${result.matchedCount}`,
+        );
+      }
+    } catch (error) {
+      this.logger.error(
+        `Failed to cancel confirm media batch: ${mediaIds.join(',')}`,
+        error,
+      );
+    }
+  }
 
   async cancelUpload(
     mediaId: string,
