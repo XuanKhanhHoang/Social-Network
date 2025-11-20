@@ -8,116 +8,18 @@ import React, {
   useCallback,
 } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Edit3,
-  Plus,
-  Users,
-  Grid3x3,
-  Newspaper,
-  MessageCircle,
-  UserPlus,
-  Lock,
-} from 'lucide-react';
-import Link from 'next/link'; // <-- Import Link
 import { usePathname, useParams } from 'next/navigation';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useUserHeader } from '@/hooks/user/useUser';
 import { useStore } from '@/store';
+import {
+  ProfileActions,
+  ViewAsType,
+} from '@/components/features/profile-header/ProfileActions';
+import { ProfileTabs } from '@/components/features/profile-header/ProfileTab';
+import { LoginPrompt } from '@/components/features/profile-header/LoginPrompt';
+import { ProfileHeaderSkeleton } from '@/components/features/profile-header/ProfileHeaderSkeleton';
 
 type ProfileType = 'OWNER' | 'FRIEND' | 'PUBLIC';
-type ViewAsType = 'OWNER' | 'FRIEND' | 'PUBLIC_LOGGED_IN' | 'PUBLIC_LOGGED_OUT';
-
-function ProfileHeaderSkeleton() {
-  return (
-    <header className="bg-card border-b border-border">
-      <Skeleton className="h-[350px] w-full rounded-b-lg" />
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="flex flex-wrap items-end -translate-y-[50px]">
-          <Skeleton className="w-40 h-40 rounded-full border-4 border-background" />
-          <div className="flex-grow ml-5 pb-4">
-            <Skeleton className="h-9 w-48 mb-2" />
-            <Skeleton className="h-5 w-24" />
-          </div>
-          <div className="flex gap-2 pb-4">
-            <Skeleton className="h-10 w-32" />
-            <Skeleton className="h-10 w-40" />
-          </div>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-function ProfileActions({ viewAsType }: { viewAsType: ViewAsType }) {
-  if (viewAsType === 'OWNER') {
-    return (
-      <>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" /> Thêm vào tin
-        </Button>
-        <Button variant="secondary">
-          <Edit3 className="mr-2 h-4 w-4" /> Chỉnh sửa trang
-        </Button>
-      </>
-    );
-  }
-
-  if (viewAsType === 'FRIEND') {
-    return (
-      <>
-        <Button variant="secondary">
-          <Users className="mr-2 h-4 w-4" /> Bạn bè
-        </Button>
-        <Button>
-          <MessageCircle className="mr-2 h-4 w-4" /> Nhắn tin
-        </Button>
-      </>
-    );
-  }
-
-  if (viewAsType === 'PUBLIC_LOGGED_IN') {
-    return (
-      <>
-        <Button>
-          <UserPlus className="mr-2 h-4 w-4" /> Thêm bạn bè
-        </Button>
-        <Button variant="secondary">
-          <MessageCircle className="mr-2 h-4 w-4" /> Nhắn tin
-        </Button>
-      </>
-    );
-  }
-
-  if (viewAsType === 'PUBLIC_LOGGED_OUT') {
-    return (
-      <Link href="/login" passHref>
-        <Button>
-          <UserPlus className="mr-2 h-4 w-4" /> Đăng nhập để thêm bạn
-        </Button>
-      </Link>
-    );
-  }
-
-  return null;
-}
-
-function LoginPrompt({ name }: { name: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center text-center p-10 bg-card rounded-lg border">
-      <Lock size={48} className="text-muted-foreground mb-4" />
-      <h3 className="text-xl font-semibold">Trang cá nhân riêng tư</h3>
-      <p className="text-muted-foreground mt-2 max-w-md">
-        Vui lòng đăng nhập để xem thông tin chi tiết, bài viết và các hoạt động
-        khác của {name}.
-      </p>
-      <Link href="/login" passHref>
-        <Button className="mt-6">Đăng nhập</Button>
-      </Link>
-    </div>
-  );
-}
 
 export default function UserLayout({
   children,
@@ -186,7 +88,7 @@ export default function UserLayout({
           className="h-[350px] bg-cover bg-center rounded-b-lg"
           style={{
             backgroundImage: header?.coverPhoto
-              ? `url(${header?.coverPhoto})`
+              ? `url(${header?.coverPhoto.url})`
               : undefined,
             backgroundColor: !header?.coverPhoto ? '#ccc' : undefined,
           }}
@@ -195,7 +97,7 @@ export default function UserLayout({
           <div className="flex flex-wrap items-end -translate-y-[50px]">
             <Avatar className="w-40 h-40 border-4 border-background">
               <AvatarImage
-                src={header.avatar || '/user.jpg'}
+                src={header.avatar?.url || '/user.jpg'}
                 alt={header.username}
               />
               <AvatarFallback>{header.firstName.charAt(0)}</AvatarFallback>
@@ -220,43 +122,11 @@ export default function UserLayout({
       </header>
 
       {viewAsType !== 'PUBLIC_LOGGED_OUT' ? (
-        <Tabs value={activeTab} className="w-full">
-          <div className="bg-card border-b">
-            <TabsList className="max-w-6xl mx-auto px-4 h-14 bg-card shadow-none rounded-none">
-              <Link href={`/user/${username}`} passHref>
-                <TabsTrigger
-                  value="timeline"
-                  className="px-4 py-2 data-[state=active]:shadow-none data-[state=active]:text-sky-500 cursor-pointer"
-                >
-                  <Newspaper className="w-4 h-4 mr-2" />
-                  Bài viết
-                </TabsTrigger>
-              </Link>
-
-              <Link href={`/user/${username}/photos`} passHref>
-                <TabsTrigger
-                  value="photos"
-                  className="px-4 py-2 data-[state=active]:shadow-none data-[state=active]:text-sky-500 cursor-pointer"
-                >
-                  <Grid3x3 className="w-4 h-4 mr-2" />
-                  Ảnh
-                </TabsTrigger>
-              </Link>
-
-              {(viewAsType === 'OWNER' || viewAsType === 'FRIEND') && (
-                <Link href={`/user/${username}/friends`} passHref>
-                  <TabsTrigger
-                    value="friends"
-                    className="px-4 py-2 data-[state=active]:shadow-none data-[state=active]:text-sky-500 cursor-pointer"
-                  >
-                    <Users className="w-4 h-4 mr-2" />
-                    Bạn bè
-                  </TabsTrigger>
-                </Link>
-              )}
-            </TabsList>
-          </div>
-        </Tabs>
+        <ProfileTabs
+          activeTab={activeTab}
+          username={username}
+          viewAsType={viewAsType}
+        />
       ) : (
         <div className="h-14" />
       )}
