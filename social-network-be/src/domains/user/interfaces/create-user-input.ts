@@ -1,4 +1,3 @@
-import { Types } from 'mongoose';
 import { Gender } from 'src/share/enums';
 
 export interface CreateUserData {
@@ -8,14 +7,5 @@ export interface CreateUserData {
   lastName: string;
   gender: Gender;
   birthDate: string;
-  username: string;
-}
-
-export interface UserBasicData {
-  _id: Types.ObjectId;
-  avatar: string;
-  email: string;
-  firstName: string;
-  lastName: string;
   username: string;
 }

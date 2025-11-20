@@ -1,4 +1,3 @@
-export * from './user.interface';
-export * from './friendship.interface';
-export * from './profile.interface';
-export * from './relationship.type';
+export * from './user';
+export * from './user-friend-context-result';
+export * from './create-user-input';
