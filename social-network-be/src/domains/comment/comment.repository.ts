@@ -102,7 +102,7 @@ export class CommentRepository extends ReactableRepository<CommentDocument> {
     userId: string,
     limit: number,
     cursor?: CommentCursorData,
-  ): Promise<Comment[]> {
+  ): Promise<CommentWithMyReactionAndPriorityModel<Types.ObjectId, string>[]> {
     const postIdObj = new Types.ObjectId(postId);
     const userIdObj = new Types.ObjectId(userId);
 
@@ -178,7 +178,7 @@ export class CommentRepository extends ReactableRepository<CommentDocument> {
         },
       },
     });
-    return this.model.aggregate<Comment>(pipeline);
+    return this.model.aggregate(pipeline);
   }
 
   async getCommentReplies(
@@ -186,7 +186,9 @@ export class CommentRepository extends ReactableRepository<CommentDocument> {
     userId: string,
     limit: number = 20,
     cursor?: ReplyCursorData,
-  ): Promise<ReplyComment[]> {
+  ): Promise<
+    CommentWithMyReactionAndPriorityModel<Types.ObjectId, Types.ObjectId>[]
+  > {
     const parentIdObj = new Types.ObjectId(commentId);
     const userIdObj = new Types.ObjectId(userId);
 
@@ -257,12 +259,12 @@ export class CommentRepository extends ReactableRepository<CommentDocument> {
 
     pipeline.push(...commonLookupStages);
 
-    return this.model.aggregate<ReplyComment>(pipeline);
+    return this.model.aggregate(pipeline);
   }
   async findTopCommentsForPosts(
     postIdsInp: string[],
     userIdInp: string,
-  ): Promise<Comment[]> {
+  ): Promise<CommentWithMyReactionModel<Types.ObjectId, string>[]> {
     const postIds = postIdsInp.map((id) => new Types.ObjectId(id));
     const userId = new Types.ObjectId(userIdInp);
     const { GRAVITY, REPLY_WEIGHT, MILLISECONDS_IN_HOUR } =
