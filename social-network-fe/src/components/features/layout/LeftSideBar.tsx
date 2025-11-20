@@ -1,8 +1,6 @@
 'use client';
-
 import { useState } from 'react';
 import Link from 'next/link';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   Home,
@@ -19,6 +17,7 @@ import {
 import { useStore } from '@/store';
 import { useLogout } from '@/hooks/auth/useAuth';
 import { useCreatePostContext } from '../feed/FeedContext';
+import { UserAvatar } from '@/components/ui/user-avatar';
 
 const NAV_ITEMS = [
   { id: 'home', label: 'Trang chủ', icon: Home, href: '/' },
@@ -82,11 +81,13 @@ const LeftSidebar = () => {
       <VibeLogo />
 
       <div className="flex items-center gap-3 py-4 border-b border-gray-100 px-6">
-        <Avatar className="w-10 h-10 bg-blue-500 rounded-full flex-shrink-0">
-          <AvatarFallback className="bg-blue-500 text-white font-semibold text-sm">
-            {user?.firstName[0]}
-          </AvatarFallback>
-        </Avatar>
+        <UserAvatar
+          name={user?.firstName}
+          src={user?.avatar?.url || '/user.png'}
+          className="w-10 h-10 bg-blue-500 rounded-full flex-shrink-0"
+          size={128}
+        />
+
         <div className="flex flex-col overflow-hidden">
           <span className="font-semibold text-gray-900 text-sm truncate">
             {userName}

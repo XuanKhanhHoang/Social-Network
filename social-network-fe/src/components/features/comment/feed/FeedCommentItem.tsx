@@ -1,5 +1,4 @@
 'use-client';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { timeAgo } from '@/lib/utils/time';
 import { generateHTML } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -7,6 +6,7 @@ import { Emoji } from '@/lib/editor/emoji-node';
 import { CommentReactionButton } from '@/components/wrappers/CommentReaction';
 import { CommentWithMyReaction } from '@/lib/interfaces/comment';
 import ContainedMedia from '../../media/common/ContainedMedia';
+import { UserAvatar } from '@/components/ui/user-avatar';
 export type FeedCommentItemProps = {
   comment: CommentWithMyReaction;
 };
@@ -16,12 +16,7 @@ export default function FeedCommentItem({ comment }: FeedCommentItemProps) {
     : '';
   return (
     <div className="flex gap-3">
-      <Avatar className="w-8 h-8">
-        <AvatarImage src={comment.author.avatar} />
-        <AvatarFallback>
-          {comment.author.firstName[0]?.toUpperCase()}
-        </AvatarFallback>
-      </Avatar>
+      <UserAvatar name={comment.author.firstName} src={comment.author.avatar} />
 
       <div className="flex-1">
         <div className="bg-gray-100 rounded-lg px-3 py-2">

@@ -1,7 +1,7 @@
 'use client';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { UserSummary } from '@/lib/interfaces/user';
 import Link from 'next/link';
 
@@ -38,10 +38,12 @@ export function FriendsCard({
                 key={friend.id}
                 className="flex flex-col items-center group"
               >
-                <Avatar className="w-16 h-16 mb-1">
-                  <AvatarImage src={friend.avatar} />
-                  <AvatarFallback>{friend.firstName.charAt(0)}</AvatarFallback>
-                </Avatar>
+                <UserAvatar
+                  name={friend.firstName}
+                  src={friend.avatar?.url}
+                  className="w-16 h-16 mb-1"
+                  size={128}
+                />
                 <span className="text-xs font-medium text-center truncate w-full group-hover:underline">
                   {friend.lastName + ' ' + friend.firstName}
                 </span>
