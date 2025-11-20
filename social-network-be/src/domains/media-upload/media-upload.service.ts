@@ -43,9 +43,21 @@ export class MediaUploadService {
   async findMedia(mediaIds: string[]) {
     if (mediaIds.length === 0) return [];
     const mediaIdObjs = mediaIds.map((id) => new Types.ObjectId(id));
-    return (
+    const unorderedMedia = (
       await this.mediaModel.find({ _id: { $in: mediaIdObjs } }).lean()
     ).map((item) => ({ ...item, _id: item._id.toString() }));
+    const mediaMap = new Map<string, MediaUploadDocument & { _id: string }>();
+    for (const item of unorderedMedia) {
+      mediaMap.set(item._id, item as any);
+    }
+    const orderedMedia = mediaIds
+      .map((id) => mediaMap.get(id))
+      .filter(
+        (item): item is MediaUploadDocument & { _id: string } =>
+          item !== undefined,
+      );
+
+    return orderedMedia;
   }
   private uploadStream(buffer: Buffer, options: any): Promise<any> {
     return new Promise((resolve, reject) => {
