@@ -5,19 +5,19 @@ import {
   BaseQueryOptions,
   BaseRepository,
 } from 'src/share/base-class/base-repository.service';
-import {
-  CreateUserData,
-  PopulatedFriend,
-  UserBasicData,
-  UserFriendsContextData,
-  UserProfile,
-} from './interfaces';
 import { UserDocument } from 'src/schemas';
+import {
+  UserMinimalModel,
+  UserMinimalWithEmailModel,
+  UserFriendsContextResult,
+  UserProfileModel,
+  CreateUserData,
+} from './interfaces';
 
 @Injectable()
 export class UserRepository extends BaseRepository<UserDocument> {
   constructor(
-    @InjectModel(UserDocument.name)
+    @InjectModel('User')
     private readonly userModel: Model<UserDocument>,
   ) {
     super(userModel);
@@ -59,14 +59,18 @@ export class UserRepository extends BaseRepository<UserDocument> {
       { projection: '+password' },
     );
   }
-  async findByIdBasic(userId: string): Promise<UserBasicData | null> {
-    return this.findLeanedById<UserBasicData>(userId, {
+  async findByIdBasic(
+    userId: string,
+  ): Promise<UserMinimalWithEmailModel<Types.ObjectId> | null> {
+    return this.findLeanedById(userId, {
       projection: 'avatar email firstName lastName username',
     });
   }
 
-  async findProfileByUsername(username: string): Promise<UserProfile | null> {
-    return this.findOneLean<UserProfile>(
+  async findProfileByUsername(
+    username: string,
+  ): Promise<UserProfileModel<Types.ObjectId> | null> {
+    return this.findOneLean(
       { username },
       {
         projection:
@@ -85,7 +89,7 @@ export class UserRepository extends BaseRepository<UserDocument> {
     limit: number;
     cursor?: number;
   }): Promise<{
-    data: PopulatedFriend[];
+    data: UserMinimalModel<Types.ObjectId>[];
     nextCursor: number | null;
   }> {
     const skip = cursor || 0;
@@ -114,16 +118,16 @@ export class UserRepository extends BaseRepository<UserDocument> {
       })
       .select('firstName lastName username avatar')
       .lean()
-      .exec()) as unknown as PopulatedFriend[];
+      .exec()) as unknown as UserMinimalModel<Types.ObjectId>[];
 
-    const friendMap = new Map<string, PopulatedFriend>();
+    const friendMap = new Map<string, UserMinimalModel<Types.ObjectId>>();
     friendsData.forEach((friend) =>
       friendMap.set(friend._id.toString(), friend),
     );
 
     const orderedFriends = friendIdsToFetch
       .map((id) => friendMap.get(id.toString()))
-      .filter((f) => f) as PopulatedFriend[];
+      .filter((f) => f) as UserMinimalModel<Types.ObjectId>[];
 
     const nextCursor = orderedFriends.length === limit ? skip + limit : null;
 
@@ -135,8 +139,8 @@ export class UserRepository extends BaseRepository<UserDocument> {
 
   async findUserFriendsContextByUsername(
     username: string,
-  ): Promise<UserFriendsContextData | null> {
-    return this.findOneLean<UserFriendsContextData>(
+  ): Promise<UserFriendsContextResult | null> {
+    return this.findOneLean<UserFriendsContextResult>(
       { username },
       {
         projection: 'friendCount privacySettings.friendList',
@@ -177,5 +181,39 @@ export class UserRepository extends BaseRepository<UserDocument> {
     );
 
     return !!requestingUser;
+  }
+  async getAccount(
+    userId: string,
+  ): Promise<
+    Pick<
+      UserDocument,
+      | 'privacySettings'
+      | 'email'
+      | 'phoneNumber'
+      | 'birthDate'
+      | 'gender'
+      | 'firstName'
+      | 'lastName'
+      | 'username'
+      | '_id'
+    >
+  > {
+    return this.userModel
+      .findById(new Types.ObjectId(userId))
+      .select(
+        'firstName lastName phoneNumber birthDate gender privacySettings email username',
+      )
+      .lean();
+  }
+  async updateAccount(
+    userId: string,
+    data: Partial<UserDocument>,
+  ): Promise<UserDocument | null> {
+    return this.userModel
+      .findByIdAndUpdate(new Types.ObjectId(userId), data, { new: true })
+      .select(
+        'firstName lastName phoneNumber birthDate gender privacySettings email username',
+      )
+      .lean();
   }
 }
