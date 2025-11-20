@@ -7,13 +7,10 @@ import {
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectConnection } from '@nestjs/mongoose';
 import { MediaType } from 'express';
-import { ClientSession, Connection, UpdateQuery } from 'mongoose';
-import {
-  MediaBasicDataWithCaption,
-  MediaUpload,
-} from 'src/domains/media-upload/interfaces/type';
+import { ClientSession, Connection, Types, UpdateQuery } from 'mongoose';
+import { MediaUpload } from 'src/domains/media-upload/interfaces/type';
 import { MediaUploadService } from 'src/domains/media-upload/media-upload.service';
-import { Post } from 'src/domains/post/interfaces/post.type';
+import { PostModel } from 'src/domains/post/interfaces';
 import { PostRepository } from 'src/domains/post/post.repository';
 
 import { PostDocument } from 'src/schemas';
@@ -22,7 +19,7 @@ import { UserPrivacy } from 'src/share/enums';
 import { PostEvents } from 'src/share/events';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 
-interface UpdatePostInput {
+export interface UpdatePostInput {
   userId: string;
   postId: string;
   data: {
@@ -35,11 +32,11 @@ interface UpdatePostInput {
     visibility?: UserPrivacy;
   };
 }
-interface UpdatePostOutput extends Post {}
+export interface UpdatePostOutput extends PostModel<Types.ObjectId> {}
 @Injectable()
 export class UpdatePostService extends BaseUseCaseService<
   UpdatePostInput,
-  Post
+  UpdatePostOutput
 > {
   constructor(
     @InjectConnection() private readonly connection: Connection,
@@ -50,7 +47,7 @@ export class UpdatePostService extends BaseUseCaseService<
     super();
   }
   private readonly logger = new Logger(UpdatePostService.name);
-  async execute(input: UpdatePostInput): Promise<Post> {
+  async execute(input: UpdatePostInput): Promise<UpdatePostOutput> {
     const session = await this.connection.startSession();
 
     try {
@@ -67,11 +64,11 @@ export class UpdatePostService extends BaseUseCaseService<
         let deletedMedias = [];
         if (mediaToDelete.length > 0)
           deletedMedias = await this.mediaUploadService.batchDeleteFromDb(
-            mediaToDelete.map((m) => m?.mediaId),
+            mediaToDelete,
             session,
           );
 
-        const updateData: UpdateQuery<Post> = {
+        const updateData: UpdateQuery<PostDocument> = {
           $set: {
             updatedAt: new Date(),
           },
@@ -136,13 +133,13 @@ export class UpdatePostService extends BaseUseCaseService<
     }
   }
   private calculateMediaChanges(
-    post: Post | PostDocument,
+    post: PostModel<Types.ObjectId> | PostDocument,
     mediaInUse:
       | { mediaId: string; caption?: string; order?: number }[]
       | undefined
       | null,
   ): {
-    mediaToDelete: MediaBasicDataWithCaption<string>[];
+    mediaToDelete: string[];
   } {
     if (mediaInUse == undefined)
       return {
