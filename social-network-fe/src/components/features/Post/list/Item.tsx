@@ -89,7 +89,7 @@ function PostItem({ post }: PostItemProps) {
       </div>
 
       {post.topComment && (
-        <div className="mt-2 pt-3 ">
+        <div className="mt-2 pt-3 px-2">
           {<FeedCommentItem comment={post.topComment} />}
         </div>
       )}

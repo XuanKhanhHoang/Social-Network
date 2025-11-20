@@ -14,7 +14,6 @@ export function UserProvider({
   const setUser = useStore((s) => s.setUser);
 
   useEffect(() => {
-    console.log('initialUser', initialUser);
     if (initialUser) setUser(initialUser);
   }, [initialUser, setUser]);
 

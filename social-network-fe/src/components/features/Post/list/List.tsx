@@ -28,7 +28,6 @@ function PostList({
       fetchNextPage();
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
-
   return (
     <div className="space-y-4">
       {posts.map((post, index) => (
