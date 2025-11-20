@@ -103,12 +103,10 @@ export function useCreatePost() {
           };
         }
       );
-      console.log(res.media);
       if (!res.media || res.media.length == 0) return;
       const newPhotos = res.media.filter(
         (m) => m.mediaType === MediaType.IMAGE
       );
-      console.log(newPhotos);
       if (newPhotos.length > 0) {
         queryClient.setQueryData(
           userKeys.photo(username),
