@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from 'src/domains/auth/jwt-auth.guard';
 import { AllowSemiPublic } from 'src/share/decorators/allow-semi-public.decorator';
 import { GetUserId } from 'src/share/decorators/user.decorator';
@@ -10,9 +18,14 @@ import {
   GetUserPhotosService,
   GetUserHeaderService,
   GetUserPostsService,
+  UpdateProfileService,
 } from 'src/use-case/user';
 import { GetUserPostsQueryDto } from './dto/get-user-post.dto';
 import { CursorPaginationQueryDto } from 'src/share/dto/req/cursor-pagination-query.dto';
+import { UpdateProfileDto } from './dto/update-user-profile';
+import { GetAccountService } from 'src/use-case/user/get-account/get-account.service';
+import { UpdateAccountService } from 'src/use-case/user/update-account/update-account.service';
+import { UpdateAccountDto } from './dto/update-account.dto';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard)
@@ -25,6 +38,9 @@ export class UserApiController {
     private readonly getUserPhotosPreviewService: GetUserPhotosService,
     private readonly getUserHeaderService: GetUserHeaderService,
     private readonly getUserPostsService: GetUserPostsService,
+    private readonly updateProfileService: UpdateProfileService,
+    private readonly getAccountService: GetAccountService,
+    private readonly updateAccountService: UpdateAccountService,
   ) {}
 
   @Get('me')
@@ -103,6 +119,30 @@ export class UserApiController {
       ...query,
       userId: requestingUserId,
       username,
+    });
+  }
+  @Patch(':username/profile')
+  async updateProfile(
+    @GetUserId() requestingUserId: string,
+    @Body() body: UpdateProfileDto,
+  ) {
+    return this.updateProfileService.execute({
+      ...body,
+      requestingUserId,
+    });
+  }
+  @Get('account')
+  async getAccount(@GetUserId() requestingUserId: string) {
+    return this.getAccountService.execute({ userId: requestingUserId });
+  }
+  @Patch('account')
+  async updateAccount(
+    @GetUserId() requestingUserId: string,
+    @Body() dto: UpdateAccountDto,
+  ) {
+    return this.updateAccountService.execute({
+      userId: requestingUserId,
+      ...dto,
     });
   }
 }
