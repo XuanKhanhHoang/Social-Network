@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import { Types } from 'mongoose';
 import { CommentRepository } from 'src/domains/comment/comment.repository';
 import { ReactionTargetType } from 'src/share/enums';
+import { UserEvents, UserUpdatedEventPayload } from 'src/share/events';
 import {
   ReactionCreatedEventPayload,
   ReactionEvents,
@@ -65,6 +67,40 @@ export class ListenersService {
         `Failed to update reaction count for comment ${payload.targetId}`,
         error.stack,
       );
+    }
+  }
+  @OnEvent(UserEvents.updated)
+  async handleUserUpdate(payload: UserUpdatedEventPayload) {
+    const { newData, userId } = payload;
+
+    const updateSet = {};
+
+    if (newData.avatar !== undefined) {
+      updateSet['author.avatar'] = newData.avatar;
+    }
+    if (newData.firstName !== undefined) {
+      updateSet['author.firstName'] = newData.firstName;
+    }
+    if (newData.lastName !== undefined) {
+      updateSet['author.lastName'] = newData.lastName;
+    }
+    if (newData.username !== undefined) {
+      updateSet['author.username'] = newData.username;
+    }
+    if (Object.keys(updateSet).length === 0) return;
+
+    try {
+      const res = await this.commentRepository.updateMany(
+        { 'author._id': new Types.ObjectId(userId) },
+        { $set: updateSet },
+      );
+      if (res.modifiedCount == 0)
+        return this.logger.warn(`Comment for user ${userId} not found`);
+      this.logger.log(
+        `Updated user information for ${res.modifiedCount} comments on user: ${userId}`,
+      );
+    } catch (error) {
+      this.logger.error('Update user information error: ', error);
     }
   }
 }
