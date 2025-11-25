@@ -1,61 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { RelationshipType } from './interfaces/relationship.type';
+import { Injectable } from '@nestjs/common';
 import { UserPrivacy } from 'src/share/enums';
 import { UserRepository } from './user.repository';
-import { GetProfileAndRelationshipResult } from './interfaces/get-profile-and-relationship-results';
+import { PrivacySettings, UserDocument } from 'src/schemas';
 
 @Injectable()
 export class UserDomainsService {
   constructor(private readonly userRepository: UserRepository) {}
-
-  async getProfileAndRelationship(
-    username: string,
-    requestingUserId: string | null,
-  ): Promise<GetProfileAndRelationshipResult> {
-    const profileUser =
-      await this.userRepository.findProfileByUsername(username);
-
-    if (!profileUser) {
-      throw new NotFoundException('User not found');
-    }
-
-    const profileUserIdStr = profileUser._id.toString();
-    const isOwner = requestingUserId && profileUserIdStr === requestingUserId;
-    if (isOwner) {
-      return {
-        profileUser,
-        isOwner,
-        isFriend: false,
-        relationship: 'OWNER',
-        friendCount: profileUser.friendCount,
-      };
-    }
-    const isFriend =
-      !isOwner &&
-      requestingUserId &&
-      (await this.userRepository.areFriends(
-        requestingUserId,
-        profileUserIdStr,
-      ));
-
-    const relationship: RelationshipType = isOwner
-      ? 'OWNER'
-      : isFriend
-        ? 'FRIEND'
-        : 'PUBLIC';
-    if (
-      relationship === 'FRIEND' &&
-      this.canView(profileUser.privacySettings.friendList, isOwner, isFriend)
-    )
-      return {
-        profileUser,
-        isOwner,
-        isFriend,
-        relationship,
-        friendCount: profileUser.friendCount,
-      };
-    return { profileUser, isOwner, isFriend, relationship };
-  }
 
   async generateUniqueUsername(
     firstName: string,
@@ -106,5 +56,39 @@ export class UserDomainsService {
       default:
         return false;
     }
+  }
+  getElementsCanView(
+    elements: Pick<
+      UserDocument,
+      'friendCount' | 'work' | 'currentLocation' | 'provinceCode'
+    > & { friendsList?: any } & any,
+    privacySettings: PrivacySettings,
+    isOwner: boolean,
+    isFriend: boolean,
+  ) {
+    const { friendCount, work, currentLocation, provinceCode, friendsList } =
+      elements;
+    const response: Partial<
+      Pick<
+        UserDocument,
+        'friendCount' | 'work' | 'currentLocation' | 'provinceCode'
+      > & { friendsList?: any }
+    > = {};
+    if (this.canView(privacySettings.friendCount, isOwner, isFriend)) {
+      response.friendCount = friendCount;
+    }
+    if (this.canView(privacySettings.work, isOwner, isFriend)) {
+      response.work = work;
+    }
+    if (this.canView(privacySettings.currentLocation, isOwner, isFriend)) {
+      response.currentLocation = currentLocation;
+    }
+    if (this.canView(privacySettings.provinceCode, isOwner, isFriend)) {
+      response.provinceCode = provinceCode;
+    }
+    if (this.canView(privacySettings.friendList, isOwner, isFriend)) {
+      response.friendsList = friendsList;
+    }
+    return response;
   }
 }

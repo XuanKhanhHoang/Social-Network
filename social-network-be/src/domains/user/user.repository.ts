@@ -1,17 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types, FilterQuery } from 'mongoose';
+import { Model, Types, FilterQuery, PipelineStage } from 'mongoose';
 import {
   BaseQueryOptions,
   BaseRepository,
 } from 'src/share/base-class/base-repository.service';
 import { UserDocument } from 'src/schemas';
 import {
-  UserMinimalModel,
   UserMinimalWithEmailModel,
   UserFriendsContextResult,
   UserProfileModel,
   CreateUserData,
+  SuggestedFriendData,
+  SuggestedFriendResult,
+  UserMinimalModel,
 } from './interfaces';
 
 @Injectable()
@@ -22,27 +24,21 @@ export class UserRepository extends BaseRepository<UserDocument> {
   ) {
     super(userModel);
   }
-  async findUserWithFriend(
-    userId: string,
-    friendId: string,
-  ): Promise<UserDocument | null> {
-    return this.findOne({
-      _id: new Types.ObjectId(userId),
-      friends: new Types.ObjectId(friendId),
-    });
-  }
+
   async findByEmail(
     email: string,
     options?: BaseQueryOptions<UserDocument>,
   ): Promise<UserDocument | null> {
     return this.findOne({ email }, options);
   }
+
   async findByUsername(
     username: string,
     options?: BaseQueryOptions<UserDocument>,
   ): Promise<UserDocument | null> {
     return this.findOne({ username }, options);
   }
+
   async getIdBysUsername(
     username: string,
     options?: BaseQueryOptions<UserDocument>,
@@ -53,12 +49,14 @@ export class UserRepository extends BaseRepository<UserDocument> {
     );
     return (user?._id || null) as Types.ObjectId | null;
   }
+
   async findByEmailAndVerified(email: string): Promise<UserDocument | null> {
     return this.findOne(
       { email, isVerified: true },
       { projection: '+password' },
     );
   }
+
   async findByIdBasic(
     userId: string,
   ): Promise<UserMinimalWithEmailModel<Types.ObjectId> | null> {
@@ -75,66 +73,9 @@ export class UserRepository extends BaseRepository<UserDocument> {
       {
         projection:
           'firstName lastName username avatar coverPhoto ' +
-          'privacySettings friendCount bio work currentLocation friends',
+          'privacySettings friendCount bio work currentLocation provinceCode',
       },
     );
-  }
-
-  async findFriendsList({
-    userId,
-    limit,
-    cursor,
-  }: {
-    userId: string;
-    limit: number;
-    cursor?: number;
-  }): Promise<{
-    data: UserMinimalModel<Types.ObjectId>[];
-    nextCursor: number | null;
-  }> {
-    const skip = cursor || 0;
-
-    const userWithPartialFriends = await this.model
-      .findById(userId)
-      .select({
-        friends: { $slice: [skip, limit] },
-      })
-      .lean()
-      .exec();
-
-    if (!userWithPartialFriends) {
-      throw new NotFoundException('User not found');
-    }
-
-    const friendIdsToFetch = userWithPartialFriends.friends || [];
-
-    if (friendIdsToFetch.length === 0) {
-      return { data: [], nextCursor: null };
-    }
-
-    const friendsData = (await this.model
-      .find({
-        _id: { $in: friendIdsToFetch },
-      })
-      .select('firstName lastName username avatar')
-      .lean()
-      .exec()) as unknown as UserMinimalModel<Types.ObjectId>[];
-
-    const friendMap = new Map<string, UserMinimalModel<Types.ObjectId>>();
-    friendsData.forEach((friend) =>
-      friendMap.set(friend._id.toString(), friend),
-    );
-
-    const orderedFriends = friendIdsToFetch
-      .map((id) => friendMap.get(id.toString()))
-      .filter((f) => f) as UserMinimalModel<Types.ObjectId>[];
-
-    const nextCursor = orderedFriends.length === limit ? skip + limit : null;
-
-    return {
-      data: orderedFriends,
-      nextCursor: nextCursor,
-    };
   }
 
   async findUserFriendsContextByUsername(
@@ -147,6 +88,7 @@ export class UserRepository extends BaseRepository<UserDocument> {
       },
     );
   }
+
   async findUserIdByUsername(
     username: string,
   ): Promise<{ _id: string } | null> {
@@ -155,6 +97,7 @@ export class UserRepository extends BaseRepository<UserDocument> {
       { projection: '_id' },
     );
   }
+
   async createUser(userDto: CreateUserData): Promise<UserDocument> {
     const user = new this.userModel(userDto);
     return user.save();
@@ -167,21 +110,6 @@ export class UserRepository extends BaseRepository<UserDocument> {
     return { deletedCount: result.deletedCount };
   }
 
-  async areFriends(
-    requestingUserId: string,
-    profileUserId: string,
-  ): Promise<boolean> {
-    if (requestingUserId === profileUserId) {
-      return false;
-    }
-
-    const requestingUser = await this.findUserWithFriend(
-      requestingUserId,
-      profileUserId,
-    );
-
-    return !!requestingUser;
-  }
   async getAccount(
     userId: string,
   ): Promise<
@@ -205,6 +133,7 @@ export class UserRepository extends BaseRepository<UserDocument> {
       )
       .lean();
   }
+
   async updateAccount(
     userId: string,
     data: Partial<UserDocument>,
@@ -215,5 +144,237 @@ export class UserRepository extends BaseRepository<UserDocument> {
         'firstName lastName phoneNumber birthDate gender privacySettings email username',
       )
       .lean();
+  }
+  async findFriendSuggestions({
+    provinceCode,
+    detectedCity,
+    limit,
+    cursor,
+    mutualFriendIds = [],
+    excludeIds = [],
+  }: SuggestedFriendData): Promise<SuggestedFriendResult> {
+    const pipeline: PipelineStage[] = [];
+
+    const mutualFriendObjIds = mutualFriendIds.map(
+      (id) => new Types.ObjectId(id),
+    );
+
+    pipeline.push({
+      $match: {
+        _id: { $nin: excludeIds.map((id) => new Types.ObjectId(id)) },
+        isVerified: true,
+      },
+    });
+
+    pipeline.push({
+      $addFields: {
+        isMutualFriend: { $in: ['$_id', mutualFriendObjIds] },
+        isSameProvince: {
+          $and: [
+            { $ne: [provinceCode, null] },
+            { $eq: ['$provinceCode', provinceCode] },
+          ],
+        },
+        isSameDetectedCity: {
+          $and: [
+            { $ne: [detectedCity, null] },
+            { $eq: ['$detectedCity', detectedCity] },
+          ],
+        },
+      },
+    });
+
+    pipeline.push({
+      $addFields: {
+        suggestionScore: {
+          $add: [
+            { $cond: ['$isSameProvince', 10, 0] },
+            { $cond: ['$isMutualFriend', 7, 0] },
+            { $cond: ['$isSameDetectedCity', 5, 0] },
+          ],
+        },
+      },
+    });
+
+    if (cursor) {
+      pipeline.push({
+        $match: {
+          $or: [
+            { suggestionScore: { $lt: cursor.lastScore } },
+            {
+              $and: [
+                { suggestionScore: { $eq: cursor.lastScore } },
+                { _id: { $lt: new Types.ObjectId(cursor.lastId) } },
+              ],
+            },
+          ],
+        },
+      });
+    }
+
+    pipeline.push({
+      $sort: {
+        suggestionScore: -1,
+        _id: -1,
+      },
+    });
+
+    pipeline.push({ $limit: limit });
+    pipeline.push({
+      $project: {
+        firstName: 1,
+        lastName: 1,
+        username: 1,
+        avatar: 1,
+        suggestionScore: 1,
+      },
+    });
+
+    return this.model.aggregate(pipeline);
+  }
+
+  async getUsernameById(id: string): Promise<{
+    username: string;
+    _id: Types.ObjectId;
+  } | null> {
+    return this.model.findById(id, { username: 1 }).lean() as any;
+  }
+
+  async searchUsers(
+    query: string,
+    limit: number,
+    cursor?: string,
+    excludeIds: string[] = [],
+  ): Promise<UserDocument[]> {
+    const pipeline: PipelineStage[] = [];
+
+    pipeline.push({
+      $match: {
+        _id: { $nin: excludeIds.map((id) => new Types.ObjectId(id)) },
+      },
+    });
+
+    pipeline.push({
+      $match: {
+        $expr: {
+          $or: [
+            {
+              $regexMatch: {
+                input: '$firstName',
+                regex: query,
+                options: 'i',
+              },
+            },
+            {
+              $regexMatch: {
+                input: '$lastName',
+                regex: query,
+                options: 'i',
+              },
+            },
+            {
+              $regexMatch: {
+                input: '$username',
+                regex: query,
+                options: 'i',
+              },
+            },
+            {
+              $regexMatch: {
+                input: { $concat: ['$firstName', ' ', '$lastName'] },
+                regex: query,
+                options: 'i',
+              },
+            },
+          ],
+        },
+      },
+    });
+
+    if (cursor) {
+      pipeline.push({
+        $match: {
+          _id: { $lt: new Types.ObjectId(cursor) },
+        },
+      });
+    }
+
+    pipeline.push({ $sort: { _id: -1 } });
+    pipeline.push({ $limit: limit });
+
+    return this.model.aggregate(pipeline);
+  }
+
+  async findManyByIdsAndSearch(
+    ids: string[],
+    query: string,
+    limit: number,
+    cursor?: string,
+  ): Promise<UserMinimalModel<Types.ObjectId>[]> {
+    const pipeline: PipelineStage[] = [];
+
+    pipeline.push({
+      $match: {
+        _id: { $in: ids.map((id) => new Types.ObjectId(id)) },
+      },
+    });
+
+    pipeline.push({
+      $match: {
+        $expr: {
+          $or: [
+            {
+              $regexMatch: {
+                input: '$firstName',
+                regex: query,
+                options: 'i',
+              },
+            },
+            {
+              $regexMatch: {
+                input: '$lastName',
+                regex: query,
+                options: 'i',
+              },
+            },
+            {
+              $regexMatch: {
+                input: '$username',
+                regex: query,
+                options: 'i',
+              },
+            },
+            {
+              $regexMatch: {
+                input: { $concat: ['$firstName', ' ', '$lastName'] },
+                regex: query,
+                options: 'i',
+              },
+            },
+          ],
+        },
+      },
+    });
+
+    if (cursor) {
+      pipeline.push({
+        $match: {
+          _id: { $lt: new Types.ObjectId(cursor) },
+        },
+      });
+    }
+
+    pipeline.push({ $sort: { _id: -1 } });
+    pipeline.push({ $limit: limit });
+    pipeline.push({
+      $project: {
+        firstName: 1,
+        lastName: 1,
+        username: 1,
+        avatar: 1,
+      },
+    });
+
+    return this.model.aggregate(pipeline);
   }
 }

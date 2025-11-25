@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
+import { FriendshipRepository } from 'src/domains/friendship/friendship.repository';
 import { PostPhotoModel } from 'src/domains/post/interfaces';
 import { PostRepository } from 'src/domains/post/post.repository';
 import { UserRepository } from 'src/domains/user/user.repository';
@@ -25,6 +26,7 @@ export class GetUserPhotosService extends BaseUseCaseService<
   constructor(
     private readonly userRepo: UserRepository,
     private readonly postRepo: PostRepository,
+    private readonly friendshipService: FriendshipRepository,
   ) {
     super();
   }
@@ -38,7 +40,10 @@ export class GetUserPhotosService extends BaseUseCaseService<
     if (requestingUserId == userId) {
       userPrivacies.push(UserPrivacy.PRIVATE, UserPrivacy.FRIENDS);
     } else if (
-      await this.userRepo.areFriends(userId as string, requestingUserId)
+      await this.friendshipService.areFriends(
+        userId as string,
+        requestingUserId,
+      )
     ) {
       userPrivacies.push(UserPrivacy.FRIENDS);
     }
@@ -53,7 +58,7 @@ export class GetUserPhotosService extends BaseUseCaseService<
       data: res.photos,
       pagination: {
         hasMore: res.nextCursor !== null,
-        nextCursor: res.nextCursor + '',
+        nextCursor: res.nextCursor !== null ? String(res.nextCursor) : null,
       },
     };
   }

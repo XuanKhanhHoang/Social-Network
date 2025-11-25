@@ -5,17 +5,14 @@ import {
   Param,
   ParseEnumPipe,
   Post,
-  UseGuards,
 } from '@nestjs/common';
 import { GetUserId } from 'src/share/decorators/user.decorator';
 import { ReactionTargetType } from 'src/share/enums';
 import { RemoveReactionService } from 'src/use-case/reaction/remove-reaction/remove-reaction.service';
 import { ToggleReactionService } from 'src/use-case/reaction/toggle-reaction/toggle-reaction.service';
 import { ToggleReactionDto } from './dto/toggle-reaction.dto';
-import { JwtAuthGuard } from 'src/domains/auth/jwt-auth.guard';
 
 @Controller('reaction-api')
-@UseGuards(JwtAuthGuard)
 export class ReactionApiController {
   constructor(
     private readonly toggleReactionService: ToggleReactionService,

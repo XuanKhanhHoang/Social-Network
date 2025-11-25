@@ -32,11 +32,13 @@ function PostItem({ post }: PostItemProps) {
     <div className="bg-white rounded-sm shadow-sm p-0 mb-4 border border-gray-100">
       <div className="flex items-start justify-between mb-3 p-3">
         <div className="flex items-center">
-          <UserAvatar
-            name={post.author.firstName}
-            src={post.author.avatar}
-            className="me-2"
-          />
+          <Link href={`/user/${post.author.username}`}>
+            <UserAvatar
+              name={post.author.firstName}
+              src={post.author.avatar}
+              className="me-2"
+            />
+          </Link>
 
           <div>
             <h3 className="font-semibold text-gray-900 text-sm">

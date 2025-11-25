@@ -6,3 +6,4 @@ export * from './get-user-photos/get-user-photos.service';
 export * from './get-user-profile/get-user-profile.service';
 export * from './get-user-posts/get-user-posts.service';
 export * from './update-profile/update-profile.service';
+export * from './get-suggest-friends/get-suggest-friends.service';

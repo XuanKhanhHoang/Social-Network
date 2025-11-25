@@ -1,66 +1,85 @@
 import { Injectable } from '@nestjs/common';
-import { UserProfileWithRelationshipExceptFriendsModel } from 'src/domains/user/interfaces';
+import { Types } from 'mongoose';
+import { FriendshipRepository } from 'src/domains/friendship/friendship.repository';
+import { UserProfileWithRelationshipModel } from 'src/domains/user/interfaces';
 import { UserDomainsService } from 'src/domains/user/user-domains.service';
+import { UserRepository } from 'src/domains/user/user.repository';
+import { FriendshipStatus } from 'src/share/enums/friendship-status';
+import {
+  getVietnamProvinceByCode,
+  VietnamProvince,
+} from 'src/share/utils/is-province-code';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 
 export interface GetUserProfileInput {
   username: string;
   requestingUserId?: string;
 }
-export interface GetUserProfileOutput {}
+export type GetUserProfileOutput = Omit<
+  UserProfileWithRelationshipModel<Types.ObjectId>,
+  'provinceCode' | 'relationship'
+> & {
+  province?: VietnamProvince;
+  relationship: {
+    status: FriendshipStatus;
+    requesterId: string;
+    recipientId: string;
+  };
+};
 
 @Injectable()
 export class GetUserProfileService extends BaseUseCaseService<
   GetUserProfileInput,
   GetUserProfileOutput
 > {
-  constructor(private readonly userDomainService: UserDomainsService) {
+  constructor(
+    private readonly userDomainService: UserDomainsService,
+    private readonly friendshipService: FriendshipRepository,
+    private readonly userRepository: UserRepository,
+  ) {
     super();
   }
   async execute(input: GetUserProfileInput): Promise<GetUserProfileOutput> {
     const { username, requestingUserId } = input;
-    const { profileUser, isOwner, isFriend, relationship } =
-      await this.userDomainService.getProfileAndRelationship(
-        username,
-        requestingUserId,
-      );
+    const profileUser =
+      await this.userRepository.findProfileByUsername(username);
 
     const settings = profileUser.privacySettings;
 
-    const profileResponse: UserProfileWithRelationshipExceptFriendsModel<string> =
-      {
-        _id: profileUser._id.toString(),
-        firstName: profileUser.firstName,
-        lastName: profileUser.lastName,
-        username: profileUser.username,
-        avatar: profileUser.avatar,
-        coverPhoto: profileUser.coverPhoto,
-        bio: profileUser.bio,
-        work: undefined,
-        currentLocation: undefined,
-        friendCount: undefined,
-        privacySettings: profileUser.privacySettings,
-        relationship: relationship,
-      };
+    const isOwner = profileUser._id.toString() === requestingUserId;
+    const isFriend = await this.friendshipService.areFriends(
+      profileUser._id.toString(),
+      requestingUserId,
+    );
+    const relationshipObject = await this.friendshipService.findRelationship(
+      profileUser._id.toString(),
+      requestingUserId,
+    );
+    const relationship = relationshipObject?.status;
+    const profileResponse: GetUserProfileOutput = {
+      ...profileUser,
+      work: undefined,
+      currentLocation: undefined,
+      friendCount: undefined,
+      province: undefined,
+      relationship: {
+        status: relationship,
+        requesterId: relationshipObject?.requester.toString(),
+        recipientId: relationshipObject?.recipient.toString(),
+      },
+    };
 
-    if (this.userDomainService.canView(settings.work, isOwner, isFriend)) {
-      profileResponse.work = profileUser.work;
+    const elementsCanView = this.userDomainService.getElementsCanView(
+      profileUser,
+      settings,
+      isOwner,
+      isFriend,
+    );
+    let province: VietnamProvince | undefined;
+    if (elementsCanView.provinceCode) {
+      province = getVietnamProvinceByCode(+elementsCanView.provinceCode);
     }
-    if (
-      this.userDomainService.canView(
-        settings.currentLocation,
-        isOwner,
-        isFriend,
-      )
-    ) {
-      profileResponse.currentLocation = profileUser.currentLocation;
-    }
-    if (
-      this.userDomainService.canView(settings.friendList, isOwner, isFriend)
-    ) {
-      profileResponse.friendCount = profileUser.friendCount;
-    }
-
-    return profileResponse;
+    delete elementsCanView.provinceCode;
+    return { ...profileResponse, ...elementsCanView, province };
   }
 }

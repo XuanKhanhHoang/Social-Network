@@ -19,3 +19,7 @@ export type PostWithTopCommentAndUserReactionModel<
 > = PostWithMyReactionModel<Types.ObjectId> & {
   topComment: CommentWithMyReactionModel<T, U> | null;
 };
+
+export type PostWithRankingScore = PostWithMyReactionModel<Types.ObjectId> & {
+  rankingScore: number;
+};

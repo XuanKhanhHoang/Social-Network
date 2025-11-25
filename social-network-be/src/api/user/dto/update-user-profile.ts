@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsMongoId, IsOptional } from 'class-validator';
+import { IsProvinceCode } from 'src/share/decorators/is-provine-code.decorator';
 
 export class UpdateProfileDto {
   @IsMongoId()
@@ -18,4 +19,9 @@ export class UpdateProfileDto {
   @IsOptional()
   @Transform(({ value }) => value.trim())
   currentLocation?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => Number(value.trim()))
+  @IsProvinceCode()
+  provinceCode?: string;
 }

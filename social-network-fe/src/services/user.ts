@@ -3,6 +3,7 @@ import {
   GetPostsFeedResponseDto,
   GetUserBioResponseDto,
   GetUserFriendsPreviewResponseDto,
+  GetSuggestFriendsResponseDto,
   GetUserHeaderResponseDto,
   GetUserPhotosResponseDto,
   GetUserProfileResponseDto,
@@ -57,6 +58,17 @@ export const userService = {
         limit,
       }
     );
+    return ApiClient.get(endpoint);
+  },
+
+  async getSuggestFriends(
+    cursor?: string,
+    limit?: number
+  ): Promise<GetSuggestFriendsResponseDto> {
+    const endpoint = buildEndpointWithParams(`${USER_PREFIX}/suggest-friends`, {
+      cursor,
+      limit,
+    });
     return ApiClient.get(endpoint);
   },
 

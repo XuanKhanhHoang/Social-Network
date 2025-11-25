@@ -1,17 +1,7 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Patch,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
-import { JwtAuthGuard } from 'src/domains/auth/jwt-auth.guard';
+import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
 import { AllowSemiPublic } from 'src/share/decorators/allow-semi-public.decorator';
 import { GetUserId } from 'src/share/decorators/user.decorator';
 import {
-  GetMePreviewProfileService,
   GetUserBioService,
   GetUserFriendsPreviewService,
   GetUserProfileService,
@@ -19,35 +9,36 @@ import {
   GetUserHeaderService,
   GetUserPostsService,
   UpdateProfileService,
+  GetSuggestFriendsService,
+  GetMePreviewProfileService,
 } from 'src/use-case/user';
 import { GetUserPostsQueryDto } from './dto/get-user-post.dto';
-import { CursorPaginationQueryDto } from 'src/share/dto/req/cursor-pagination-query.dto';
-import { UpdateProfileDto } from './dto/update-user-profile';
 import { GetAccountService } from 'src/use-case/user/get-account/get-account.service';
 import { UpdateAccountService } from 'src/use-case/user/update-account/update-account.service';
+import { CursorPaginationQueryDto } from 'src/share/dto/req/cursor-pagination-query.dto';
+import { CursorPaginationWithSearchQueryDto } from 'src/share/dto/req/cursor-pagination-with-search-query.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
-
+import { UpdateProfileDto } from './dto/update-user-profile';
 @Controller('users')
-@UseGuards(JwtAuthGuard)
 export class UserApiController {
   constructor(
-    private readonly getMeProfileService: GetMePreviewProfileService,
+    private readonly getUserHeaderService: GetUserHeaderService,
     private readonly getUserBioService: GetUserBioService,
     private readonly getUserFriendsPreviewService: GetUserFriendsPreviewService,
     private readonly getUserProfileService: GetUserProfileService,
     private readonly getUserPhotosPreviewService: GetUserPhotosService,
-    private readonly getUserHeaderService: GetUserHeaderService,
     private readonly getUserPostsService: GetUserPostsService,
     private readonly updateProfileService: UpdateProfileService,
     private readonly getAccountService: GetAccountService,
     private readonly updateAccountService: UpdateAccountService,
+    private readonly getSuggestFriendsService: GetSuggestFriendsService,
+    private readonly getMeProfileService: GetMePreviewProfileService,
   ) {}
 
   @Get('me')
   async getMyProfile(@GetUserId() userId: string) {
     return this.getMeProfileService.execute({ userId });
   }
-
   @Get(':username/header')
   @AllowSemiPublic()
   async getUserHeader(
@@ -70,17 +61,18 @@ export class UserApiController {
   @AllowSemiPublic()
   async getFriendsPreview(
     @Param('username') username: string,
-    @Query() query: CursorPaginationQueryDto,
+    @Query() query: CursorPaginationWithSearchQueryDto,
     @GetUserId() requestingUserId?: string,
   ) {
-    const { limit, cursor: cursorStr } = query;
+    const { limit, cursor: cursorStr, search } = query;
     const cursorN = cursorStr ? Number(cursorStr) : undefined;
-    const cursor = isNaN(cursorN) ? undefined : cursorN;
+    const cursor = isNaN(cursorN) ? cursorStr : cursorN;
     return this.getUserFriendsPreviewService.execute({
       username,
-      requestingUserId: requestingUserId,
+      requestingUserId,
       limit,
       cursor,
+      search,
     });
   }
 
@@ -143,6 +135,18 @@ export class UserApiController {
     return this.updateAccountService.execute({
       userId: requestingUserId,
       ...dto,
+    });
+  }
+  @Get('suggest-friends')
+  async getSuggestFriends(
+    @GetUserId() requestingUserId: string,
+    @Query() query: CursorPaginationQueryDto,
+  ) {
+    const { limit, cursor } = query;
+    return this.getSuggestFriendsService.execute({
+      userId: requestingUserId,
+      limit,
+      cursor,
     });
   }
 }

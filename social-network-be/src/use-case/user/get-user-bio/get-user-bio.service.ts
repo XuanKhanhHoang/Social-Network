@@ -1,6 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { UserBioModel } from 'src/domains/user/interfaces';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { FriendshipRepository } from 'src/domains/friendship/friendship.repository';
 import { UserDomainsService } from 'src/domains/user/user-domains.service';
+import { UserRepository } from 'src/domains/user/user.repository';
+import {
+  getVietnamProvinceByCode,
+  VietnamProvince,
+} from 'src/share/utils/is-province-code';
+
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 
 export interface GetUserBioInput {
@@ -10,6 +16,7 @@ export interface GetUserBioInput {
 export interface GetUserBioOutput {
   bio?: string;
   work?: string;
+  province?: VietnamProvince;
   currentLocation?: string;
 }
 
@@ -18,35 +25,37 @@ export class GetUserBioService extends BaseUseCaseService<
   GetUserBioInput,
   GetUserBioOutput
 > {
-  constructor(private readonly userDomainsService: UserDomainsService) {
+  constructor(
+    private readonly userDomainsService: UserDomainsService,
+    private readonly userRepository: UserRepository,
+    private readonly friendshipService: FriendshipRepository,
+  ) {
     super();
   }
   async execute(input: GetUserBioInput): Promise<GetUserBioOutput> {
     const { username, requestingUserId } = input;
-    const { profileUser, isOwner, isFriend } =
-      await this.userDomainsService.getProfileAndRelationship(
-        username,
-        requestingUserId,
-      );
+    const profileUser =
+      await this.userRepository.findProfileByUsername(username);
 
-    const settings = profileUser.privacySettings;
-    const response: Partial<UserBioModel> = {
-      bio: profileUser.bio,
-    };
-
-    if (this.userDomainsService.canView(settings.work, isOwner, isFriend)) {
-      response.work = profileUser.work;
+    if (!profileUser) {
+      throw new NotFoundException('User not found');
     }
-    if (
-      this.userDomainsService.canView(
-        settings.currentLocation,
-        isOwner,
-        isFriend,
-      )
-    ) {
-      response.currentLocation = profileUser.currentLocation;
+    const isFriend = await this.friendshipService.areFriends(
+      profileUser._id.toString(),
+      requestingUserId,
+    );
+    const isOwner = profileUser._id.toString() === requestingUserId;
+    const elementsCanView = this.userDomainsService.getElementsCanView(
+      profileUser,
+      profileUser.privacySettings,
+      isOwner,
+      isFriend,
+    );
+    let province: VietnamProvince | undefined;
+    if (elementsCanView.provinceCode) {
+      province = getVietnamProvinceByCode(+elementsCanView.provinceCode);
     }
-
-    return response;
+    delete elementsCanView.provinceCode;
+    return { ...elementsCanView, bio: profileUser.bio, province };
   }
 }

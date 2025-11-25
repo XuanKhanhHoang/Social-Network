@@ -1,5 +1,5 @@
 'use client';
-import PostCreator from '@/components/features/post/create/Manager';
+import PostCreator from '@/components/features/post/create/PostCreator';
 import { useInfiniteUserPosts } from '@/hooks/post/usePost';
 import PostList from '@/components/features/post/list/List';
 import { useStore } from '@/store';
