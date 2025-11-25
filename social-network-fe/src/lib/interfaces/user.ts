@@ -1,4 +1,5 @@
 import { Gender, VisibilityPrivacy } from '../constants/enums';
+import { FriendshipStatus } from '../constants/enums/friendship-status';
 import {
   GetAccountResponseDto,
   GetUserBioResponseDto,
@@ -7,6 +8,8 @@ import {
   PhotoDto,
   UserSummaryWithAvatarUrlDto,
 } from '../dtos';
+import { VietnamProvince } from './common';
+import { Province } from './other';
 
 export function transformToUserSummary(
   user: unknown & {
@@ -83,6 +86,7 @@ export function transformToUserHeader(
   userDto: GetUserHeaderResponseDto
 ): UserHeader {
   return {
+    id: userDto._id,
     firstName: userDto.firstName,
     lastName: userDto.lastName,
     username: userDto.username,
@@ -93,6 +97,7 @@ export function transformToUserHeader(
   };
 }
 export interface UserHeader {
+  id: string;
   firstName: string;
   lastName: string;
   username: string;
@@ -108,7 +113,11 @@ export interface UserHeader {
     height?: number;
     mediaId?: string;
   };
-  headerType: 'PUBLIC' | 'FRIEND' | 'OWNER';
+  headerType: {
+    status: FriendshipStatus;
+    requesterId: string;
+    recipientId: string;
+  } | null;
   friendCount?: number;
 }
 
@@ -116,6 +125,8 @@ export type PrivacySettings = {
   work: VisibilityPrivacy;
   currentLocation: VisibilityPrivacy;
   friendList: VisibilityPrivacy;
+  provinceCode: VisibilityPrivacy;
+  friendCount: VisibilityPrivacy;
 };
 
 export function transformAndGetUserProfile(
@@ -130,6 +141,7 @@ export function transformAndGetUserProfile(
     bio: GetUserHeaderResponseDto.bio,
     work: GetUserHeaderResponseDto.work,
     currentLocation: GetUserHeaderResponseDto.currentLocation,
+    province: GetUserHeaderResponseDto.province,
     privacySettings: GetUserHeaderResponseDto.privacySettings,
     friendCount: GetUserHeaderResponseDto.friendCount,
     fullName:
@@ -158,10 +170,11 @@ export type UserProfile = {
   bio?: string;
   work?: string;
   currentLocation?: string;
+  province?: Province;
   friendCount?: number;
   privacySettings: PrivacySettings;
   fullName: string;
-  userProfileType: 'PUBLIC' | 'FRIEND' | 'OWNER';
+  userProfileType: FriendshipStatus | null;
 };
 
 export function transformToUserBio(bio: GetUserBioResponseDto): UserBio {
@@ -169,31 +182,39 @@ export function transformToUserBio(bio: GetUserBioResponseDto): UserBio {
     bio: bio.bio,
     work: bio.work,
     currentLocation: bio.currentLocation,
+    province: bio.province,
   };
 }
 export type UserBio = {
   bio?: string;
   work?: string;
   currentLocation?: string;
+  province?: VietnamProvince;
 };
 
 export function transformToUserPreviewPhoto(photo: PhotoDto): UserPhoto {
   return {
-    mediaId: photo._id,
+    id: photo._id,
     mediaType: photo.mediaType,
     url: photo.url,
     width: photo.width,
     height: photo.height,
     createAt: photo.createdAt,
+    caption: photo.caption,
+    order: photo.order,
+    postId: photo.postId,
   };
 }
 export type UserPhoto = {
-  mediaId: string;
+  id: string;
   mediaType: string;
   url: string;
   width?: number;
   height?: number;
   createAt: string;
+  caption?: string;
+  order?: number;
+  postId: string;
 };
 export function transformToUserAccount(
   user: GetAccountResponseDto

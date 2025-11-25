@@ -1,7 +1,7 @@
 'use client';
 import { Card, CardContent } from '@/components/ui/card';
 import { UserProfile } from '@/lib/interfaces/user';
-import { Briefcase, MapPin } from 'lucide-react';
+import { Briefcase, MapPin, MapPinHouse } from 'lucide-react';
 
 interface BioCardProps {
   user: UserProfile;
@@ -36,6 +36,14 @@ export function BioCard({ user }: BioCardProps) {
                 <Briefcase className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                 <span>
                   Làm việc tại <strong>{user.work}</strong>
+                </span>
+              </li>
+            )}
+            {user.province && (
+              <li className="flex items-center gap-3">
+                <MapPinHouse className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                <span>
+                  Tỉnh/Thành phố <strong>{user.province.name}</strong>
                 </span>
               </li>
             )}

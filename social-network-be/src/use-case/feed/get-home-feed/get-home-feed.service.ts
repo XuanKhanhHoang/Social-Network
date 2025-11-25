@@ -6,9 +6,9 @@ import {
 } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { CommentRepository } from 'src/domains/comment/comment.repository';
+import { FriendshipRepository } from 'src/domains/friendship/friendship.repository';
 import {
   PostCursorData,
-  PostWithMyReactionModel,
   PostWithTopCommentAndUserReactionModel,
 } from 'src/domains/post/interfaces';
 
@@ -42,6 +42,7 @@ export class GetHomeFeedService extends BaseUseCaseService<
     private readonly commentRepository: CommentRepository,
     private readonly postRepository: PostRepository,
     private readonly userRepository: UserRepository,
+    private readonly friendshipRepository: FriendshipRepository,
   ) {
     super();
   }
@@ -52,23 +53,21 @@ export class GetHomeFeedService extends BaseUseCaseService<
         ? decodeCursor<PostCursorData>(cursor)
         : undefined;
 
-      const requestingUser = await this.userRepository.findById(userId, {
-        friends: 1,
-      });
-      if (!requestingUser) {
+      const userExists = await this.userRepository.checkIdExist(userId);
+      if (!userExists) {
         throw new NotFoundException('User not found');
       }
 
-      const authorIds = [
+      const { friendIds } = await this.friendshipRepository.findFriendIdsList({
         userId,
-        ...requestingUser.friends.map((id) => id.toString()),
-      ];
+        limit: 1000,
+      });
 
       const posts = await this.postRepository.findForHomeFeed({
         limit: limit + 1,
         requestingUserId: userId,
         cursor: decodedCursor,
-        authorIds: authorIds,
+        friendIds: friendIds,
       });
 
       const hasMore = posts.length > limit;
@@ -77,10 +76,11 @@ export class GetHomeFeedService extends BaseUseCaseService<
       if (hasMore) {
         const lastPost = posts[limit - 1];
         nextCursor = encodeCursor({
-          lastHotScore: lastPost.hotScore,
+          lastHotScore: lastPost.rankingScore,
           lastId: lastPost._id.toString(),
         });
       }
+
       const enrichedPosts = await this.enrichPostsWithComments(
         posts.slice(0, limit),
         userId,
@@ -99,7 +99,7 @@ export class GetHomeFeedService extends BaseUseCaseService<
   }
 
   private async enrichPostsWithComments(
-    posts: PostWithMyReactionModel<Types.ObjectId>[],
+    posts: any[],
     userId: string,
   ): Promise<PostWithTopCommentAndUserReactionModel<Types.ObjectId>[]> {
     if (posts.length === 0) {

@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { CommentRepository } from 'src/domains/comment/comment.repository';
+import { FriendshipRepository } from 'src/domains/friendship/friendship.repository';
 import {
   PostCursorData,
   PostWithMyReactionModel,
@@ -44,6 +45,7 @@ export class GetUserPostsService extends BaseUseCaseService<
     private readonly commentRepository: CommentRepository,
     private readonly postRepository: PostRepository,
     private readonly userRepository: UserRepository,
+    private readonly friendshipService: FriendshipRepository,
   ) {
     super();
   }
@@ -67,7 +69,7 @@ export class GetUserPostsService extends BaseUseCaseService<
         if (targetUserId === userId) {
           visibilities.push(UserPrivacy.PRIVATE, UserPrivacy.FRIENDS);
         } else if (
-          targetUser.friends.some((friendId) => friendId.toString() === userId)
+          await this.friendshipService.areFriends(targetUserId, userId)
         ) {
           visibilities.push(UserPrivacy.FRIENDS);
         }

@@ -1,5 +1,6 @@
 import { Types } from 'mongoose';
 import { SubUser, UserDocument } from 'src/schemas';
+import { FriendshipStatus } from 'src/share/enums/friendship-status';
 
 export type SubUserModel<T extends string | Types.ObjectId> = Omit<
   SubUser,
@@ -28,17 +29,17 @@ export type UserProfileModel<T extends string | Types.ObjectId> = Pick<
   | 'bio'
   | 'work'
   | 'currentLocation'
-  | 'friends'
+  | 'provinceCode'
 > & {
   _id: T;
 };
 
 export type UserBioModel = Pick<
   UserDocument,
-  'bio' | 'work' | 'currentLocation'
+  'bio' | 'work' | 'currentLocation' | 'provinceCode'
 >;
-export type UserProfileWithRelationshipExceptFriendsModel<
+export type UserProfileWithRelationshipModel<
   T extends string | Types.ObjectId,
-> = Omit<UserProfileModel<T>, 'friends'> & {
-  relationship: 'OWNER' | 'FRIEND' | 'PUBLIC';
+> = UserProfileModel<T> & {
+  relationship: FriendshipStatus | null;
 };

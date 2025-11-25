@@ -76,7 +76,7 @@ export class CreatePostService extends BaseUseCaseService<
         username: author.username,
         firstName: author.firstName,
         lastName: author.lastName,
-        avatar: author.avatar.mediaId.toString(),
+        avatar: author?.avatar && author.avatar.url,
       },
       media,
       content: data.content,

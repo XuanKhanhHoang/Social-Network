@@ -8,9 +8,11 @@ import {
 } from './';
 import { ReactionApiModule } from './reaction/reaction-api.module';
 import { FeedApiModule } from './feed/feed-api.module';
+import { FriendshipApiModule } from './friendship/friendship-api.module';
 
 @Module({
   imports: [
+    FriendshipApiModule,
     PostApiModule,
     CommentApiModule,
     AuthApiModuleModule,

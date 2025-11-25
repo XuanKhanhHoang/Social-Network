@@ -1,5 +1,5 @@
 'use client';
-import AccountSettingsForm from '@/components/features/settings/account-settings/AccountSettingsForm';
+import AccountSettingsForm from '@/components/features/user/settings/account-settings/AccountSettingsForm';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGetAccount } from '@/hooks/user/useUser';
 

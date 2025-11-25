@@ -1,5 +1,8 @@
 import { Gender } from '../constants/enums';
+import { FriendshipStatus } from '../constants/enums/friendship-status';
 import { VisibilityPrivacy } from '../constants/enums/visibility-privacy';
+import { Province } from '../interfaces';
+import { VietnamProvince } from '../interfaces/common';
 import { PrivacySettings } from '../interfaces/user';
 import { CursorPaginationResponse } from './common/pagination';
 
@@ -23,6 +26,7 @@ export type UserSummaryWithAvatarUrlDto = Omit<UserSummaryDto, 'avatar'> & {
 };
 
 export interface GetUserHeaderResponseDto {
+  _id: string;
   firstName: string;
   lastName: string;
   username: string;
@@ -38,7 +42,11 @@ export interface GetUserHeaderResponseDto {
     height?: number;
     mediaId?: string;
   };
-  relationship: 'PUBLIC' | 'FRIEND' | 'OWNER';
+  relationship: {
+    status: FriendshipStatus;
+    requesterId: string;
+    recipientId: string;
+  } | null;
   friendCount?: number;
 }
 
@@ -46,6 +54,8 @@ export interface PrivacySettingsDto {
   work: VisibilityPrivacy;
   currentLocation: VisibilityPrivacy;
   friendList: VisibilityPrivacy;
+  provinceCode: VisibilityPrivacy;
+  friendCount: VisibilityPrivacy;
 }
 
 export interface GetUserProfileResponseDto {
@@ -67,15 +77,17 @@ export interface GetUserProfileResponseDto {
   bio?: string;
   work?: string;
   currentLocation?: string;
+  province?: Province;
   friendCount?: number;
   privacySettings: PrivacySettingsDto;
-  relationship: 'PUBLIC' | 'FRIEND' | 'OWNER';
+  relationship: FriendshipStatus | null;
 }
 
 export interface GetUserBioResponseDto {
   bio?: string;
   work?: string;
   currentLocation?: string;
+  province: VietnamProvince;
 }
 
 export interface GetUserFriendsPreviewResponseDto
@@ -83,13 +95,20 @@ export interface GetUserFriendsPreviewResponseDto
   total: number;
 }
 
+export type GetSuggestFriendsResponseDto =
+  CursorPaginationResponse<UserSummaryDto>;
+
 export interface PhotoDto {
   _id: string;
+  mediaId: string;
   mediaType: string;
   url: string;
   width?: number;
   height?: number;
   createdAt: string;
+  caption?: string;
+  order?: number;
+  postId: string;
 }
 
 export type GetUserPhotosResponseDto = CursorPaginationResponse<PhotoDto>;
@@ -100,15 +119,27 @@ export interface UpdateProfileRequestDto {
   bio?: string;
   work?: string;
   currentLocation?: string;
+  provinceCode?: string | null;
 }
 
 export interface UpdateProfileResponseDto {
   _id: string;
-  avatar?: string | null;
-  coverPhoto?: string | null;
+  avatar?: {
+    mediaId: string;
+    url: string;
+    width?: number;
+    height?: number;
+  } | null;
+  coverPhoto?: {
+    mediaId: string;
+    url: string;
+    width?: number;
+    height?: number;
+  } | null;
   bio?: string;
   work?: string;
   currentLocation?: string;
+  provinceCode?: string | null;
   username: string;
 }
 export interface GetAccountResponseDto {

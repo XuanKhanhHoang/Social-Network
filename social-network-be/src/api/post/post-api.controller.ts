@@ -1,21 +1,11 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Patch,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { ParseMongoIdPipe } from 'src/share/pipe/parse-mongo-id-pipe';
 import { GetUserId } from 'src/share/decorators/user.decorator';
 import { CreatePostService } from 'src/use-case/post/create-post/create-post.service';
 import { UpdatePostService } from 'src/use-case/post/update-post/update-post.service';
 import { GetPostFullService } from 'src/use-case/post/get-post-full/get-post-full.service';
 import { CreatePostDto, UpdatePostDto } from './dto';
-import { JwtAuthGuard } from 'src/domains/auth/jwt-auth.guard';
 
-@UseGuards(JwtAuthGuard)
 @Controller('posts')
 export class PostController {
   constructor(

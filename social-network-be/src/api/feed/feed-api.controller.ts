@@ -1,5 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/domains/auth/jwt-auth.guard';
+import { Controller, Get, Query } from '@nestjs/common';
 import { GetUserId } from 'src/share/decorators/user.decorator';
 import { GetHomeFeedService } from 'src/use-case/feed/get-home-feed/get-home-feed.service';
 import { GetHomeFeedDto } from './dto/get-home-feed.dto';
@@ -9,7 +8,6 @@ export class FeedController {
   constructor(private readonly getHomeFeedService: GetHomeFeedService) {}
 
   @Get()
-  @UseGuards(JwtAuthGuard)
   async getHomeFeed(
     @Query() query: GetHomeFeedDto,
     @GetUserId() userId: string,

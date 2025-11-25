@@ -5,11 +5,9 @@ import {
   UploadedFile,
   Param,
   Delete,
-  UseGuards,
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { JwtAuthGuard } from 'src/domains/auth/jwt-auth.guard';
 import { GetUserId } from 'src/share/decorators/user.decorator';
 import {
   DeleteTempFileService,
@@ -17,7 +15,6 @@ import {
 } from 'src/use-case/media-upload';
 
 @Controller('medias')
-@UseGuards(JwtAuthGuard)
 export class MediaUploadApiController {
   constructor(
     private readonly uploadToTempService: UploadToTempService,
