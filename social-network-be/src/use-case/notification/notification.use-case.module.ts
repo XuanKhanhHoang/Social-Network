@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { NotificationModule } from 'src/domains/notification/notification.module';
+import { NotificationGatewayModule } from 'src/gateway/notification-gateway.module';
 import {
   CreateNotificationService,
   GetNotificationsService,
@@ -7,7 +8,7 @@ import {
 } from './';
 
 @Module({
-  imports: [NotificationModule],
+  imports: [NotificationModule, NotificationGatewayModule],
   providers: [
     CreateNotificationService,
     GetNotificationsService,
