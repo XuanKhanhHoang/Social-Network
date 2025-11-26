@@ -2,7 +2,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { FriendshipRepository } from 'src/domains/friendship/friendship.repository';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { UserEvents } from 'src/share/events';
+import {
+  FriendEvents,
+  FriendRemovedEventPayload,
+  UserEvents,
+} from 'src/share/events';
 import { UserRepository } from 'src/domains/user/user.repository';
 
 export interface RemoveFriendInput {
@@ -53,6 +57,10 @@ export class RemoveFriendService extends BaseUseCaseService<
         friendCountDelta: -1,
       },
     });
+    this.emitter.emit(FriendEvents.removed, {
+      userId,
+      friendId: targetUserId,
+    } as FriendRemovedEventPayload);
     return {
       recipient: {
         _id: recipient._id.toString(),

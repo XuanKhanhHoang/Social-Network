@@ -14,6 +14,13 @@ import { UserRepository } from 'src/domains/user/user.repository';
 import { TiptapDocument } from 'src/share/dto/req/tiptap-content.dto';
 import { MediaType } from 'src/share/enums';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import {
+  CommentEvents,
+  CommentReplyCreatedEventPayload,
+  PostCommentedEventPayload,
+  PostEvents,
+} from 'src/share/events';
 
 export interface CreateCommentInput {
   postId: string;
@@ -35,6 +42,7 @@ export class CreateCommentService extends BaseUseCaseService<
     private readonly commentRepository: CommentRepository,
     private readonly mediaUploadService: MediaUploadService,
     private readonly userRepository: UserRepository,
+    private readonly eventEmitter: EventEmitter2,
   ) {
     super();
   }
@@ -123,6 +131,24 @@ export class CreateCommentService extends BaseUseCaseService<
 
         return comment;
       });
+
+      const contentSnippet = this.extractContentSnippet(content);
+      if (parentId) {
+        this.eventEmitter.emit(CommentEvents.replyCreated, {
+          replyId: result._id.toString(),
+          commentId: parentId,
+          userId: authorId,
+          contentSnippet,
+        } as CommentReplyCreatedEventPayload);
+      } else {
+        this.eventEmitter.emit(PostEvents.commented, {
+          commentId: result._id.toString(),
+          postId,
+          userId: authorId,
+          contentSnippet,
+        } as PostCommentedEventPayload);
+      }
+
       return result;
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -132,6 +158,18 @@ export class CreateCommentService extends BaseUseCaseService<
       throw error;
     } finally {
       await session.endSession();
+    }
+  }
+
+  private extractContentSnippet(content?: TiptapDocument): string {
+    if (!content || !content.content) return '';
+    try {
+      const text = content.content
+        .map((node) => node.content?.map((n) => n.text).join('') || '')
+        .join(' ');
+      return text.slice(0, 100);
+    } catch (e) {
+      return '';
     }
   }
 }
