@@ -1,6 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { UserRepository } from 'src/domains/user/user.repository';
+import {
+  UserEvents,
+  UserFriendCountChangedEventPayload,
+  UserUpdatedEventPayload,
+} from 'src/share/events';
 
 @Injectable()
 export class CleanupUnverifiedAccountsListenerService {
@@ -41,5 +47,35 @@ export class CleanupUnverifiedAccountsListenerService {
     }
 
     return { deletedCount };
+  }
+  @OnEvent(UserEvents.updated)
+  async handleUserUpdated(payload: UserUpdatedEventPayload) {
+    try {
+      await this.userRepository.updateById(payload.userId, {
+        $inc: {
+          friendCount: payload.newData.friendCountDelta,
+        },
+      });
+    } catch (error) {
+      this.logger.warn(
+        `Failed to update user friend count for user ${payload.userId}`,
+        error,
+      );
+    }
+  }
+  @OnEvent(UserEvents.friendCountChanged)
+  async handleFriendCountChanged(payload: UserFriendCountChangedEventPayload) {
+    try {
+      await this.userRepository.updateById(payload.userId, {
+        $inc: {
+          friendCount: payload.newData.friendCountDelta,
+        },
+      });
+    } catch (error) {
+      this.logger.warn(
+        `Failed to update user friend count for user ${payload.userId}`,
+        error,
+      );
+    }
   }
 }

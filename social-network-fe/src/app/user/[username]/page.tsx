@@ -1,7 +1,6 @@
 'use client';
 import { useParams } from 'next/navigation';
 import UserProfileFeed from '@/components/features/user/common/UserFeed';
-import UserSidebar from '@/components/features/user/common/UserSidebar';
 import { useUserProfile } from '@/hooks/user/useUser';
 import { useStore } from '@/store';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -45,7 +44,7 @@ export default function UserProfilePage() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
       <aside className="md:col-span-1 md:sticky top-4 self-start space-y-6">
-        <UserSidebar user={user} isLoggedIn={isLoggedIn} />
+        {/* <UserSidebar user={user} isLoggedIn={isLoggedIn} /> */}
       </aside>
 
       <section className="md:col-span-2 space-y-6">

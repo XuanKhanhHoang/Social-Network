@@ -14,6 +14,7 @@ import { RegisterService } from '../../use-case/auth/register/register.service';
 import { VerifyEmailService } from '../../use-case/auth/verify-email/verify-email.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto';
+import { AllowPublic } from 'src/share/decorators/allow-public-req.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -24,11 +25,13 @@ export class AuthController {
   ) {}
 
   @Post('register')
+  @AllowPublic()
   async register(@Body() registerDto: RegisterDto) {
     return this.registerUserService.execute(registerDto);
   }
 
   @Post('login')
+  @AllowPublic()
   async login(
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) res: Response,
@@ -69,6 +72,7 @@ export class AuthController {
   }
 
   @Get('verify-email/:token')
+  @AllowPublic()
   async verifyEmail(@Param('token') token: string) {
     return this.verifyEmailService.execute({ token });
   }

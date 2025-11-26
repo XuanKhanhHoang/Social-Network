@@ -7,6 +7,7 @@ export interface GetMePreviewProfileInput {
   userId: string;
 }
 export interface GetMePreviewProfileOutput {
+  _id: string;
   firstName: string;
   lastName: string;
   username: string;
@@ -27,6 +28,7 @@ export class GetMePreviewProfileService extends BaseUseCaseService<
     const { userId } = input;
     const res = await this.userRepository.findByIdBasic(userId);
     return {
+      _id: res._id.toString(),
       firstName: res.firstName,
       lastName: res.lastName,
       username: res.username,

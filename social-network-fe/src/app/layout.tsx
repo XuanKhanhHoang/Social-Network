@@ -13,6 +13,7 @@ import { CreatePostProvider } from '@/components/features/feed/FeedContext';
 import { UserSummaryWithEmailDto } from '@/lib/dtos';
 import { transformToStoreUser } from '@/store/slices/authSlice';
 import { ImageViewerProvider } from '@/components/provider/ImageViewerProvider';
+import { AppSidebarProvider } from '@/components/provider/AppSidebarProvider';
 
 export const metadata: Metadata = {
   title: 'Vibe',
@@ -73,9 +74,11 @@ export default async function RootLayout({
                     {user != undefined ? (
                       <div className="min-h-screen bg-white">
                         <div className="max-w-screen mx-auto flex">
-                          <LeftSidebar />
-                          {children}
-                          {modal}
+                          <AppSidebarProvider>
+                            <LeftSidebar />
+                            {children}
+                            {modal}
+                          </AppSidebarProvider>
                         </div>
                       </div>
                     ) : (

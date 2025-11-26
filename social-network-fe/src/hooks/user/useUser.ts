@@ -5,7 +5,6 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { userService } from '@/services/user';
-import { QUERY_KEY } from '@/lib/constants/query-key';
 import {
   transformAndGetUserProfile,
   transformToUserAccount,
@@ -21,7 +20,7 @@ import {
 } from '@/lib/dtos';
 
 export const userKeys = {
-  all: [QUERY_KEY.USER] as const,
+  all: ['user'] as const,
   me: () => [...userKeys.all, 'me'] as const,
   headers: () => [...userKeys.all, 'header'] as const,
   header: (username: string) => [...userKeys.headers(), username] as const,
@@ -76,6 +75,7 @@ export const useUserFriendsPreview = (username: string) => {
     enabled: !!username,
   });
 };
+
 export const useGetAccount = () => {
   return useQuery({
     queryKey: userKeys.account(),

@@ -8,10 +8,8 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import { CreateCommentDto, UpdateCommentDto } from './dto';
-import { JwtAuthGuard } from 'src/domains/auth/jwt-auth.guard';
 import { ParseMongoIdPipe } from 'src/share/pipe/parse-mongo-id-pipe';
 import { GetUserId } from 'src/share/decorators/user.decorator';
 import { CreateCommentService } from 'src/use-case/comment/create-comment/create-comment.service';
@@ -19,7 +17,6 @@ import { UpdateCommentService } from 'src/use-case/comment/update-comment/update
 import { GetPostCommentsService } from 'src/use-case/comment/get-post-comments/get-post-comments.service';
 import { GetReplyCommentsService } from 'src/use-case/comment/get-reply-comments/get-reply-comments.service';
 
-@UseGuards(JwtAuthGuard)
 @Controller('comments')
 export class CommentController {
   constructor(

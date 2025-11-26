@@ -42,6 +42,39 @@ export abstract class BaseRepository<T extends Document> {
     }
     return query.lean().exec() as Promise<TResult[]>;
   }
+
+  async findManyByIds<TResult = T>(
+    ids: string[],
+    options?: BaseQueryOptions<T>,
+  ): Promise<TResult[]> {
+    const { projection, session, ...restOptions } = options || {};
+    const query = this.model.find(
+      { _id: { $in: ids } } as FilterQuery<T>,
+      projection,
+      restOptions,
+    );
+    if (session) {
+      query.session(session);
+    }
+    return query.exec() as Promise<TResult[]>;
+  }
+
+  async findManyLeanedByIds<TResult = T>(
+    ids: string[],
+    options?: BaseQueryOptions<T>,
+  ): Promise<TResult[]> {
+    const { projection, session, ...restOptions } = options || {};
+    const query = this.model.find(
+      { _id: { $in: ids } } as FilterQuery<T>,
+      projection,
+      restOptions,
+    );
+    if (session) {
+      query.session(session);
+    }
+    return query.lean().exec() as Promise<TResult[]>;
+  }
+
   async checkIdExist(
     id: string,
     options?: BaseQueryOptions<T>,
@@ -53,13 +86,17 @@ export abstract class BaseRepository<T extends Document> {
     }
     return query.exec();
   }
-  async findById(id: string, options?: BaseQueryOptions<T>): Promise<T | null> {
+
+  async findById<TResult extends Partial<T> = T>(
+    id: string,
+    options?: BaseQueryOptions<T>,
+  ): Promise<TResult | null> {
     const { projection, session, ...restOptions } = options || {};
     const query = this.model.findById(id, projection, restOptions);
     if (session) {
       query.session(session);
     }
-    return query.exec();
+    return query.exec() as any;
   }
 
   async findLeanedById<TResult>(
@@ -73,6 +110,7 @@ export abstract class BaseRepository<T extends Document> {
     }
     return query.lean().exec() as Promise<TResult | null>;
   }
+
   async findOne(
     filter: FilterQuery<T>,
     options?: BaseQueryOptions<T>,
@@ -96,6 +134,7 @@ export abstract class BaseRepository<T extends Document> {
     }
     return query.lean().exec() as Promise<TResult | null>;
   }
+
   async updateById(
     id: string,
     updateData: UpdateQuery<T>,
@@ -119,6 +158,7 @@ export abstract class BaseRepository<T extends Document> {
       })
       .exec() as Promise<T | Pick<T, P> | null>;
   }
+
   async updateMany(
     filter: FilterQuery<T>,
     updateData: UpdateQuery<T>,
@@ -126,6 +166,7 @@ export abstract class BaseRepository<T extends Document> {
   ): Promise<UpdateWriteOpResult> {
     return this.model.updateMany(filter, updateData, { session }).exec();
   }
+
   async bulkWrite(
     ops: AnyBulkWriteOperation<T>[],
     session?: ClientSession,

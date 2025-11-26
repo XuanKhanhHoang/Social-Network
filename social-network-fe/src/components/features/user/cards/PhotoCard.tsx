@@ -29,11 +29,11 @@ export function PhotosCard({ photos, username }: PhotosCardProps) {
           {photos.length > 0 &&
             photos.map((photo) => (
               <div
-                key={photo.mediaId}
+                key={photo.id}
                 className="rounded-md overflow-hidden cursor-pointer"
                 onClick={() =>
                   open({
-                    imgId: photo.mediaId,
+                    imgId: photo.id,
                     url: photo.url,
                     width: photo.width,
                     height: photo.height,
@@ -42,7 +42,7 @@ export function PhotosCard({ photos, username }: PhotosCardProps) {
               >
                 <Image
                   src={photo.url}
-                  alt={`Ảnh ${photo.mediaId}`}
+                  alt={`Ảnh ${photo.id}`}
                   width={150}
                   height={150}
                   className="object-cover aspect-square transition-transform hover:scale-110"

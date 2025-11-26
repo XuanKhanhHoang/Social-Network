@@ -19,6 +19,7 @@ export interface UpdateProfileInput {
   work?: string;
   currentLocation?: string;
   requestingUserId: string;
+  provinceCode?: string | null;
 }
 export interface UpdateProfileOutput {
   _id: string;
@@ -37,6 +38,7 @@ export interface UpdateProfileOutput {
   bio?: string;
   work?: string;
   currentLocation?: string;
+  provinceCode?: string | null;
   username: string;
 }
 
@@ -54,8 +56,15 @@ export class UpdateProfileService extends BaseUseCaseService<
   }
   private readonly logger = new Logger(UpdateProfileService.name);
   async execute(input: UpdateProfileInput): Promise<UpdateProfileOutput> {
-    const { avatar, coverPhoto, bio, work, currentLocation, requestingUserId } =
-      input;
+    const {
+      avatar,
+      coverPhoto,
+      bio,
+      work,
+      currentLocation,
+      requestingUserId,
+      provinceCode,
+    } = input;
 
     const mediaIdsToFind: string[] = [];
     if (typeof avatar === 'string') mediaIdsToFind.push(avatar);
@@ -81,6 +90,7 @@ export class UpdateProfileService extends BaseUseCaseService<
       bio,
       work,
       currentLocation,
+      provinceCode,
     };
     const eventNewData: Record<string, any> = {};
 

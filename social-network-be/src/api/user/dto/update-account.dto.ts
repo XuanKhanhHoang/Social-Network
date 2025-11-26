@@ -21,8 +21,16 @@ export class PrivacySettingsDto {
   currentLocation?: UserPrivacy;
 
   @IsOptional()
-  @IsEnum(UserPrivacy)
+  @IsEnum([UserPrivacy.FRIENDS, UserPrivacy.PRIVATE])
   friendList?: UserPrivacy;
+
+  @IsOptional()
+  @IsEnum(UserPrivacy)
+  provinceCode?: UserPrivacy;
+
+  @IsOptional()
+  @IsEnum(UserPrivacy)
+  friendCount?: UserPrivacy;
 }
 
 export class UpdateAccountDto {

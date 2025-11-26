@@ -20,7 +20,7 @@ export function FriendsCard({
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg font-semibold">Bạn bè</CardTitle>
-        <Link href={`/username/${username}/friends`} passHref>
+        <Link href={`/user/${username}/friends`} passHref>
           <Button variant="link" className="p-0 h-auto text-blue-500">
             Xem tất cả
           </Button>

@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { Document, Types } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 import { Gender, UserPrivacy } from 'src/share/enums';
 import { SubMedia } from './sub-comment-media.schema';
 
@@ -17,14 +17,28 @@ export class PrivacySettings {
     enum: UserPrivacy,
     default: UserPrivacy.PUBLIC,
   })
-  currentLocation: UserPrivacy;
+  provinceCode: UserPrivacy;
+
+  @Prop({
+    type: String,
+    enum: [UserPrivacy.FRIENDS, UserPrivacy.PRIVATE],
+    default: UserPrivacy.FRIENDS,
+  })
+  friendList: UserPrivacy;
 
   @Prop({
     type: String,
     enum: UserPrivacy,
     default: UserPrivacy.FRIENDS,
   })
-  friendList: UserPrivacy;
+  friendCount: UserPrivacy;
+
+  @Prop({
+    type: String,
+    enum: UserPrivacy,
+    default: UserPrivacy.FRIENDS,
+  })
+  currentLocation: UserPrivacy;
 }
 
 const PrivacySettingsSchema = SchemaFactory.createForClass(PrivacySettings);
@@ -79,11 +93,17 @@ export class UserDocument extends Document {
   @Prop({ default: '' })
   currentLocation: string;
 
-  @Prop({
-    type: [{ type: Types.ObjectId, ref: 'User' }],
-    default: [],
-  })
-  friends: Types.ObjectId[];
+  @Prop({ default: null })
+  provinceCode: string;
+
+  @Prop({ type: String, default: null })
+  detectedCity: string;
+
+  @Prop({ type: String, default: null })
+  lastKnownIp: string;
+
+  @Prop({ type: Date, default: null })
+  lastDetectedLocationUpdatedAt: Date;
 
   @Prop({ type: Number, default: 0 })
   friendCount: number;

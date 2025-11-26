@@ -53,6 +53,8 @@ export class GetAccountService extends BaseUseCaseService<
           work: 'PUBLIC',
           currentLocation: 'PUBLIC',
           friendList: 'FRIENDS',
+          province: 'FRIENDS',
+          friendCount: 'FRIENDS',
         } as any),
     };
   }

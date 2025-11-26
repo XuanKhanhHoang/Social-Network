@@ -17,7 +17,9 @@ import {
   PostCursorData,
   PostPhotoModel,
   PostWithMyReactionModel,
+  PostWithRankingScore,
 } from './interfaces';
+
 @Injectable()
 export class PostRepository extends ReactableRepository<PostDocument> {
   constructor(
@@ -29,7 +31,6 @@ export class PostRepository extends ReactableRepository<PostDocument> {
   private readonly logger = new Logger(PostRepository.name);
 
   //* PIPELINE REUSABLE STAGES
-
   private getUserReactionStage(userId: string): PipelineStage[] {
     const userObjectId = new Types.ObjectId(userId);
     return [
@@ -73,44 +74,70 @@ export class PostRepository extends ReactableRepository<PostDocument> {
       ...item,
       mediaId: new Types.ObjectId(item.mediaId),
     }));
-    const [createdPost] = await this.model.create([{ ...data, media }], {
-      session,
-    });
+    const [createdPost] = await this.model.create(
+      [
+        {
+          ...data,
+          media,
+          author: {
+            ...data.author,
+            _id: new Types.ObjectId(data.author._id),
+          },
+        },
+      ],
+      {
+        session,
+      },
+    );
     return createdPost;
   }
+
   async findForHomeFeed({
     limit,
     requestingUserId,
     cursor,
-    authorIds,
-  }: FindPostForHomeFeedData): Promise<
-    PostWithMyReactionModel<Types.ObjectId>[]
-  > {
+    friendIds,
+  }: Omit<FindPostForHomeFeedData, 'authorIds'> & {
+    friendIds: string[];
+  }): Promise<PostWithRankingScore[]> {
     const pipeline: PipelineStage[] = [];
 
     const requestingUserObjId = new Types.ObjectId(requestingUserId);
+    const friendObjIds = friendIds.map((id) => new Types.ObjectId(id));
+
+    const twoDaysAgo = new Date();
+    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
 
     pipeline.push({ $match: { status: PostStatus.ACTIVE } });
-
-    if (authorIds && authorIds.length > 0) {
-      pipeline.push({
-        $match: {
-          'author._id': {
-            $in: authorIds.map((id) => new Types.ObjectId(id)),
-          },
-        },
-      });
-    }
 
     pipeline.push({
       $match: {
         $or: [
           { 'author._id': requestingUserObjId },
           {
-            'author._id': { $ne: requestingUserObjId },
-            visibility: { $in: [UserPrivacy.PUBLIC, UserPrivacy.FRIENDS] },
+            'author._id': { $in: friendObjIds },
+            visibility: UserPrivacy.FRIENDS,
+          },
+          {
+            'author._id': { $nin: [...friendObjIds, requestingUserObjId] },
+            visibility: UserPrivacy.PUBLIC,
+            createdAt: { $gte: twoDaysAgo },
           },
         ],
+      },
+    });
+
+    pipeline.push({
+      $addFields: {
+        isFriend: { $in: ['$author._id', friendObjIds] },
+      },
+    });
+
+    pipeline.push({
+      $addFields: {
+        rankingScore: {
+          $add: [{ $ifNull: ['$hotScore', 0] }, { $cond: ['$isFriend', 2, 0] }],
+        },
       },
     });
 
@@ -118,10 +145,10 @@ export class PostRepository extends ReactableRepository<PostDocument> {
       pipeline.push({
         $match: {
           $or: [
-            { hotScore: { $lt: cursor.lastHotScore } },
+            { rankingScore: { $lt: cursor.lastHotScore } },
             {
               $and: [
-                { hotScore: { $eq: cursor.lastHotScore } },
+                { rankingScore: { $eq: cursor.lastHotScore } },
                 { _id: { $lt: new Types.ObjectId(cursor.lastId) } },
               ],
             },
@@ -132,7 +159,7 @@ export class PostRepository extends ReactableRepository<PostDocument> {
 
     pipeline.push({
       $sort: {
-        hotScore: -1,
+        rankingScore: -1,
         _id: -1,
       },
     });
@@ -140,9 +167,13 @@ export class PostRepository extends ReactableRepository<PostDocument> {
     pipeline.push({ $limit: limit });
     pipeline.push(...this.getUserReactionStage(requestingUserId));
 
-    return this.model.aggregate<PostWithMyReactionModel<Types.ObjectId>>(
-      pipeline,
-    );
+    pipeline.push({
+      $project: {
+        isFriend: 0,
+      },
+    });
+
+    return this.model.aggregate<PostWithRankingScore>(pipeline);
   }
 
   async findForUserProfile({
