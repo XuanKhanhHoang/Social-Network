@@ -8,6 +8,7 @@ import {
 } from './';
 import { ReactionApiModule } from './reaction/reaction-api.module';
 import { FeedApiModule } from './feed/feed-api.module';
+import { NotificationApiModule } from './notification/notification-api.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { FeedApiModule } from './feed/feed-api.module';
     MediaUploadApiModule,
     ReactionApiModule,
     FeedApiModule,
+    NotificationApiModule,
   ],
 })
 export class ApiModule {}
