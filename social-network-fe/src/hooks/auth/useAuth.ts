@@ -2,6 +2,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { authService } from '@/services/auth';
 import { useStore } from '@/store';
 import { useEffect } from 'react';
+import { transformToStoreUser } from '@/store/slices/authSlice';
 
 export const authKeys = {
   all: ['auth'] as const,
@@ -34,7 +35,7 @@ export const useVerifyUser = () => {
 
   useEffect(() => {
     if (data) {
-      setUser(data);
+      setUser(transformToStoreUser(data));
     } else if (isError) {
       clearUser();
     }

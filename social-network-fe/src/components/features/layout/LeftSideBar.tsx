@@ -80,7 +80,6 @@ const SidebarFooter = ({ isExpanded }: { isExpanded: boolean }) => {
     <div
       className={cn(
         'border-t border-gray-100 py-4 flex flex-col transition-all duration-300 ease-in-out',
-        // Footer căn chỉnh tương tự Logo
         isExpanded ? 'pl-6' : 'pl-[28px]'
       )}
     >
@@ -154,17 +153,14 @@ const LeftSidebar = () => {
     <aside
       className={cn(
         'bg-white border-r border-gray-200 sticky top-0 h-screen flex flex-col flex-shrink-0 transition-all duration-300 ease-in-out z-50',
-        // FIX 1: Xóa overflow-x-hidden ở đây để nút toggle (-right-3) hiển thị được
         isExpanded ? 'w-64' : 'w-20'
       )}
     >
       <VibeLogo isExpanded={isExpanded} />
 
-      {/* User Info Section */}
       <div
         className={cn(
           'flex items-center py-4 border-b border-gray-100 transition-all duration-300 ease-in-out',
-          // Avatar căn chỉnh
           isExpanded ? 'pl-6' : 'pl-5'
         )}
       >
@@ -190,8 +186,6 @@ const LeftSidebar = () => {
         </div>
       </div>
 
-      {/* FIX 2: Thêm items-center để các nav items tự động căn giữa khi thu nhỏ -> Icon sẽ thẳng hàng với Avatar */}
-      {/* Giữ overflow-x-hidden ở đây để tránh scrollbar ngang khi text bung ra */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 scrollbar-hide flex flex-col items-center gap-1">
         <TooltipProvider delayDuration={0}>
           {NAV_ITEMS.map((item) => {
@@ -210,7 +204,7 @@ const LeftSidebar = () => {
                   'h-11',
                   isExpanded
                     ? 'w-[calc(100%-16px)] pl-4 text-sm font-medium rounded-md mx-2'
-                    : 'w-11 rounded-md pl-2.5', // items-center ở nav cha sẽ lo việc căn giữa cục w-11 này
+                    : 'w-11 rounded-md pl-2.5',
                   isActive
                     ? 'bg-blue-50 text-gray-900'
                     : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'

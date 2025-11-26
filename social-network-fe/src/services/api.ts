@@ -34,7 +34,22 @@ export class ApiClient {
       body,
     };
 
-    const response = await fetch(url, config);
+    let response = await fetch(url, config);
+
+    if (response.status === 401) {
+      try {
+        const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
+          method: 'POST',
+          credentials: 'include',
+        });
+
+        if (refreshResponse.ok) {
+          response = await fetch(url, config);
+        }
+      } catch {
+        // Refresh failed, let it fall through to original 401 handling
+      }
+    }
 
     if (!response.ok) {
       const error: ApiError = new Error(

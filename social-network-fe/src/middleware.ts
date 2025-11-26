@@ -9,20 +9,8 @@ export function middleware(request: NextRequest) {
   const publicPaths = ['/public'];
   const semiPublicPaths = ['/user'];
 
-  const sessionExpired = searchParams.get('session_expired') === 'true';
-  if (pathname === '/login' && sessionExpired) {
-    const cleanUrl = new URL('/login', request.url);
-    const res = NextResponse.redirect(cleanUrl);
-
-    const cookieOptions = { path: '/', httpOnly: true, maxAge: -1 };
-    res.cookies.set('accessToken', '', cookieOptions);
-    res.cookies.set('refreshToken', '', cookieOptions);
-
-    return res;
-  }
-
-  let isPublic = false,
-    isSemiPublic = false;
+  let isPublic = false;
+  let isSemiPublic = false;
 
   const trulyPublicPaths = [...authRoutes, ...publicPaths];
 

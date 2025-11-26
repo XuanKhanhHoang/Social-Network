@@ -1,18 +1,9 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Patch,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
-import { JwtAuthGuard } from 'src/domains/auth/jwt-auth.guard';
+import { Controller, Get, Param, Patch, Query } from '@nestjs/common';
 import { GetUserId } from 'src/share/decorators/user.decorator';
 import { ParseMongoIdPipe } from 'src/share/pipe/parse-mongo-id-pipe';
 import { GetNotificationsService } from 'src/use-case/notification/get-notifications/get-notifications.service';
 import { MarkReadNotificationService } from 'src/use-case/notification/mark-read-notification/mark-read-notification.service';
 
-@UseGuards(JwtAuthGuard)
 @Controller('notifications')
 export class NotificationController {
   constructor(

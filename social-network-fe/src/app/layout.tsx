@@ -5,8 +5,6 @@ import { EmojiPickerProvider } from '@/components/provider/EmojiPickerProvider';
 import { QueryProvider } from '@/components/provider/QueryProvider';
 import { cookies, headers } from 'next/headers';
 import { authService } from '@/services/auth';
-import { UserProvider } from '@/components/provider/UserProvider';
-import { redirect } from 'next/navigation';
 import { AppInitializer } from '@/components/features/layout/AppInitializer';
 import LeftSidebar from '@/components/features/layout/LeftSideBar';
 import { CreatePostProvider } from '@/components/features/feed/FeedContext';
@@ -14,6 +12,7 @@ import { UserSummaryWithEmailDto } from '@/lib/dtos';
 import { transformToStoreUser } from '@/store/slices/authSlice';
 import { ImageViewerProvider } from '@/components/provider/ImageViewerProvider';
 import { AppSidebarProvider } from '@/components/provider/AppSidebarProvider';
+import { AuthGuard } from '@/components/features/auth/AuthGuard';
 
 export const metadata: Metadata = {
   title: 'Vibe',
@@ -27,37 +26,26 @@ export default async function RootLayout({
   children: React.ReactNode;
   modal: React.ReactNode;
 }>) {
-  const hdrs = await headers();
-  const isPublic = hdrs.get('x-route-public') != 'false';
-  const isSemiPublic = hdrs.get('x-route-semi-public') != 'false';
-
   let user: UserSummaryWithEmailDto | undefined;
+  const headersList = await headers();
+  const isPublic = headersList.get('x-route-public') === 'true';
+  const isSemiPublic = headersList.get('x-route-semi-public') === 'true';
 
   if (typeof window == 'undefined') {
-    if (isPublic) {
-      user = undefined;
-    } else {
-      const cookieStore = await cookies();
-      const accessToken = cookieStore.get('accessToken')?.value;
-      const refreshToken = cookieStore.get('refreshToken')?.value;
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get('accessToken')?.value;
+    const refreshToken = cookieStore.get('refreshToken')?.value;
 
-      if (accessToken || refreshToken) {
-        try {
-          user = await authService.verifyUser({
-            headers: {
-              Cookie: `accessToken=${accessToken}; refreshToken=${refreshToken}`,
-            },
-          });
-          if (!user) throw new Error('Service return null/undefined user!');
-        } catch (error) {
-          redirect('/login?session_expired=true');
-        }
-      } else {
-        if (isSemiPublic) {
-          user = undefined;
-        } else {
-          redirect('/login');
-        }
+    if (accessToken || refreshToken) {
+      try {
+        user = await authService.verifyUser({
+          headers: {
+            Cookie: `accessToken=${accessToken}; refreshToken=${refreshToken}`,
+          },
+        });
+      } catch (error) {
+        console.error('Verify user failed in Layout:', error);
+        user = undefined;
       }
     }
   }
@@ -66,7 +54,11 @@ export default async function RootLayout({
     <html lang="en">
       <body className={`antialiased`}>
         <AppInitializer>
-          <UserProvider initialUser={user && transformToStoreUser(user)}>
+          <AuthGuard
+            initialUser={user && transformToStoreUser(user)}
+            isPublic={isPublic}
+            isSemiPublic={isSemiPublic}
+          >
             <QueryProvider>
               <EmojiPickerProvider>
                 <ImageViewerProvider>
@@ -92,7 +84,7 @@ export default async function RootLayout({
               </EmojiPickerProvider>
               <Toaster position="top-right" expand />
             </QueryProvider>
-          </UserProvider>
+          </AuthGuard>
         </AppInitializer>
       </body>
     </html>
