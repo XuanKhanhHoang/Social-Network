@@ -15,11 +15,12 @@ import { Separator } from '@/components/ui/separator';
 import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { validateEmail, validatePassword } from '@/lib/utils/validation';
 import Link from 'next/link';
-import { authService } from '@/services/auth';
-import { RegisterDto } from '@/lib/dtos';
+import { authService } from '@/features/auth/services/auth.service';
+import { RegisterRequestDto } from '@/lib/dtos';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Gender } from '@/lib/constants/enums';
+
 interface FormErrors {
   firstName?: string;
   lastName?: string;
@@ -118,7 +119,7 @@ const RegisterPage = () => {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      const registerData: RegisterDto = {
+      const registerData: RegisterRequestDto = {
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,

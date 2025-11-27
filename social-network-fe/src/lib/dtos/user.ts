@@ -3,7 +3,7 @@ import { FriendshipStatus } from '../constants/enums/friendship-status';
 import { VisibilityPrivacy } from '../constants/enums/visibility-privacy';
 import { Province } from '../interfaces';
 import { VietnamProvince } from '../interfaces/common';
-import { PrivacySettings } from '../interfaces/user';
+import { PrivacySettings } from '@/features/user/types';
 import { CursorPaginationResponse } from './common/pagination';
 
 export interface UserSummaryDto {

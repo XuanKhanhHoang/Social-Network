@@ -2,7 +2,7 @@
 
 import { ReactionTargetType, ReactionType } from '@/lib/constants/enums';
 import ReactionButton from '../ui/reaction-button';
-import { useUpdateCommentCache } from '@/hooks/comment/useCommentCache';
+import { useUpdateCommentCache } from '@/features/comment/hooks/useCommentCache';
 import { CommentWithMyReaction } from '@/lib/interfaces/comment';
 type CommentReactionButtonProps = Omit<
   React.ComponentProps<typeof ReactionButton>,

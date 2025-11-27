@@ -4,16 +4,13 @@ import { Toaster } from 'sonner';
 import { EmojiPickerProvider } from '@/components/provider/EmojiPickerProvider';
 import { QueryProvider } from '@/components/provider/QueryProvider';
 import { cookies, headers } from 'next/headers';
-import { authService } from '@/services/auth';
-import { UserProvider } from '@/components/provider/UserProvider';
-import { redirect } from 'next/navigation';
+import { authService } from '@/features/auth/services/auth.service';
 import { AppInitializer } from '@/components/features/layout/AppInitializer';
-import LeftSidebar from '@/components/features/layout/LeftSideBar';
-import { CreatePostProvider } from '@/components/features/feed/FeedContext';
-import { UserSummaryWithEmailDto } from '@/lib/dtos';
-import { transformToStoreUser } from '@/store/slices/authSlice';
+import { CreatePostProvider } from '@/features/post/components/feed/FeedContext';
 import { ImageViewerProvider } from '@/components/provider/ImageViewerProvider';
-import { AppSidebarProvider } from '@/components/provider/AppSidebarProvider';
+import { AuthGuard } from '@/features/auth/components/AuthGuard';
+import { MainLayout } from '@/components/features/layout/MainLayout';
+import { SocketProvider } from '@/components/provider/SocketProvider';
 
 export const metadata: Metadata = {
   title: 'Vibe',
@@ -27,37 +24,25 @@ export default async function RootLayout({
   children: React.ReactNode;
   modal: React.ReactNode;
 }>) {
-  const hdrs = await headers();
-  const isPublic = hdrs.get('x-route-public') != 'false';
-  const isSemiPublic = hdrs.get('x-route-semi-public') != 'false';
-
-  let user: UserSummaryWithEmailDto | undefined;
+  let isAuthenticated = false;
+  const headersList = await headers();
+  const isPublic = headersList.get('x-route-public') === 'true';
+  const isSemiPublic = headersList.get('x-route-semi-public') === 'true';
 
   if (typeof window == 'undefined') {
-    if (isPublic) {
-      user = undefined;
-    } else {
-      const cookieStore = await cookies();
-      const accessToken = cookieStore.get('accessToken')?.value;
-      const refreshToken = cookieStore.get('refreshToken')?.value;
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get('accessToken')?.value;
 
-      if (accessToken || refreshToken) {
-        try {
-          user = await authService.verifyUser({
-            headers: {
-              Cookie: `accessToken=${accessToken}; refreshToken=${refreshToken}`,
-            },
-          });
-          if (!user) throw new Error('Service return null/undefined user!');
-        } catch (error) {
-          redirect('/login?session_expired=true');
-        }
-      } else {
-        if (isSemiPublic) {
-          user = undefined;
-        } else {
-          redirect('/login');
-        }
+    if (accessToken) {
+      try {
+        await authService.checkSession({
+          headers: {
+            Cookie: `accessToken=${accessToken};`,
+          },
+        });
+        isAuthenticated = true;
+      } catch {
+        isAuthenticated = false;
       }
     }
   }
@@ -66,33 +51,29 @@ export default async function RootLayout({
     <html lang="en">
       <body className={`antialiased`}>
         <AppInitializer>
-          <UserProvider initialUser={user && transformToStoreUser(user)}>
+          <AuthGuard
+            hasToken={isAuthenticated}
+            isPublic={isPublic}
+            isSemiPublic={isSemiPublic}
+          >
             <QueryProvider>
-              <EmojiPickerProvider>
-                <ImageViewerProvider>
-                  <CreatePostProvider>
-                    {user != undefined ? (
-                      <div className="min-h-screen bg-white">
-                        <div className="max-w-screen mx-auto flex">
-                          <AppSidebarProvider>
-                            <LeftSidebar />
-                            {children}
-                            {modal}
-                          </AppSidebarProvider>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
+              <SocketProvider>
+                <EmojiPickerProvider>
+                  <ImageViewerProvider>
+                    <CreatePostProvider>
+                      <MainLayout
+                        isAuthenticated={isAuthenticated}
+                        modal={modal}
+                      >
                         {children}
-                        {modal}
-                      </>
-                    )}
-                  </CreatePostProvider>
-                </ImageViewerProvider>
-              </EmojiPickerProvider>
-              <Toaster position="top-right" expand />
+                      </MainLayout>
+                    </CreatePostProvider>
+                  </ImageViewerProvider>
+                </EmojiPickerProvider>
+                <Toaster position="top-right" expand />
+              </SocketProvider>
             </QueryProvider>
-          </UserProvider>
+          </AuthGuard>
         </AppInitializer>
       </body>
     </html>

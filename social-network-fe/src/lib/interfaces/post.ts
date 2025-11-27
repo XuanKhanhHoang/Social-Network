@@ -8,7 +8,7 @@ import {
 import {
   transformToUserSummaryWidthAvatarUrl,
   UserSummaryWidthAvatarUrl,
-} from './user';
+} from '@/features/user/types';
 import { ReactionsBreakdown } from './reaction';
 import { PostDto, PostWithMyReactionDto, PostWithTopCommentDto } from '../dtos';
 import {

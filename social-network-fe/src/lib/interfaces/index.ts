@@ -1,4 +1,4 @@
-export * from './user';
+export * from '@/features/user/types';
 export * from './other';
 export * from './comment';
 export * from './reaction';

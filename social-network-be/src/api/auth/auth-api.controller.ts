@@ -15,6 +15,7 @@ import { VerifyEmailService } from '../../use-case/auth/verify-email/verify-emai
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto';
 import { AllowPublic } from 'src/share/decorators/allow-public-req.decorator';
+import { HttpCode, HttpStatus } from '@nestjs/common';
 
 @Controller('auth')
 export class AuthController {
@@ -82,5 +83,11 @@ export class AuthController {
     res.clearCookie('accessToken');
     res.clearCookie('refreshToken');
     return { message: 'Logout successful' };
+  }
+
+  @Post('check')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  check() {
+    return;
   }
 }

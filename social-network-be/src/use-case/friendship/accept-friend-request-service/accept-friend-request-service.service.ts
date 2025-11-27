@@ -1,7 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { FriendshipRepository } from 'src/domains/friendship/friendship.repository';
-import { UserEvents } from 'src/share/events';
+import {
+  FriendEvents,
+  FriendRequestAcceptedEventPayload,
+  UserEvents,
+} from 'src/share/events';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 import { FriendshipStatus } from 'src/share/enums/friendship-status';
 import { UserRepository } from 'src/domains/user/user.repository';
@@ -59,6 +63,11 @@ export class AcceptFriendRequestService extends BaseUseCaseService<
         friendCountDelta: 1,
       },
     });
+    this.emitter.emit(FriendEvents.requestAccepted, {
+      friendshipId: result._id.toString(),
+      userId: recipientId,
+      friendId: requesterId,
+    } as FriendRequestAcceptedEventPayload);
 
     return {
       requester: {

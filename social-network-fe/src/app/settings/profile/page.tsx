@@ -1,10 +1,10 @@
 'use client';
 
 import { useStore } from '@/store';
-import { useUserProfile } from '@/hooks/user/useUser';
-import { EditProfileSkeleton } from '@/components/features/user/settings/profile-settings/ProfileSettingsSkeleton';
-import { useGetProvinces } from '@/hooks/province/useGetProvinces';
-import { EditProfileForm } from '@/components/features/user/settings/profile-settings/form/EditProfileForm';
+import { useUserProfile } from '@/features/user/hooks/useUser';
+import { EditProfileSkeleton } from '@/features/user/components/settings/profile-settings/ProfileSettingsSkeleton';
+import { useGetProvinces } from '@/features/province/hooks/useGetProvinces';
+import { EditProfileForm } from '@/features/user/components/settings/profile-settings/form/EditProfileForm';
 
 export default function EditProfilePage() {
   const userAuth = useStore((s) => s.user);
@@ -26,3 +26,4 @@ export default function EditProfilePage() {
     </div>
   );
 }
+

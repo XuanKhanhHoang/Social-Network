@@ -14,6 +14,15 @@ import { UserRepository } from 'src/domains/user/user.repository';
 import { TiptapDocument } from 'src/share/dto/req/tiptap-content.dto';
 import { MediaType } from 'src/share/enums';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import {
+  CommentEvents,
+  CommentReplyCreatedEventPayload,
+  PostCommentedEventPayload,
+  PostEvents,
+} from 'src/share/events';
+import { UserMinimalWithEmailModel } from 'src/domains/user/interfaces';
+import { MediaUploadDocument } from 'src/schemas';
 
 export interface CreateCommentInput {
   postId: string;
@@ -35,6 +44,7 @@ export class CreateCommentService extends BaseUseCaseService<
     private readonly commentRepository: CommentRepository,
     private readonly mediaUploadService: MediaUploadService,
     private readonly userRepository: UserRepository,
+    private readonly eventEmitter: EventEmitter2,
   ) {
     super();
   }
@@ -49,9 +59,12 @@ export class CreateCommentService extends BaseUseCaseService<
     const session = await this.connection.startSession();
 
     try {
+      let post, parentComment;
       const result = await session.withTransaction(async () => {
         //TODO: NEED TO HANDLE Mentioned User
-        const [post, author, mediaItem, parentComment] = await Promise.all([
+        let author: UserMinimalWithEmailModel<Types.ObjectId>,
+          mediaItem: (MediaUploadDocument & { _id: string }) | null;
+        [post, author, mediaItem, parentComment] = await Promise.all([
           this.postRepository.checkIdExist(postId, {
             session,
           }),
@@ -88,7 +101,7 @@ export class CreateCommentService extends BaseUseCaseService<
                 username: author.username,
                 firstName: author.firstName,
                 lastName: author.lastName,
-                avatar: author.avatar.mediaId.toString(),
+                avatar: author?.avatar?.url,
               },
               content,
               media: mediaId
@@ -123,6 +136,26 @@ export class CreateCommentService extends BaseUseCaseService<
 
         return comment;
       });
+
+      const contentSnippet = this.extractContentSnippet(content);
+      if (parentId) {
+        this.eventEmitter.emit(CommentEvents.replyCreated, {
+          replyId: result._id.toString(),
+          commentId: parentId,
+          userId: authorId,
+          ownerId: parentComment.author._id.toString(),
+          contentSnippet,
+        } as CommentReplyCreatedEventPayload);
+      } else {
+        this.eventEmitter.emit(PostEvents.commented, {
+          commentId: result._id.toString(),
+          postId,
+          userId: authorId,
+          ownerId: post.author._id.toString(),
+          contentSnippet,
+        } as PostCommentedEventPayload);
+      }
+
       return result;
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -132,6 +165,18 @@ export class CreateCommentService extends BaseUseCaseService<
       throw error;
     } finally {
       await session.endSession();
+    }
+  }
+
+  private extractContentSnippet(content?: TiptapDocument): string {
+    if (!content || !content.content) return '';
+    try {
+      const text = content.content
+        .map((node) => node.content?.map((n) => n.text).join('') || '')
+        .join(' ');
+      return text.slice(0, 100);
+    } catch (e) {
+      return '';
     }
   }
 }

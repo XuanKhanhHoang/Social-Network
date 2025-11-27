@@ -1,4 +1,4 @@
-import { authService } from '@/services/auth';
+import { authService } from '@/features/auth/services/auth.service';
 import {
   Card,
   CardHeader,

@@ -7,6 +7,8 @@ import { FriendshipRepository } from 'src/domains/friendship/friendship.reposito
 import { UserRepository } from 'src/domains/user/user.repository';
 import { FriendshipStatus } from 'src/share/enums/friendship-status';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { FriendEvents, FriendRequestSentEventPayload } from 'src/share/events';
 
 export interface SendFriendRequestInput {
   requesterId: string;
@@ -31,6 +33,7 @@ export class SendFriendRequestService extends BaseUseCaseService<
   constructor(
     private readonly friendshipRepository: FriendshipRepository,
     private readonly userRepository: UserRepository,
+    private readonly eventEmitter: EventEmitter2,
   ) {
     super();
   }
@@ -64,6 +67,13 @@ export class SendFriendRequestService extends BaseUseCaseService<
       requesterId,
       recipientId,
     );
+
+    this.eventEmitter.emit(FriendEvents.requestSent, {
+      requestId: result._id.toString(),
+      senderId: requesterId,
+      receiverId: recipientId,
+    } as FriendRequestSentEventPayload);
+
     return {
       recipient: {
         _id: recipientId,

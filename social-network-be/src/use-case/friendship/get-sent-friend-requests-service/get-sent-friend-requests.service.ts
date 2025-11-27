@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { FriendshipRepository } from 'src/domains/friendship/friendship.repository';
-import { UserMinimalModel } from 'src/domains/user/interfaces';
+import { FriendshipDocumentModelWithPopulatedUser } from 'src/domains/friendship/interfaces';
 import { BeCursorPaginated } from 'src/share/dto/res/be-paginated.dto';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 
@@ -12,7 +12,9 @@ export interface GetSentFriendRequestsInput {
 }
 
 export interface GetSentFriendRequestsOutput
-  extends BeCursorPaginated<UserMinimalModel<Types.ObjectId>> {}
+  extends BeCursorPaginated<
+    FriendshipDocumentModelWithPopulatedUser<Types.ObjectId>
+  > {}
 
 @Injectable()
 export class GetSentFriendRequestsService extends BaseUseCaseService<
@@ -35,14 +37,10 @@ export class GetSentFriendRequestsService extends BaseUseCaseService<
       skip,
     );
 
-    const data = requests.map(
-      (req) => req.recipient as unknown as UserMinimalModel<Types.ObjectId>,
-    );
-
     const nextCursor = requests.length === limit ? skip + limit : null;
 
     return {
-      data,
+      data: requests,
       pagination: {
         hasMore: nextCursor !== null,
         nextCursor: nextCursor ? nextCursor.toString() : null,
