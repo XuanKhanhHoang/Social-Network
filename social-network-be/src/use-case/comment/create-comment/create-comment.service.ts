@@ -101,7 +101,7 @@ export class CreateCommentService extends BaseUseCaseService<
                 username: author.username,
                 firstName: author.firstName,
                 lastName: author.lastName,
-                avatar: author.avatar.url,
+                avatar: author?.avatar?.url,
               },
               content,
               media: mediaId

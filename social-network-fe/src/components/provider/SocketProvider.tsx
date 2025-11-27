@@ -1,11 +1,11 @@
 'use client';
-
 import { useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useStore } from '@/store';
 import { toast } from 'sonner';
 import { Notification, NotificationType } from '@/lib/types/notification';
 import { SocketEvents } from '@/lib/constants/socket';
+import { useSocketCacheUpdater } from '@/hooks/useSocketCacheUpdater';
 
 const SOCKET_URL =
   process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:3000';
@@ -34,6 +34,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const socketRef = useRef<Socket | null>(null);
   const addNotification = useStore((state) => state.addNotification);
   const user = useStore((state) => state.user);
+  const { handleSocketNotification } = useSocketCacheUpdater();
 
   useEffect(() => {
     if (!user) {
@@ -59,12 +60,12 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         SocketEvents.NEW_NOTIFICATION,
         (data: Notification) => {
           addNotification(data);
+          handleSocketNotification(data, user.username);
 
           const message = getNotificationMessage(data);
           toast(message);
         }
       );
-
       socketRef.current.on('disconnect', () => {
         console.log('Socket disconnected');
       });
@@ -76,7 +77,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         socketRef.current = null;
       }
     };
-  }, [user, addNotification]);
+  }, [user, addNotification, handleSocketNotification]);
 
   return <>{children}</>;
 };

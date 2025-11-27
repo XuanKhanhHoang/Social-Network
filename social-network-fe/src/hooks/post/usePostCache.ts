@@ -1,4 +1,5 @@
 import { InfiniteData, useQueryClient } from '@tanstack/react-query';
+import { useCallback } from 'react';
 import { ReactionType } from '@/lib/constants/enums';
 import { getUpdatedReactionState } from '@/lib/cache/reaction-updater';
 import { postService } from '@/services/post';
@@ -10,46 +11,55 @@ type PostUpdater = (oldPost: PostWithTopCommentDto) => PostWithTopCommentDto;
 export function useUpdatePostCache() {
   const queryClient = useQueryClient();
 
-  const updatePostInAllCaches = (postId: string, updater: PostUpdater) => {
-    queryClient.setQueriesData<
-      InfiniteData<GetPostsFeedResponseDto, string | undefined>
-    >({ queryKey: postKeys.lists() }, (oldData) => {
-      if (!oldData) return oldData;
+  const updatePostInAllCaches = useCallback(
+    (postId: string, updater: PostUpdater) => {
+      queryClient.setQueriesData<
+        InfiniteData<GetPostsFeedResponseDto, string | undefined>
+      >({ queryKey: postKeys.lists() }, (oldData) => {
+        if (!oldData) return oldData;
 
-      return {
-        ...oldData,
-        pages: oldData.pages.map((page) => ({
-          ...page,
-          data:
-            page.data?.map((post) =>
-              post._id === postId ? updater(post) : post
-            ) ?? [],
-        })),
-      };
-    });
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page) => ({
+            ...page,
+            data:
+              page.data?.map((post) =>
+                post._id === postId ? updater(post) : post
+              ) ?? [],
+          })),
+        };
+      });
 
-    queryClient.setQueryData<PostWithTopCommentDto>(
-      postKeys.detail(postId),
-      (oldPost) => (oldPost ? updater(oldPost) : undefined)
-    );
-  };
+      queryClient.setQueryData<PostWithTopCommentDto>(
+        postKeys.detail(postId),
+        (oldPost) => (oldPost ? updater(oldPost) : undefined)
+      );
+    },
+    [queryClient]
+  );
 
-  return {
-    incrementComments: (postId: string) => {
+  const incrementComments = useCallback(
+    (postId: string) => {
       updatePostInAllCaches(postId, (post) => ({
         ...post,
         commentsCount: post.commentsCount + 1,
       }));
     },
+    [updatePostInAllCaches]
+  );
 
-    decrementComments: (postId: string) => {
+  const decrementComments = useCallback(
+    (postId: string) => {
       updatePostInAllCaches(postId, (post) => ({
         ...post,
         commentsCount: Math.max(0, post.commentsCount - 1),
       }));
     },
+    [updatePostInAllCaches]
+  );
 
-    updateUserReaction: (
+  const updateUserReaction = useCallback(
+    (
       postId: string,
       newReaction: ReactionType | null,
       previousReaction?: ReactionType | null
@@ -62,12 +72,11 @@ export function useUpdatePostCache() {
         )
       );
     },
+    [updatePostInAllCaches]
+  );
 
-    updateReactionFromSocket: (
-      postId: string,
-      reactionType: ReactionType,
-      increment: boolean
-    ) => {
+  const updateReactionFromSocket = useCallback(
+    (postId: string, reactionType: ReactionType, increment: boolean) => {
       updatePostInAllCaches(postId, (post) => {
         const change = increment ? 1 : -1;
         return {
@@ -83,15 +92,21 @@ export function useUpdatePostCache() {
         };
       });
     },
+    [updatePostInAllCaches]
+  );
 
-    incrementShares: (postId: string) => {
+  const incrementShares = useCallback(
+    (postId: string) => {
       updatePostInAllCaches(postId, (post) => ({
         ...post,
         sharesCount: post.sharesCount + 1,
       }));
     },
+    [updatePostInAllCaches]
+  );
 
-    refreshPost: async (postId: string) => {
+  const refreshPost = useCallback(
+    async (postId: string) => {
       try {
         const freshPost = await queryClient.fetchQuery({
           queryKey: postKeys.detail(postId),
@@ -110,9 +125,20 @@ export function useUpdatePostCache() {
         return null;
       }
     },
+    [queryClient, updatePostInAllCaches]
+  );
 
-    invalidateFeed: () => {
-      return queryClient.invalidateQueries({ queryKey: postKeys.lists() });
-    },
+  const invalidateFeed = useCallback(() => {
+    return queryClient.invalidateQueries({ queryKey: postKeys.lists() });
+  }, [queryClient]);
+
+  return {
+    incrementComments,
+    decrementComments,
+    updateUserReaction,
+    updateReactionFromSocket,
+    incrementShares,
+    refreshPost,
+    invalidateFeed,
   };
 }
