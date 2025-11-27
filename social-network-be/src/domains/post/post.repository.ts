@@ -105,9 +105,6 @@ export class PostRepository extends ReactableRepository<PostDocument> {
     const requestingUserObjId = new Types.ObjectId(requestingUserId);
     const friendObjIds = friendIds.map((id) => new Types.ObjectId(id));
 
-    const twoDaysAgo = new Date();
-    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
-
     pipeline.push({ $match: { status: PostStatus.ACTIVE } });
 
     pipeline.push({
@@ -116,12 +113,11 @@ export class PostRepository extends ReactableRepository<PostDocument> {
           { 'author._id': requestingUserObjId },
           {
             'author._id': { $in: friendObjIds },
-            visibility: UserPrivacy.FRIENDS,
+            visibility: { $in: [UserPrivacy.FRIENDS, UserPrivacy.PUBLIC] },
           },
           {
             'author._id': { $nin: [...friendObjIds, requestingUserObjId] },
             visibility: UserPrivacy.PUBLIC,
-            createdAt: { $gte: twoDaysAgo },
           },
         ],
       },
