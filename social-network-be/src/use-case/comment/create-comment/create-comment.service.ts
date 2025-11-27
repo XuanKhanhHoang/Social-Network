@@ -57,9 +57,11 @@ export class CreateCommentService extends BaseUseCaseService<
     const session = await this.connection.startSession();
 
     try {
+      let post, parentComment;
       const result = await session.withTransaction(async () => {
         //TODO: NEED TO HANDLE Mentioned User
-        const [post, author, mediaItem, parentComment] = await Promise.all([
+        let author, mediaItem;
+        [post, author, mediaItem, parentComment] = await Promise.all([
           this.postRepository.checkIdExist(postId, {
             session,
           }),
@@ -138,6 +140,7 @@ export class CreateCommentService extends BaseUseCaseService<
           replyId: result._id.toString(),
           commentId: parentId,
           userId: authorId,
+          ownerId: parentComment.author._id.toString(),
           contentSnippet,
         } as CommentReplyCreatedEventPayload);
       } else {
@@ -145,6 +148,7 @@ export class CreateCommentService extends BaseUseCaseService<
           commentId: result._id.toString(),
           postId,
           userId: authorId,
+          ownerId: post.author._id.toString(),
           contentSnippet,
         } as PostCommentedEventPayload);
       }

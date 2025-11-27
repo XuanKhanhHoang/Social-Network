@@ -26,5 +26,6 @@ export type PostCommentedEventPayload = {
   commentId: string;
   postId: string;
   userId: string;
+  ownerId: string;
   contentSnippet?: string;
 };

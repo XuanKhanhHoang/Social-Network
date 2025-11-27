@@ -21,5 +21,6 @@ export type CommentReplyCreatedEventPayload = {
   replyId: string;
   commentId: string;
   userId: string;
+  ownerId: string;
   contentSnippet?: string;
 };
