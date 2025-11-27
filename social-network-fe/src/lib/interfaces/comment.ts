@@ -2,7 +2,7 @@ import { ReactionsBreakdown } from './reaction';
 import {
   transformToUserSummaryWidthAvatarUrl,
   UserSummaryWidthAvatarUrl,
-} from './user';
+} from '@/features/user/types';
 import { MediaType, ReactionType } from '../constants/enums';
 import { JSONContent } from '@tiptap/react';
 import { CommentDto, CommentWithMyReactionDto } from '../dtos';

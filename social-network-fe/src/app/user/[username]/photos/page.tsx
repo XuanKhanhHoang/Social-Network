@@ -1,9 +1,9 @@
 'use client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
-import { useUserPhotosPreview } from '@/hooks/user/useUser';
+import { useUserPhotosPreview } from '@/features/user/hooks/useUser';
 import { useParams } from 'next/navigation';
-import { transformToUserPreviewPhoto } from '@/lib/interfaces/user';
+import { transformToUserPreviewPhoto } from '@/features/user/types';
 import { useImageViewer } from '@/components/provider/ImageViewerProvider';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, ImageOff } from 'lucide-react';
@@ -65,7 +65,7 @@ export default function PhotoPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
           {photos.map((photo) => (
             <div
-              key={photo.mediaId}
+              key={photo.id}
               className="aspect-square relative overflow-hidden rounded-md cursor-pointer group"
             >
               <Image
@@ -76,7 +76,7 @@ export default function PhotoPage() {
                 sizes="(max-width: 768px) 50vw, (max-width: 1024px) 25vw, 20vw"
                 onClick={() =>
                   open({
-                    imgId: photo.mediaId,
+                    imgId: photo.id,
                     url: photo.url,
                     width: photo.width,
                     height: photo.height,

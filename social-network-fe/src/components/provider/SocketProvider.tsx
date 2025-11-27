@@ -3,9 +3,9 @@ import { useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useStore } from '@/store';
 import { toast } from 'sonner';
-import { Notification, NotificationType } from '@/lib/types/notification';
+import { Notification, NotificationType } from '@/features/notification/types';
 import { SocketEvents } from '@/lib/constants/socket';
-import { useSocketCacheUpdater } from '@/hooks/useSocketCacheUpdater';
+import { useSocketCacheUpdater } from '@/features/notification/hooks/useSocketCacheUpdater';
 
 const SOCKET_URL =
   process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:3000';

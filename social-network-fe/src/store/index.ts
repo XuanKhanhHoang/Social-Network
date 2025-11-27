@@ -4,7 +4,7 @@ import { AuthSlice, createAuthSlice } from './slices/authSlice';
 import {
   NotificationSlice,
   createNotificationSlice,
-} from './slices/notificationSlice';
+} from '@/features/notification/store/notificationSlice';
 
 type StoreState = AuthSlice & NotificationSlice;
 

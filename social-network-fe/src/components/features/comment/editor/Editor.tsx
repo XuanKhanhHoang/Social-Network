@@ -11,12 +11,12 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import _ from 'lodash';
-import { useMediaUpload } from '@/hooks/media/useMediaUpload';
 import { MediaItemWithHandlingStatus } from '../../media/type';
 import MediaUploadItem from '../../media/uploader/UploadItem';
-import { useUpdatePostCache } from '@/hooks/post/usePostCache';
-import { useUpdateCommentCache } from '@/hooks/comment/useCommentCache';
+import { useUpdatePostCache } from '@/features/post/hooks/usePostCache';
 import { commentService } from '@/services/comment';
+import { useUpdateCommentCache } from '@/features/comment/hooks/useCommentCache';
+import { useMediaUpload } from '@/features/media/hooks/useMediaUpload';
 export type CommentEditorProps = {
   postId: string;
   parentId?: string;

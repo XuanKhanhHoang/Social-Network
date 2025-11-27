@@ -1,7 +1,7 @@
 'use client';
 import { useParams } from 'next/navigation';
-import UserProfileFeed from '@/components/features/user/common/UserFeed';
-import { useUserProfile } from '@/hooks/user/useUser';
+import UserProfileFeed from '@/features/user/components/common/UserFeed';
+import { useUserProfile } from '@/features/user/hooks/useUser';
 import { useStore } from '@/store';
 import { Skeleton } from '@/components/ui/skeleton';
 

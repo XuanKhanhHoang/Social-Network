@@ -8,15 +8,15 @@ import React, {
   useCallback,
 } from 'react';
 import { usePathname, useParams } from 'next/navigation';
-import { useUserHeader } from '@/hooks/user/useUser';
+import { useUserHeader } from '@/features/user/hooks/useUser';
 import { useStore } from '@/store';
 import {
   ProfileActions,
   ViewAsTypeFriendshipStatus,
-} from '@/components/features/user/profile/header/ProfileActions';
-import { ProfileTabs } from '@/components/features/user/profile/header/ProfileTab';
-import { LoginPrompt } from '@/components/features/user/profile/header/LoginPrompt';
-import { ProfileHeaderSkeleton } from '@/components/features/user/profile/header/ProfileHeaderSkeleton';
+} from '@/features/user/components/profile/header/ProfileActions';
+import { ProfileTabs } from '@/features/user/components/profile/header/ProfileTab';
+import { LoginPrompt } from '@/features/user/components/profile/header/LoginPrompt';
+import { ProfileHeaderSkeleton } from '@/features/user/components/profile/header/ProfileHeaderSkeleton';
 
 import { FriendshipStatus } from '@/lib/constants/enums/friendship-status';
 import { UserAvatar } from '@/components/ui/user-avatar';

@@ -6,7 +6,6 @@ import { generateHTML } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Emoji } from '@/lib/editor/emoji-node';
 import { CommentReactionButton } from '@/components/wrappers/CommentReaction';
-import { useGetCommentReplies } from '@/hooks/comment/useComment';
 import {
   CommentWithMyReaction,
   transformToCommentWithMyReaction,
@@ -14,6 +13,7 @@ import {
 import { useReplyStore } from '@/store/reply-comments/reply.store';
 import ContainedMedia from '../../media/common/ContainedMedia';
 import { UserAvatar } from '@/components/ui/user-avatar';
+import { useGetCommentReplies } from '@/features/comment/hooks/useComment';
 
 type CommentItemProps = {
   comment: CommentWithMyReaction;

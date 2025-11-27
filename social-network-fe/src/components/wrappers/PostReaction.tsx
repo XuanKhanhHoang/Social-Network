@@ -2,7 +2,7 @@
 
 import { ReactionType } from '@/lib/constants/enums';
 import ReactionButton from '../ui/reaction-button';
-import { useUpdatePostCache } from '@/hooks/post/usePostCache';
+import { useUpdatePostCache } from '@/features/post/hooks/usePostCache';
 type PostReactionButtonProps = Omit<
   React.ComponentProps<typeof ReactionButton>,
   'onReactionChange' | 'entityType' | 'entityId'

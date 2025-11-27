@@ -1,7 +1,7 @@
 'use client';
-import AccountSettingsForm from '@/components/features/user/settings/account-settings/AccountSettingsForm';
+import AccountSettingsForm from '@/features/user/components/settings/account-settings/AccountSettingsForm';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useGetAccount } from '@/hooks/user/useUser';
+import { useGetAccount } from '@/features/user/hooks/useUser';
 
 export default function AccountSettingsPage() {
   const { data: userAccount, isLoading } = useGetAccount();

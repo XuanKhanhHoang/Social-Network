@@ -17,8 +17,8 @@ import {
   PanelLeft,
 } from 'lucide-react';
 import { useStore } from '@/store';
-import { useLogout } from '@/hooks/auth/useAuth';
-import { useCreatePostContext } from '../feed/FeedContext';
+import { useLogout } from '@/features/auth/hooks/useAuth';
+import { useCreatePostContext } from '@/features/post/components/feed/FeedContext';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { useAppSidebarContext } from '@/components/provider/AppSidebarProvider';
 import { cn } from '@/lib/utils';

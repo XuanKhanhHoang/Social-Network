@@ -17,7 +17,7 @@ import HappySmileIcon from '@/assets/emoji/happy-smile-svgrepo-com.svg';
 import WowIcon from '@/assets/emoji/wow-svgrepo-com.svg';
 import SadTearIcon from '@/assets/emoji/sad-tear-svgrepo-com.svg';
 import AngryIcon from '@/assets/emoji/angry-svgrepo-com.svg';
-import { useReaction } from '@/hooks/reaction/useReaction';
+import { useReaction } from '@/features/reaction/hooks/useReaction';
 
 const REACTION_MAP = [
   {
@@ -202,3 +202,4 @@ export default function ReactionButton({
     </Popover>
   );
 }
+

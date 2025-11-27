@@ -4,7 +4,7 @@ import { useStore } from '@/store';
 import { AppSidebarProvider } from '@/components/provider/AppSidebarProvider';
 import LeftSidebar from '@/components/features/layout/LeftSideBar';
 
-import { NotificationManager } from '../notification/NotificationManager';
+import { NotificationManager } from '@/features/notification/components/NotificationManager';
 
 interface MainLayoutProps {
   children: React.ReactNode;
