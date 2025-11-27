@@ -97,4 +97,10 @@ export class ApiClient {
       ...options,
     });
   }
+  static async checkSession(options: RequestOptions = {}): Promise<void> {
+    await this.post('/auth/check', undefined, {
+      credentials: 'include',
+      ...options,
+    });
+  }
 }

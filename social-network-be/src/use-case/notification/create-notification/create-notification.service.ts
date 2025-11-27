@@ -54,10 +54,7 @@ export class CreateNotificationService extends BaseUseCaseService<
     const notification =
       await this.notificationRepository.createNotification(notificationData);
 
-    this.notificationGateway.sendToUser(
-      input.receiver.toString(),
-      notification,
-    );
+    this.notificationGateway.sendToUser(input.receiver, notification);
 
     return notification;
   }

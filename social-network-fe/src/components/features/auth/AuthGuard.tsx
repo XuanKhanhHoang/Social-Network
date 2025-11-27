@@ -1,58 +1,67 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useStore } from '@/store';
-import { StoreUser } from '@/store/slices/authSlice';
+import { transformToStoreUser } from '@/store/slices/authSlice';
+import { UserSummaryWithEmailDto } from '@/lib/dtos';
 import { ApiClient } from '@/services/api';
 
 interface AuthGuardProps {
-  initialUser?: StoreUser | null;
+  hasToken: boolean;
   children: React.ReactNode;
   isPublic?: boolean;
   isSemiPublic?: boolean;
 }
 
 export function AuthGuard({
-  initialUser,
+  hasToken,
   children,
   isPublic,
   isSemiPublic,
 }: AuthGuardProps) {
+  const user = useStore((s) => s.user);
   const setUser = useStore((s) => s.setUser);
+
   const router = useRouter();
-  const pathname = usePathname();
-  const [isChecking, setIsChecking] = useState(false);
+
+  const isPrivate = !isPublic && !isSemiPublic;
+  const shouldFetchUser = !user && (hasToken || isPrivate);
+
+  const [isLoading, setIsLoading] = useState(shouldFetchUser);
 
   useEffect(() => {
-    if (initialUser !== undefined) {
-      setUser(initialUser);
-    }
-  }, [initialUser, setUser]);
+    if (!shouldFetchUser) return;
 
-  useEffect(() => {
-    const isPrivate = !isPublic && !isSemiPublic;
+    setIsLoading(true);
 
-    if (isPrivate && !initialUser) {
-      setIsChecking(true);
-      ApiClient.post('/auth/refresh')
-        .then(() => {
+    ApiClient.get<UserSummaryWithEmailDto>('/users/me')
+      .then((data) => {
+        setUser(transformToStoreUser(data));
+        if (!hasToken) {
           router.refresh();
-        })
-        .catch(() => {
+        }
+      })
+      .catch(() => {
+        if (isPrivate) {
           router.push('/login');
-        });
-    } else {
-      setIsChecking(false);
-    }
-  }, [pathname, initialUser, router, isPublic, isSemiPublic]);
+        }
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [hasToken, user, setUser, router, isPrivate, shouldFetchUser]);
 
-  if (isChecking) {
+  if (isLoading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center">
+      <div className="flex h-screen w-full items-center justify-center bg-white">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>
     );
+  }
+
+  if (isPrivate && !user) {
+    return null;
   }
 
   return <>{children}</>;

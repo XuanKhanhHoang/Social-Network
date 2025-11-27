@@ -33,4 +33,7 @@ export const authService = {
   async verifyUser(options?: RequestOptions): Promise<UserSummaryWithEmailDto> {
     return ApiClient.get(`${USER_PREFIX}/me`, options);
   },
+  async checkSession(options?: RequestOptions): Promise<void> {
+    return ApiClient.checkSession(options);
+  },
 };
