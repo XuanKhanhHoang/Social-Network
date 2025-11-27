@@ -6,21 +6,31 @@ import {
   CreateNotificationService,
   GetNotificationsService,
   MarkReadNotificationService,
+  CountUnreadNotificationsService,
 } from './';
 import { NotificationEventListener } from './listeners/listeners.service';
 
+import { FriendshipModule } from 'src/domains/friendship/friendship.module';
+
 @Module({
-  imports: [NotificationModule, UserModule, NotificationGatewayModule],
+  imports: [
+    NotificationModule,
+    UserModule,
+    NotificationGatewayModule,
+    FriendshipModule,
+  ],
   providers: [
     CreateNotificationService,
     GetNotificationsService,
     MarkReadNotificationService,
+    CountUnreadNotificationsService,
     NotificationEventListener,
   ],
   exports: [
     CreateNotificationService,
     GetNotificationsService,
     MarkReadNotificationService,
+    CountUnreadNotificationsService,
   ],
 })
 export class NotificationUseCaseModule {}

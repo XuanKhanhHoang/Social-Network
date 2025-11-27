@@ -10,6 +10,7 @@ import { CreatePostProvider } from '@/components/features/feed/FeedContext';
 import { ImageViewerProvider } from '@/components/provider/ImageViewerProvider';
 import { AuthGuard } from '@/components/features/auth/AuthGuard';
 import { MainLayout } from '@/components/features/layout/MainLayout';
+import { SocketProvider } from '@/components/provider/SocketProvider';
 
 export const metadata: Metadata = {
   title: 'Vibe',
@@ -56,16 +57,21 @@ export default async function RootLayout({
             isSemiPublic={isSemiPublic}
           >
             <QueryProvider>
-              <EmojiPickerProvider>
-                <ImageViewerProvider>
-                  <CreatePostProvider>
-                    <MainLayout isAuthenticated={isAuthenticated} modal={modal}>
-                      {children}
-                    </MainLayout>
-                  </CreatePostProvider>
-                </ImageViewerProvider>
-              </EmojiPickerProvider>
-              <Toaster position="top-right" expand />
+              <SocketProvider>
+                <EmojiPickerProvider>
+                  <ImageViewerProvider>
+                    <CreatePostProvider>
+                      <MainLayout
+                        isAuthenticated={isAuthenticated}
+                        modal={modal}
+                      >
+                        {children}
+                      </MainLayout>
+                    </CreatePostProvider>
+                  </ImageViewerProvider>
+                </EmojiPickerProvider>
+                <Toaster position="top-right" expand />
+              </SocketProvider>
             </QueryProvider>
           </AuthGuard>
         </AppInitializer>

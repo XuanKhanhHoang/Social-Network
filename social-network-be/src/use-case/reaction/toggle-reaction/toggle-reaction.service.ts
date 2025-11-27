@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ReactionService } from 'src/domains/reaction/reaction.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ReactionTargetType, ReactionType } from 'src/share/enums';
+import { ReactionTargetType, ReactionType, ActionType } from 'src/share/enums';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 import { PostRepository } from 'src/domains/post/post.repository';
 import { CommentRepository } from 'src/domains/comment/comment.repository';
@@ -29,6 +29,8 @@ export class ToggleReactionService extends BaseUseCaseService<
   ToggleReactionServiceInput,
   ToggleReactionServiceOutput
 > {
+  private readonly logger = new Logger(ToggleReactionService.name);
+
   constructor(
     private readonly reactionService: ReactionService,
     private readonly eventEmitter: EventEmitter2,
@@ -49,16 +51,20 @@ export class ToggleReactionService extends BaseUseCaseService<
       reactionType,
     );
 
-    if (result.action === 'create') {
+    if (result.action === ActionType.CREATED) {
       if (targetType === ReactionTargetType.POST) {
         const post = await this.postRepository.findById(targetId);
-        if (post && post.author._id.toString() !== userId) {
-          this.eventEmitter.emit(PostEvents.liked, {
-            postId: targetId,
-            userId,
-            ownerId: post.author._id.toString(),
-            type: reactionType,
-          } as PostLikedEventPayload);
+        if (post) {
+          if (post.author._id.toString() !== userId) {
+            const payload = {
+              postId: targetId,
+              userId,
+              ownerId: post.author._id.toString(),
+              type: reactionType,
+            } as PostLikedEventPayload;
+
+            this.eventEmitter.emit(PostEvents.liked, payload);
+          }
         }
       } else if (targetType === ReactionTargetType.COMMENT) {
         const comment = await this.commentRepository.findById(targetId);

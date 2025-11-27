@@ -13,6 +13,7 @@ import {
   SendFriendRequestDto,
 } from '@/lib/dtos/friendship';
 import { userKeys } from '../user/useUser';
+import { mapFriendshipDtoToDomain } from '@/types/friendship';
 
 const updateHeaderAndProfileRecipientAndRequester = (
   queryClient: QueryClient,
@@ -39,10 +40,15 @@ const updateHeaderAndProfileRecipientAndRequester = (
     queryKey: userKeys.profile(requesterUsername),
   });
 };
+
 export function useFriendRequests() {
   return useQuery({
     queryKey: friendshipKeys.received(),
     queryFn: () => FriendshipService.getReceivedFriendRequests({ limit: 10 }),
+    select: (data) => ({
+      ...data,
+      data: data.data.map((item) => mapFriendshipDtoToDomain(item)),
+    }),
   });
 }
 
@@ -50,6 +56,10 @@ export function useSentRequests() {
   return useQuery({
     queryKey: friendshipKeys.sent(),
     queryFn: () => FriendshipService.getSentFriendRequests({ limit: 10 }),
+    select: (data) => ({
+      ...data,
+      data: data.data.map((item) => mapFriendshipDtoToDomain(item)),
+    }),
   });
 }
 

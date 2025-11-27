@@ -44,7 +44,6 @@ export function UserProfileActions({
       currentLocation: formData.get('location') as string,
     };
 
-    console.log('Submitting changes:', data);
     // TODO:  mutation
     // updateProfileMutation.mutate(data, {
     //   onSuccess: () => {
@@ -58,12 +57,10 @@ export function UserProfileActions({
 
   // TODO:  friend handler
   const handleAddFriend = () => {
-    console.log('Add friend:', user.username);
     // addFriendMutation.mutate(user.username);
   };
 
   const handleUnfriend = () => {
-    console.log('Unfriend:', user.username);
     // unfriendMutation.mutate(user.username);
   };
 

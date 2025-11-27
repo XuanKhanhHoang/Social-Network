@@ -32,8 +32,6 @@ export class CreateNotificationService extends BaseUseCaseService<
   async execute(
     input: CreateNotificationInput,
   ): Promise<CreateNotificationOutput> {
-    this.logger.log(`Creating notification for user ${input.receiver}`);
-
     const sender = await this.userRepository.findByIdBasic(input.sender._id);
     if (!sender) {
       this.logger.warn(`Sender not found: ${input.sender._id}`);
@@ -54,7 +52,10 @@ export class CreateNotificationService extends BaseUseCaseService<
     const notification =
       await this.notificationRepository.createNotification(notificationData);
 
-    this.notificationGateway.sendToUser(input.receiver, notification);
+    await this.notificationGateway.sendToUser(
+      notification.receiver._id.toString(),
+      notification,
+    );
 
     return notification;
   }

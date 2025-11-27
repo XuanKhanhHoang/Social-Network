@@ -4,6 +4,7 @@ import { Model, Types } from 'mongoose';
 import { BaseRepository } from 'src/share/base-class/base-repository.service';
 import { FriendshipDocument } from 'src/schemas/friendship.schema';
 import { FriendshipStatus } from 'src/share/enums/friendship-status';
+import { FriendshipDocumentModelWithPopulatedUser } from './interfaces';
 
 @Injectable()
 export class FriendshipRepository extends BaseRepository<FriendshipDocument> {
@@ -103,7 +104,11 @@ export class FriendshipRepository extends BaseRepository<FriendshipDocument> {
     });
   }
 
-  async getPendingRequests(userId: string, limit: number, skip: number) {
+  async getPendingRequests(
+    userId: string,
+    limit: number,
+    skip: number,
+  ): Promise<FriendshipDocumentModelWithPopulatedUser<Types.ObjectId>[]> {
     return this.friendshipModel
       .find({
         recipient: new Types.ObjectId(userId),
@@ -114,10 +119,16 @@ export class FriendshipRepository extends BaseRepository<FriendshipDocument> {
       .limit(limit)
       .populate('requester', 'firstName lastName username avatar')
       .lean()
-      .exec();
+      .exec() as unknown as Promise<
+      FriendshipDocumentModelWithPopulatedUser<Types.ObjectId>[]
+    >;
   }
 
-  async getSentRequests(userId: string, limit: number, skip: number) {
+  async getSentRequests(
+    userId: string,
+    limit: number,
+    skip: number,
+  ): Promise<FriendshipDocumentModelWithPopulatedUser<Types.ObjectId>[]> {
     return this.friendshipModel
       .find({
         requester: new Types.ObjectId(userId),
@@ -128,7 +139,9 @@ export class FriendshipRepository extends BaseRepository<FriendshipDocument> {
       .limit(limit)
       .populate('recipient', 'firstName lastName username avatar')
       .lean()
-      .exec();
+      .exec() as unknown as Promise<
+      FriendshipDocumentModelWithPopulatedUser<Types.ObjectId>[]
+    >;
   }
 
   async getUnableFriendCandidates(userId: string): Promise<string[]> {

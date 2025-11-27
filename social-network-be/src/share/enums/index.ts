@@ -5,3 +5,4 @@ export * from './reaction-type';
 export * from './post-status';
 export * from './reaction-target-type';
 export * from './notification-type.enum';
+export * from './action-type.enum';

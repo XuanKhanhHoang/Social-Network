@@ -1,9 +1,10 @@
 import { FriendshipDto } from '@/lib/dtos/friendship';
+import { transformToUserSummary, UserSummary } from '@/lib/interfaces';
 
 export interface Friendship {
   id: string;
-  requester: string;
-  recipient: string;
+  requester: UserSummary;
+  recipient: UserSummary;
   status: 'PENDING' | 'ACCEPTED' | 'BLOCKED';
   createdAt: string;
   updatedAt: string;
@@ -12,9 +13,9 @@ export interface Friendship {
 export function mapFriendshipDtoToDomain(dto: FriendshipDto): Friendship {
   return {
     id: dto._id,
-    requester: dto.requester,
-    recipient: dto.recipient,
-    status: dto.status,
+    requester: transformToUserSummary(dto.requester),
+    recipient: transformToUserSummary(dto.recipient),
+    status: dto.status as 'PENDING' | 'ACCEPTED' | 'BLOCKED',
     createdAt: dto.createdAt,
     updatedAt: dto.updatedAt,
   };

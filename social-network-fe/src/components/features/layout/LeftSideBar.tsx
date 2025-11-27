@@ -40,7 +40,7 @@ const NAV_ITEMS = [
     href: '#',
     badge: 3,
   },
-  { id: 'notifications', label: 'Thông báo', icon: Bell, href: '#', badge: 5 },
+  { id: 'notifications', label: 'Thông báo', icon: Bell, href: '#' },
   { id: 'friends', label: 'Bạn bè', icon: Users, href: '/friends' },
   { id: 'profile', label: 'Trang cá nhân', icon: User, href: '/user/' },
 ];
@@ -149,6 +149,8 @@ const LeftSidebar = () => {
     }
   };
 
+  const unreadNotifyCount = useStore((s) => s.unreadCount);
+
   return (
     <aside
       className={cn(
@@ -231,7 +233,7 @@ const LeftSidebar = () => {
                   {item.label}
                 </span>
 
-                {item.badge && item.badge > 0 && (
+                {item.id === 'notifications' && unreadNotifyCount > 0 && (
                   <span
                     className={cn(
                       'bg-red-500 text-white text-xs rounded-md font-semibold flex items-center justify-center transition-all duration-300',
@@ -240,7 +242,7 @@ const LeftSidebar = () => {
                         : 'absolute -top-1 -right-1 w-4 h-4 text-[10px] border-2 border-white rounded-full'
                     )}
                   >
-                    {item.badge}
+                    {unreadNotifyCount}
                   </span>
                 )}
               </Link>

@@ -51,7 +51,6 @@ export default function UserLayout({
     return 'PUBLIC_LOGGED_OUT';
   }, [header, userAuth]);
 
-  console.log(userAuth);
   const getActiveTab = useCallback(() => {
     if (!username) return 'timeline';
     if (pathname === `/user/${username}/photos`) return 'photos';

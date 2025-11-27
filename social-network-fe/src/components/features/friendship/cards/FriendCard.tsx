@@ -1,10 +1,10 @@
 import { Card } from '@/components/ui/card';
 import { UserAvatar } from '@/components/ui/user-avatar';
-import { UserSummaryDto } from '@/lib/dtos/user';
+import { UserSummary } from '@/lib/interfaces';
 import Link from 'next/link';
 
 interface FriendCardProps {
-  user: UserSummaryDto;
+  user: UserSummary;
   actions?: React.ReactNode;
 }
 

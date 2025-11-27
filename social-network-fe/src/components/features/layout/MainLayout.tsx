@@ -4,6 +4,8 @@ import { useStore } from '@/store';
 import { AppSidebarProvider } from '@/components/provider/AppSidebarProvider';
 import LeftSidebar from '@/components/features/layout/LeftSideBar';
 
+import { NotificationManager } from '../notification/NotificationManager';
+
 interface MainLayoutProps {
   children: React.ReactNode;
   modal: React.ReactNode;
@@ -21,15 +23,18 @@ export function MainLayout({
 
   if (showSidebar) {
     return (
-      <div className="min-h-screen bg-white">
-        <div className="max-w-screen mx-auto flex">
-          <AppSidebarProvider>
-            <LeftSidebar />
-            {children}
-            {modal}
-          </AppSidebarProvider>
+      <>
+        <NotificationManager />
+        <div className="min-h-screen bg-white">
+          <div className="max-w-screen mx-auto flex">
+            <AppSidebarProvider>
+              <LeftSidebar />
+              {children}
+              {modal}
+            </AppSidebarProvider>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 

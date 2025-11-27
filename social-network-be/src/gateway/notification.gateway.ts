@@ -10,6 +10,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as cookie from 'cookie';
 import { UpdateUserIpLocationService } from '../use-case/ip-location-tracking/update-user-ip-location/update-user-ip-location.service';
 
+import { SocketEvents } from 'src/share/constants/socket.constant';
+
 @WebSocketGateway({
   cors: {
     origin: process.env.FRONTEND_URL || 'http://localhost:3000',
@@ -82,7 +84,8 @@ export class NotificationGateway
     this.logger.log(`Client disconnected: ${client.id}`);
   }
 
-  sendToUser(userId: string, payload: any) {
-    this.server.to(`user_${userId}`).emit('new_notification', payload);
+  async sendToUser(userId: string, payload: any) {
+    const roomName = `user_${userId}`;
+    this.server.to(roomName).emit(SocketEvents.NEW_NOTIFICATION, payload);
   }
 }

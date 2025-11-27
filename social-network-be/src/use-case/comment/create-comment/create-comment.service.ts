@@ -21,6 +21,8 @@ import {
   PostCommentedEventPayload,
   PostEvents,
 } from 'src/share/events';
+import { UserMinimalWithEmailModel } from 'src/domains/user/interfaces';
+import { MediaUploadDocument } from 'src/schemas';
 
 export interface CreateCommentInput {
   postId: string;
@@ -60,7 +62,8 @@ export class CreateCommentService extends BaseUseCaseService<
       let post, parentComment;
       const result = await session.withTransaction(async () => {
         //TODO: NEED TO HANDLE Mentioned User
-        let author, mediaItem;
+        let author: UserMinimalWithEmailModel<Types.ObjectId>,
+          mediaItem: (MediaUploadDocument & { _id: string }) | null;
         [post, author, mediaItem, parentComment] = await Promise.all([
           this.postRepository.checkIdExist(postId, {
             session,
@@ -98,7 +101,7 @@ export class CreateCommentService extends BaseUseCaseService<
                 username: author.username,
                 firstName: author.firstName,
                 lastName: author.lastName,
-                avatar: author.avatar.mediaId.toString(),
+                avatar: author.avatar.url,
               },
               content,
               media: mediaId

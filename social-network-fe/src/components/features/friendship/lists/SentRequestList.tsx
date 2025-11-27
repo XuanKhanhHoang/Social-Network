@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button';
-import { UserSummaryDto } from '@/lib/dtos/user';
 import {
   useCancelFriendRequest,
   useSentRequests,
@@ -39,16 +38,16 @@ export default function SentRequestList({
         </Button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {data.data.slice(0, maxItems).map((user: UserSummaryDto) => (
+        {data.data.slice(0, maxItems).map((request) => (
           <FriendCard
-            key={user._id}
-            user={user}
+            key={request.id}
+            user={request.recipient}
             actions={
               <Button
                 variant="outline"
                 size="sm"
                 className="w-full"
-                onClick={() => cancelRequest.mutate(user._id)}
+                onClick={() => cancelRequest.mutate(request.recipient.id)}
                 disabled={cancelRequest.isPending}
               >
                 Hủy

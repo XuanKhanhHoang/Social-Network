@@ -65,8 +65,8 @@ export class AcceptFriendRequestService extends BaseUseCaseService<
     });
     this.emitter.emit(FriendEvents.requestAccepted, {
       friendshipId: result._id.toString(),
-      userId: requesterId,
-      friendId: recipientId,
+      userId: recipientId,
+      friendId: requesterId,
     } as FriendRequestAcceptedEventPayload);
 
     return {

@@ -24,7 +24,6 @@ export class NotificationEventListener {
 
   @OnEvent(FriendEvents.requestSent)
   async handleFriendRequestSent(payload: FriendRequestSentEventPayload) {
-    this.logger.log(`Handling Friend Request Sent: ${JSON.stringify(payload)}`);
     await this.createNotificationService.execute({
       sender: { _id: payload.senderId },
       receiver: payload.receiverId,
@@ -38,9 +37,6 @@ export class NotificationEventListener {
   async handleFriendRequestAccepted(
     payload: FriendRequestAcceptedEventPayload,
   ) {
-    this.logger.log(
-      `Handling Friend Request Accepted: ${JSON.stringify(payload)}`,
-    );
     await this.createNotificationService.execute({
       sender: { _id: payload.userId },
       receiver: payload.friendId,
@@ -52,7 +48,6 @@ export class NotificationEventListener {
 
   @OnEvent(PostEvents.liked)
   async handlePostLiked(payload: PostLikedEventPayload) {
-    this.logger.log(`Handling Post Liked: ${JSON.stringify(payload)}`);
     await this.createNotificationService.execute({
       sender: { _id: payload.userId },
       receiver: payload.ownerId,
@@ -64,7 +59,6 @@ export class NotificationEventListener {
 
   @OnEvent(PostEvents.commented)
   async handlePostCommented(payload: PostCommentedEventPayload) {
-    this.logger.log(`Handling Post Commented: ${JSON.stringify(payload)}`);
     await this.createNotificationService.execute({
       sender: { _id: payload.userId },
       receiver: payload.ownerId,
@@ -76,7 +70,6 @@ export class NotificationEventListener {
 
   @OnEvent(CommentEvents.liked)
   async handleCommentLiked(payload: CommentLikedEventPayload) {
-    this.logger.log(`Handling Comment Liked: ${JSON.stringify(payload)}`);
     await this.createNotificationService.execute({
       sender: { _id: payload.userId },
       receiver: payload.ownerId,
@@ -88,9 +81,6 @@ export class NotificationEventListener {
 
   @OnEvent(CommentEvents.replyCreated)
   async handleCommentReplyCreated(payload: CommentReplyCreatedEventPayload) {
-    this.logger.log(
-      `Handling Comment Reply Created: ${JSON.stringify(payload)}`,
-    );
     await this.createNotificationService.execute({
       sender: { _id: payload.userId },
       receiver: payload.ownerId,

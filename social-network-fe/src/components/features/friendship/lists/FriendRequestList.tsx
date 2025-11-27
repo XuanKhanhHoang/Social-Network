@@ -17,7 +17,6 @@ export default function FriendRequestList({
   const acceptRequest = useAcceptFriendRequest();
   const denyRequest = useDenyFriendRequest();
 
-  console.log(data);
   if (isLoading) return <div>Đang tải...</div>;
   if (isError) return <div>Có lỗi xảy ra</div>;
 
@@ -45,8 +44,8 @@ export default function FriendRequestList({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {data.data.slice(0, maxItems).map((request) => (
           <FriendCard
-            key={request._id}
-            user={request}
+            key={request.id}
+            user={request.requester}
             actions={
               <>
                 <Button
@@ -55,7 +54,7 @@ export default function FriendRequestList({
                   className="flex-1"
                   onClick={() =>
                     acceptRequest.mutate({
-                      requesterId: request._id,
+                      requesterId: request.requester.id,
                     })
                   }
                   disabled={acceptRequest.isPending}
@@ -66,7 +65,7 @@ export default function FriendRequestList({
                   variant="outline"
                   size="sm"
                   className="flex-1"
-                  onClick={() => denyRequest.mutate(request._id)}
+                  onClick={() => denyRequest.mutate(request.requester.id)}
                   disabled={denyRequest.isPending}
                 >
                   Từ chối

@@ -7,6 +7,7 @@ import {
   AcceptFriendRequestResponseDto,
   SendFriendRequestResponseDto,
   RemoveFriendResponseDto,
+  GetSentFriendRequestsResponseDto,
 } from '../lib/dtos/friendship';
 import { UserSummaryDto } from '@/lib/dtos';
 
@@ -66,7 +67,7 @@ export const FriendshipService = {
     if (limit) params.append('limit', limit.toString());
     if (cursor) params.append('cursor', cursor);
 
-    return ApiClient.get<GetSuggestedFriendsResponseDto>(
+    return ApiClient.get<GetSentFriendRequestsResponseDto>(
       `/friendships/requests/sent?${params.toString()}`
     );
   },

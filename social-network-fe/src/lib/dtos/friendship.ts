@@ -19,18 +19,18 @@ export interface FriendRequestDto {
 }
 
 export type GetReceivedFriendRequestsResponseDto =
-  CursorPaginationResponse<UserSummaryDto>;
+  CursorPaginationResponse<FriendshipDto>;
 
 export type GetSuggestedFriendsResponseDto =
   CursorPaginationResponse<UserSummaryDto>;
 
 export type GetSentFriendRequestsResponseDto =
-  CursorPaginationResponse<UserSummaryDto>;
+  CursorPaginationResponse<FriendshipDto>;
 
 export interface FriendshipDto {
   _id: string;
-  requester: string;
-  recipient: string;
+  requester: UserSummaryDto;
+  recipient: UserSummaryDto;
   status: FriendshipStatus;
   createdAt: string;
   updatedAt: string;

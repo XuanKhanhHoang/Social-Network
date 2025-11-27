@@ -44,4 +44,13 @@ export class NotificationRepository extends BaseRepository<NotificationDocument>
       .findByIdAndUpdate(notificationId, { isRead: true }, { new: true })
       .exec();
   }
+
+  async countUnread(userId: string): Promise<number> {
+    return this.model
+      .countDocuments({
+        receiver: new Types.ObjectId(userId),
+        isRead: false,
+      })
+      .exec();
+  }
 }

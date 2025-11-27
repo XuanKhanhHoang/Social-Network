@@ -8,7 +8,7 @@ import {
   ReactionRemovedEventPayload,
   ReactionUpdatedEventPayload,
 } from 'src/share/events';
-import { ReactionTargetType, ReactionType } from 'src/share/enums';
+import { ReactionTargetType, ReactionType, ActionType } from 'src/share/enums';
 import { ReactionDocument } from 'src/schemas/reaction.schema';
 
 @Injectable()
@@ -34,7 +34,7 @@ export class ReactionService {
       const oldType = existingReaction.reactionType;
       existingReaction.reactionType = reactionType;
       await existingReaction.save();
-      const action = 'updated';
+      const action = ActionType.UPDATED;
       const delta = 0;
 
       const payload: ReactionUpdatedEventPayload = {
@@ -54,7 +54,7 @@ export class ReactionService {
         targetType,
         reactionType,
       });
-      const action = 'created';
+      const action = ActionType.CREATED;
       const delta = 1;
       const payload: ReactionCreatedEventPayload = {
         targetId,
@@ -80,11 +80,11 @@ export class ReactionService {
     });
 
     if (!existingReaction) {
-      return { action: 'removed', reaction: null, delta: 0 };
+      return { action: ActionType.REMOVED, reaction: null, delta: 0 };
     }
 
     await existingReaction.deleteOne();
-    const action = 'removed';
+    const action = ActionType.REMOVED;
     const delta = -1;
 
     const payload: ReactionRemovedEventPayload = {
