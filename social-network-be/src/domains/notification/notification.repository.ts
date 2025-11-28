@@ -27,14 +27,30 @@ export class NotificationRepository extends BaseRepository<NotificationDocument>
     return newNotification.save();
   }
 
-  async findForUser(userId: string, limit: number = 20, skip: number = 0) {
-    return this.model
-      .find({ receiver: new Types.ObjectId(userId) })
+  async findForUser(userId: string, limit: number = 20, cursor?: string) {
+    const query: any = { receiver: new Types.ObjectId(userId) };
+
+    if (cursor) {
+      query._id = { $lt: new Types.ObjectId(cursor) };
+    }
+
+    const notifications = await this.model
+      .find(query)
       .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
+      .limit(limit + 1)
       .populate('relatedId')
       .exec();
+
+    let nextCursor: string | null = null;
+    if (notifications.length > limit) {
+      const nextItem = notifications.pop();
+      nextCursor = nextItem ? nextItem._id.toString() : null;
+    }
+
+    return {
+      data: notifications,
+      nextCursor,
+    };
   }
 
   async markAsRead(
@@ -51,6 +67,14 @@ export class NotificationRepository extends BaseRepository<NotificationDocument>
         receiver: new Types.ObjectId(userId),
         isRead: false,
       })
+      .exec();
+  }
+  async markAllAsRead(userId: string): Promise<void> {
+    await this.model
+      .updateMany(
+        { receiver: new Types.ObjectId(userId), isRead: false },
+        { isRead: true },
+      )
       .exec();
   }
 }

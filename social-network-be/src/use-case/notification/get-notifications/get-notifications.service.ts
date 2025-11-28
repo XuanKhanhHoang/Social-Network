@@ -2,13 +2,18 @@ import { Injectable, Logger } from '@nestjs/common';
 import { NotificationRepository } from 'src/domains/notification/notification.repository';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 import { NotificationDocument } from 'src/schemas/notification.schema';
+import { BeCursorPaginated } from 'src/share/dto/res/be-paginated.dto';
 
 export interface GetNotificationsInput {
   userId: string;
   limit: number;
-  skip: number;
+  cursor?: string;
 }
-export type GetNotificationsOutput = NotificationDocument[];
+export type GetNotificationsOutput = BeCursorPaginated<
+  Omit<NotificationDocument, 'relatedId'> & {
+    relatedId: any;
+  }
+>;
 
 @Injectable()
 export class GetNotificationsService extends BaseUseCaseService<
@@ -22,8 +27,19 @@ export class GetNotificationsService extends BaseUseCaseService<
   }
 
   async execute(input: GetNotificationsInput): Promise<GetNotificationsOutput> {
-    const { userId, limit, skip } = input;
+    const { userId, limit, cursor } = input;
     this.logger.log(`Fetching notifications for user ${userId}`);
-    return this.notificationRepository.findForUser(userId, limit, skip);
+    const { data, nextCursor } = await this.notificationRepository.findForUser(
+      userId,
+      limit,
+      cursor,
+    );
+    return {
+      data,
+      pagination: {
+        nextCursor,
+        hasMore: !!nextCursor,
+      },
+    };
   }
 }

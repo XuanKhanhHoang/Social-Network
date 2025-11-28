@@ -144,6 +144,7 @@ export class CreateCommentService extends BaseUseCaseService<
           commentId: parentId,
           userId: authorId,
           ownerId: parentComment.author._id.toString(),
+          postId,
           contentSnippet,
         } as CommentReplyCreatedEventPayload);
       } else {

@@ -45,7 +45,7 @@ export class CreateNotificationService extends BaseUseCaseService<
         username: sender.username,
         firstName: sender.firstName,
         lastName: sender.lastName,
-        avatar: sender.avatar?.mediaId?.toString(),
+        avatar: sender.avatar?.url,
       },
     };
 

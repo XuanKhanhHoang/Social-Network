@@ -40,7 +40,12 @@ const NAV_ITEMS = [
     href: '#',
     badge: 3,
   },
-  { id: 'notifications', label: 'Thông báo', icon: Bell, href: '#' },
+  {
+    id: 'notifications',
+    label: 'Thông báo',
+    icon: Bell,
+    href: '/notifications',
+  },
   { id: 'friends', label: 'Bạn bè', icon: Users, href: '/friends' },
   { id: 'profile', label: 'Trang cá nhân', icon: User, href: '/user/' },
 ];
@@ -49,7 +54,6 @@ const VibeLogo = ({ isExpanded }: { isExpanded: boolean }) => (
   <div
     className={cn(
       'logo-section flex items-center py-5 border-b border-gray-100 transition-all duration-300 ease-in-out',
-      // Logo căn chỉnh: Mở pl-6 (24px), Đóng pl-5 (20px) để icon nằm giữa 80px
       isExpanded ? 'pl-6' : 'pl-5'
     )}
   >
