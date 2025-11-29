@@ -25,6 +25,9 @@ export class NotificationDocument extends Document {
   @Prop({ type: String })
   message?: string;
 
+  @Prop({ type: Object })
+  metadata?: Record<string, any>;
+
   createdAt: Date;
   updatedAt: Date;
 }

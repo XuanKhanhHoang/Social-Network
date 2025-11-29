@@ -51,7 +51,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { useUpdateAccount } from '@/features/user/hooks/useUser';
 import { Gender, VisibilityPrivacy } from '@/lib/constants/enums';
 import { useStore } from '@/store';
-import { StoreUser } from '@/store/slices/authSlice';
+import { StoreUser } from '@/features/auth/store/authSlice';
 import { UserAccount } from '@/features/user/types';
 
 const accountFormSchema = z.object({

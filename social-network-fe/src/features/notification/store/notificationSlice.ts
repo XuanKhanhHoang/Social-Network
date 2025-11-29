@@ -7,6 +7,7 @@ export interface NotificationSlice {
   setUnreadCount: (count: number) => void;
   addNotification: (item: Notification) => void;
   markAllRead: () => void;
+  emptyRealtimeNotifications: () => void;
 }
 
 export const createNotificationSlice: StateCreator<NotificationSlice> = (
@@ -21,4 +22,5 @@ export const createNotificationSlice: StateCreator<NotificationSlice> = (
       realtimeNotifications: [item, ...state.realtimeNotifications],
     })),
   markAllRead: () => set({ unreadCount: 0, realtimeNotifications: [] }),
+  emptyRealtimeNotifications: () => set({ realtimeNotifications: [] }),
 });

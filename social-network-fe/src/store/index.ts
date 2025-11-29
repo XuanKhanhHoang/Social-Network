@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import { AuthSlice, createAuthSlice } from './slices/authSlice';
+import { AuthSlice, createAuthSlice } from '@/features/auth/store/authSlice';
 import {
   NotificationSlice,
   createNotificationSlice,

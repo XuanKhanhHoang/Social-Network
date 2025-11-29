@@ -7,4 +7,5 @@ export interface CreateNotificationData {
   relatedId: string;
   relatedModel: string;
   message?: string;
+  metadata?: Record<string, any>;
 }

@@ -57,7 +57,7 @@ export const useUserPhotosPreview = (username: string) => {
     queryFn: ({ pageParam }: { pageParam?: string }) =>
       userService.getPhotosPreview(username, pageParam as string | undefined),
     getNextPageParam: (lastPage) => {
-      return lastPage.pagination.nextCursor ?? undefined;
+      return lastPage.hasNextPage ? lastPage.cursor : undefined;
     },
     initialPageParam: undefined,
     enabled: !!username,
@@ -69,7 +69,7 @@ export const useUserFriendsPreview = (username: string) => {
     queryFn: ({ pageParam }: { pageParam?: string }) =>
       userService.getFriendsPreview(username, pageParam as string | undefined),
     getNextPageParam: (lastPage) => {
-      return lastPage.pagination.nextCursor ?? undefined;
+      return lastPage.hasNextPage ? lastPage.cursor : undefined;
     },
     initialPageParam: undefined,
     enabled: !!username,
@@ -124,8 +124,7 @@ export const useUpdateUserProfile = (username: string) => {
     mutationFn: (data: UpdateProfileRequestDto) =>
       userService.updateUserProfile(username, data),
     onSuccess: (data: UpdateProfileResponseDto) => {
-      const { _id, avatar, coverPhoto, bio, work, currentLocation, username } =
-        data;
+      const { avatar, coverPhoto, bio, work, currentLocation, username } = data;
       queryClient.setQueryData(
         userKeys.header(username),
         (oldData: GetUserHeaderResponseDto) => {

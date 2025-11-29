@@ -38,11 +38,11 @@ export function UserProfileActions({
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget);
-    const data = {
-      bio: formData.get('bio') as string,
-      work: formData.get('work') as string,
-      currentLocation: formData.get('location') as string,
-    };
+    // const data = {
+    //   bio: formData.get('bio') as string,
+    //   work: formData.get('work') as string,
+    //   currentLocation: formData.get('location') as string,
+    // };
 
     // TODO:  mutation
     // updateProfileMutation.mutate(data, {

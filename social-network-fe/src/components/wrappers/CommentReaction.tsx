@@ -3,7 +3,7 @@
 import { ReactionTargetType, ReactionType } from '@/lib/constants/enums';
 import ReactionButton from '../ui/reaction-button';
 import { useUpdateCommentCache } from '@/features/comment/hooks/useCommentCache';
-import { CommentWithMyReaction } from '@/lib/interfaces/comment';
+import { CommentWithMyReaction } from '@/features/comment/types/comment';
 type CommentReactionButtonProps = Omit<
   React.ComponentProps<typeof ReactionButton>,
   | 'entityId'

@@ -2,7 +2,7 @@ import { UserPlus } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Button } from '@/components/ui/button';
-import { UserSummaryDto } from '@/lib/dtos/user';
+import { UserSummaryDto } from '@/features/user/services/user.dto';
 import {
   useSendFriendRequest,
   useSuggestedFriends,

@@ -76,6 +76,7 @@ export class NotificationEventListener {
       type: NotificationType.COMMENT_LIKED,
       relatedId: payload.commentId,
       relatedModel: 'Comment',
+      metadata: { postId: payload.postId },
     });
   }
 
@@ -87,6 +88,7 @@ export class NotificationEventListener {
       type: NotificationType.COMMENT_REPLY_CREATED,
       relatedId: payload.commentId,
       relatedModel: 'Comment',
+      metadata: { postId: payload.postId },
     });
   }
 }

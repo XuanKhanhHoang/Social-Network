@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Button } from '@/components/ui/button';
 import { useBlockedUsers } from '@/features/friendship/hooks/useFriendship';
-import { UserSummaryDto } from '@/lib/dtos/user';
+import { UserSummaryDto } from '@/features/user/services/user.dto';
 import FriendCard from '../cards/FriendCard';
 
 export default function BlockedUserList() {

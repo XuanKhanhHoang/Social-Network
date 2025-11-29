@@ -1,5 +1,5 @@
-import { FriendshipDto } from '@/lib/dtos/friendship';
-import { transformToUserSummary, UserSummary } from '@/lib/interfaces';
+import { FriendshipDto } from '../services/friendship.dto';
+import { transformToUserSummary, UserSummary } from '@/features/user/types';
 
 export interface Friendship {
   id: string;

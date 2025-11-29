@@ -1,11 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Notification, NotificationType } from '../types';
+import { Notification } from '../types';
 import { useUpdatePostCache } from '@/features/post/hooks/usePostCache';
 import { friendshipKeys } from '@/features/friendship/hooks/friendshipKeys';
 import { userKeys } from '@/features/user/hooks/useUser';
 import { postKeys } from '@/features/post/hooks/usePost';
 import { ReactionType } from '@/lib/constants/enums';
 import { useCallback } from 'react';
+import { NotificationType } from '../const';
 
 export function useSocketCacheUpdater() {
   const queryClient = useQueryClient();

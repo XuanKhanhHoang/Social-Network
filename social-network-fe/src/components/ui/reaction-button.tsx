@@ -8,7 +8,6 @@ import {
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { ReactionTargetType, ReactionType } from '@/lib/constants/enums';
-import { reactionService } from '@/services/reaction';
 
 import ThumbsUpIcon from '@/assets/emoji/thumbs-up-svgrepo-com.svg';
 import ThumbsUpFillIcon from '@/assets/emoji/thumbs-up-fill-svgrepo-com.svg';
@@ -18,6 +17,7 @@ import WowIcon from '@/assets/emoji/wow-svgrepo-com.svg';
 import SadTearIcon from '@/assets/emoji/sad-tear-svgrepo-com.svg';
 import AngryIcon from '@/assets/emoji/angry-svgrepo-com.svg';
 import { useReaction } from '@/features/reaction/hooks/useReaction';
+import { reactionService } from '@/features/reaction/services/reaction.service';
 
 const REACTION_MAP = [
   {
@@ -202,4 +202,3 @@ export default function ReactionButton({
     </Popover>
   );
 }
-

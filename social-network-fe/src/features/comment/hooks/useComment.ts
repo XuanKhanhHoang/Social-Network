@@ -3,12 +3,12 @@ import {
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query';
-import { commentService } from '@/services/comment';
+import { commentService } from '@/features/comment/services/comment.service';
 import {
   CreateCommentRequestDto,
   GetCommentsResponseDto,
   UpdateCommentRequestDto,
-} from '@/lib/dtos';
+} from '@/features/comment/services/comment.dto';
 
 export const commentKeys = {
   all: ['comments'] as const,
@@ -29,7 +29,7 @@ export function useGetRootComments(postId: string, limit: number = 10) {
         limit,
       }),
     getNextPageParam: (lastPage: GetCommentsResponseDto) =>
-      lastPage.pagination.hasMore ? lastPage.pagination.nextCursor : undefined,
+      lastPage.hasNextPage ? lastPage.cursor : undefined,
     initialPageParam: undefined as string | undefined,
     enabled: !!postId,
   });
@@ -49,7 +49,7 @@ export function useGetCommentReplies(
         limit,
       }),
     getNextPageParam: (lastPage: GetCommentsResponseDto) =>
-      lastPage.pagination.hasMore ? lastPage.pagination.nextCursor : undefined,
+      lastPage.hasNextPage ? lastPage.cursor : undefined,
     initialPageParam: undefined as string | undefined,
     enabled: !!parentId && (options?.enabled ?? true),
   });

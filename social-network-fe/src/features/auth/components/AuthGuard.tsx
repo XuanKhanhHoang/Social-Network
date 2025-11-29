@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useStore } from '@/store';
-import { transformToStoreUser } from '@/store/slices/authSlice';
-import { UserSummaryWithEmailDto } from '@/lib/dtos';
+import { transformToStoreUser } from '@/features/auth/store/authSlice';
+import { UserSummaryWithEmailDto } from '@/features/user/services/user.dto';
 import { ApiClient } from '@/services/api';
 
 interface AuthGuardProps {

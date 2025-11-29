@@ -1,8 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { useGetRootComments } from '@/features/comment/hooks/useComment';
-import { Post } from '@/lib/interfaces/post';
-import CommentItem from '@/components/features/comment/common/CommentItem';
-import { transformToCommentWithMyReaction } from '@/lib/interfaces/comment';
+import { Post } from '@/features/post/types/post';
+import CommentItem from '@/features/comment/components/common/CommentItem';
+import { transformToCommentWithMyReaction } from '@/features/comment/types/comment';
 
 export default function PostDetailCommentsSection({
   postId,

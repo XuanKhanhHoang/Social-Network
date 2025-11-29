@@ -7,6 +7,7 @@ import {
   GetNotificationsService,
   MarkReadNotificationService,
   CountUnreadNotificationsService,
+  MarkReadAllNotificationService,
 } from './';
 import { NotificationEventListener } from './listeners/listeners.service';
 
@@ -24,6 +25,7 @@ import { FriendshipModule } from 'src/domains/friendship/friendship.module';
     GetNotificationsService,
     MarkReadNotificationService,
     CountUnreadNotificationsService,
+    MarkReadAllNotificationService,
     NotificationEventListener,
   ],
   exports: [
@@ -31,6 +33,7 @@ import { FriendshipModule } from 'src/domains/friendship/friendship.module';
     GetNotificationsService,
     MarkReadNotificationService,
     CountUnreadNotificationsService,
+    MarkReadAllNotificationService,
   ],
 })
 export class NotificationUseCaseModule {}

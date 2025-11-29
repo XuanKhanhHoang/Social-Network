@@ -2,9 +2,9 @@ import {
   LoginResponseDto,
   RegisterRequestDto,
   RegisterResponseDto,
-  UserSummaryWithEmailDto,
   VerifyEmailResponseDto,
-} from '@/lib/dtos';
+} from './auth.dto';
+import { UserSummaryWithEmailDto } from '@/features/user/services/user.dto';
 import { ApiClient } from '@/services/api';
 import { RequestOptions } from '@/services/type';
 

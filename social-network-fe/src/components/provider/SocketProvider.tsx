@@ -3,9 +3,12 @@ import { useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useStore } from '@/store';
 import { toast } from 'sonner';
-import { Notification, NotificationType } from '@/features/notification/types';
+import { Notification } from '@/features/notification/types';
 import { SocketEvents } from '@/lib/constants/socket';
 import { useSocketCacheUpdater } from '@/features/notification/hooks/useSocketCacheUpdater';
+import { NotificationType } from '@/features/notification/const';
+import { NotificationDto } from '@/features/notification/services/notification.dto';
+import { mapNotificationDtoToDomain } from '@/features/notification/utils/mapper';
 
 const SOCKET_URL =
   process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:3000';
@@ -55,14 +58,14 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       socketRef.current.on('connect', () => {
         console.log('Socket connected');
       });
-
       socketRef.current.on(
         SocketEvents.NEW_NOTIFICATION,
-        (data: Notification) => {
-          addNotification(data);
-          handleSocketNotification(data, user.username);
+        (data: NotificationDto) => {
+          const notification = mapNotificationDtoToDomain(data);
+          addNotification(notification);
+          handleSocketNotification(notification, user.username);
 
-          const message = getNotificationMessage(data);
+          const message = getNotificationMessage(notification);
           toast(message);
         }
       );

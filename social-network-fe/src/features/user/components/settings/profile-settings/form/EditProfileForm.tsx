@@ -12,7 +12,7 @@ import { MediaType } from '@/lib/constants/enums';
 import { useMediaUpload } from '@/features/media/hooks/useMediaUpload';
 import { useUpdateUserProfile } from '@/features/user/hooks/useUser';
 import { useStore } from '@/store';
-import { StoreUser } from '@/store/slices/authSlice';
+import { StoreUser } from '@/features/auth/store/authSlice';
 import { UserProfile } from '@/features/user/types';
 import { Province } from '@/lib/interfaces';
 import { AvatarCard } from '../cards/AvatarCard';
@@ -153,4 +153,3 @@ export function EditProfileForm({
     </Form>
   );
 }
-

@@ -39,8 +39,8 @@ export function useInfiniteHomeFeed({ limit }: { limit?: number }) {
         },
       }),
     getNextPageParam: (lastPage: GetPostsFeedResponseDto) => {
-      return lastPage.pagination.hasMore && lastPage.pagination.nextCursor
-        ? lastPage.pagination.nextCursor
+      return lastPage.hasNextPage && lastPage.cursor
+        ? lastPage.cursor
         : undefined;
     },
     initialPageParam: undefined as string | undefined,
@@ -64,8 +64,8 @@ export function useInfiniteUserPosts({
         },
       }),
     getNextPageParam: (lastPage: GetPostsFeedResponseDto) => {
-      return lastPage.pagination.hasMore && lastPage.pagination.nextCursor
-        ? lastPage.pagination.nextCursor
+      return lastPage.hasNextPage && lastPage.cursor
+        ? lastPage.cursor
         : undefined;
     },
     initialPageParam: undefined as string | undefined,
