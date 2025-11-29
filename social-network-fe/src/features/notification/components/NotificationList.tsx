@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useNotificationSync } from '../hooks/useNotificationSync';
+import { Notification } from '../types';
 
 const NotificationSkeleton = () => (
   <div className="flex items-center gap-4 p-4 border-b border-border/40">
@@ -17,7 +18,11 @@ const NotificationSkeleton = () => (
   </div>
 );
 
-export const NotificationList = () => {
+export const NotificationList = ({
+  onItemClick,
+}: {
+  onItemClick?: () => void;
+}) => {
   const {
     data: notifications,
     fetchNextPage,
@@ -35,7 +40,11 @@ export const NotificationList = () => {
     }
   }, [inView, hasNextPage, fetchNextPage]);
 
-  console.log(notifications);
+  const onNotificationClick = (notification: Notification) => {
+    handleNavigate(notification);
+    onItemClick?.();
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-1">
@@ -75,7 +84,7 @@ export const NotificationList = () => {
           <NotificationItem
             key={notification.id}
             notification={notification}
-            onClick={handleNavigate}
+            onClick={onNotificationClick}
           />
         ))}
 

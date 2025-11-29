@@ -28,6 +28,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { NotificationSheet } from '@/features/notification/components/NotificationSheet';
 
 const NAV_ITEMS = [
   { id: 'home', label: 'Trang chủ', icon: Home, href: '/' },
@@ -251,6 +252,63 @@ const LeftSidebar = () => {
                 )}
               </Link>
             );
+
+            if (item.id === 'notifications') {
+              return (
+                <NotificationSheet
+                  key={item.id}
+                  tooltip={!isExpanded ? item.label : undefined}
+                >
+                  <div
+                    className={cn(
+                      'flex items-center transition-all duration-200 relative group flex-shrink-0 cursor-pointer',
+                      'h-11',
+                      isExpanded
+                        ? 'w-[calc(100%-16px)] pl-4 text-sm font-medium rounded-md mx-2'
+                        : 'w-11 rounded-md pl-2.5',
+                      isActive
+                        ? 'bg-blue-50 text-gray-900'
+                        : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
+                    )}
+                    onClick={() => setActiveItem(item.id)}
+                  >
+                    <Icon
+                      className={cn(
+                        'flex-shrink-0 transition-all duration-200',
+                        'w-6 h-6',
+                        isActive
+                          ? 'text-blue-600'
+                          : 'text-gray-500 group-hover:text-gray-900'
+                      )}
+                    />
+
+                    <span
+                      className={cn(
+                        'overflow-hidden whitespace-nowrap transition-all duration-300 ease-in-out flex-shrink-0',
+                        isExpanded
+                          ? 'max-w-[200px] opacity-100 ml-3'
+                          : 'max-w-0 opacity-0 ml-0'
+                      )}
+                    >
+                      {item.label}
+                    </span>
+
+                    {unreadNotifyCount > 0 && (
+                      <span
+                        className={cn(
+                          'bg-red-500 text-white text-xs rounded-md font-semibold flex items-center justify-center transition-all duration-300',
+                          isExpanded
+                            ? 'ml-auto px-2 py-0.5'
+                            : 'absolute -top-1 -right-1 w-4 h-4 text-[10px] border-2 border-white rounded-full'
+                        )}
+                      >
+                        {unreadNotifyCount}
+                      </span>
+                    )}
+                  </div>
+                </NotificationSheet>
+              );
+            }
 
             if (!isExpanded) {
               return (
