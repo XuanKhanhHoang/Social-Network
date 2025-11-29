@@ -10,10 +10,10 @@ import { Emoji } from '@/lib/editor/emoji-node';
 import { generateHTML } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { PostReactionButton } from '@/components/wrappers/PostReaction';
-import { PostWithTopComment } from '@/lib/interfaces/post';
-import CommentEditor from '@/components/features/comment/editor/Editor';
-import FeedCommentItem from '@/components/features/comment/feed/FeedCommentItem';
-import PostFeedMedia from '@/components/features/media/feed/FeedMedia';
+import { PostWithTopComment } from '@/features/post/types/post';
+import CommentEditor from '@/features/comment/components/editor/Editor';
+import FeedCommentItem from '@/features/comment/components/feed/FeedCommentItem';
+import PostFeedMedia from '@/features/media/components/feed/FeedMedia';
 import { UserAvatar } from '@/components/ui/user-avatar';
 
 export type PostItemProps = {

@@ -4,7 +4,7 @@ import {
   PostWithMyReactionDto,
   UpdatePostRequestDto,
   UpdatePostResponseDto,
-} from '@/lib/dtos';
+} from './post.dto';
 import { ApiClient } from '@/services/api';
 import { RequestOptions } from '@/services/type';
 

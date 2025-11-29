@@ -33,7 +33,7 @@ export const useNotificationNavigation = () => {
         case NotificationType.POST_LIKED:
         case NotificationType.POST_COMMENTED:
           if (notification.relatedId) {
-            router.push(`/posts/${notification.relatedId}`);
+            router.push(`/post/${notification.relatedId}`);
           } else {
             console.warn(
               'Notification missing relatedId (Post ID):',
@@ -47,12 +47,12 @@ export const useNotificationNavigation = () => {
           const postId = notification.metadata?.postId;
 
           if (postId) {
-            router.push(`/posts/${postId}`);
+            router.push(`/post/${postId}`);
           } else if (
             notification.relatedModel === 'Post' &&
             notification.relatedId
           ) {
-            router.push(`/posts/${notification.relatedId}`);
+            router.push(`/post/${notification.relatedId}`);
           } else {
             console.warn(
               'Cannot navigate: Missing postId in metadata for comment notification',

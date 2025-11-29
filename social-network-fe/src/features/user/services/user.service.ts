@@ -1,6 +1,5 @@
 import {
   GetAccountResponseDto,
-  GetPostsFeedResponseDto,
   GetUserBioResponseDto,
   GetUserFriendsPreviewResponseDto,
   GetSuggestFriendsResponseDto,
@@ -11,7 +10,8 @@ import {
   UpdateAccountResponseDto,
   UpdateProfileRequestDto,
   UpdateProfileResponseDto,
-} from '@/lib/dtos';
+} from './user.dto';
+import { GetPostsFeedResponseDto } from '@/features/post/services/post.dto';
 import { ApiClient } from '@/services/api';
 import { CursorPaginationParams, RequestOptions } from '@/services/type';
 

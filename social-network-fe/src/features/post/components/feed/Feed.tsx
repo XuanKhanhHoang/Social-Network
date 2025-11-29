@@ -1,5 +1,5 @@
 import PostCreator from '@/features/post/components/create/PostCreator';
-import StoriesContainer from '@/components/features/story/StoryFeed';
+import StoriesContainer from '@/features/story/components/StoryFeed';
 import HomeFeed from './HomeFeed';
 
 function Feed() {

@@ -1,7 +1,10 @@
 import { InfiniteData, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { ReactionType } from '@/lib/constants/enums';
-import { getUpdatedReactionState } from '@/lib/cache/reaction-updater';
+import {
+  getUpdatedReactionState,
+  Reactable,
+} from '@/lib/cache/reaction-updater';
 import { postService } from '../services/post.service';
 import { postKeys } from './usePost';
 import { GetPostsFeedResponseDto, PostWithTopCommentDto } from '@/lib/dtos';
@@ -23,7 +26,7 @@ export function useUpdatePostCache() {
           pages: oldData.pages.map((page) => ({
             ...page,
             data:
-              page.data?.map((post) =>
+              page.data?.map((post: PostWithTopCommentDto) =>
                 post._id === postId ? updater(post) : post
               ) ?? [],
           })),
@@ -64,12 +67,14 @@ export function useUpdatePostCache() {
       newReaction: ReactionType | null,
       previousReaction?: ReactionType | null
     ) => {
-      updatePostInAllCaches(postId, (post) =>
-        getUpdatedReactionState<PostWithTopCommentDto>(
-          post,
-          newReaction,
-          previousReaction
-        )
+      updatePostInAllCaches(
+        postId,
+        (post) =>
+          getUpdatedReactionState(
+            post as unknown as Reactable,
+            newReaction,
+            previousReaction
+          ) as PostWithTopCommentDto
       );
     },
     [updatePostInAllCaches]

@@ -2,7 +2,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { authService } from '../services/auth.service';
 import { useStore } from '@/store';
 import { useEffect } from 'react';
-import { transformToStoreUser } from '@/store/slices/authSlice';
+import { transformToStoreUser } from '@/features/auth/store/authSlice';
 
 export const authKeys = {
   all: ['auth'] as const,

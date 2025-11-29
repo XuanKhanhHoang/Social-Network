@@ -5,11 +5,11 @@ import { EmojiPickerProvider } from '@/components/provider/EmojiPickerProvider';
 import { QueryProvider } from '@/components/provider/QueryProvider';
 import { cookies, headers } from 'next/headers';
 import { authService } from '@/features/auth/services/auth.service';
-import { AppInitializer } from '@/components/features/layout/AppInitializer';
+import { AppInitializer } from '@/components/layout/AppInitializer';
 import { CreatePostProvider } from '@/features/post/components/feed/FeedContext';
 import { ImageViewerProvider } from '@/components/provider/ImageViewerProvider';
 import { AuthGuard } from '@/features/auth/components/AuthGuard';
-import { MainLayout } from '@/components/features/layout/MainLayout';
+import { MainLayout } from '@/components/layout/MainLayout';
 import { SocketProvider } from '@/components/provider/SocketProvider';
 
 export const metadata: Metadata = {

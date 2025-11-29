@@ -9,9 +9,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Upload, User } from 'lucide-react';
-import MediaUploadItem from '@/components/features/media/uploader/UploadItem';
+import MediaUploadItem from '@/features/media/components/uploader/UploadItem';
 import { UseMediaUploadReturn } from '@/features/media/hooks/useMediaUpload';
-import { MediaItemWithHandlingStatus } from '@/components/features/media/type';
+import { MediaItemWithHandlingStatus } from '@/features/media/components/type';
 
 interface AvatarCardProps {
   currentAvatar: MediaItemWithHandlingStatus;
@@ -78,4 +78,3 @@ export function AvatarCard({ currentAvatar, avatarUpload }: AvatarCardProps) {
     </Card>
   );
 }
-

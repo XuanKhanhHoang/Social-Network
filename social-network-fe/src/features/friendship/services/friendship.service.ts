@@ -8,7 +8,7 @@ import {
   SendFriendRequestResponseDto,
   RemoveFriendResponseDto,
   GetSentFriendRequestsResponseDto,
-} from '@/lib/dtos/friendship';
+} from './friendship.dto';
 import { UserSummaryDto } from '@/lib/dtos';
 
 export const FriendshipService = {

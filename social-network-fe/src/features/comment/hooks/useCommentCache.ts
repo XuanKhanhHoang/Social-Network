@@ -1,8 +1,14 @@
 import { useQueryClient, InfiniteData } from '@tanstack/react-query';
-import { getUpdatedReactionState } from '@/lib/cache/reaction-updater';
+import {
+  getUpdatedReactionState,
+  Reactable,
+} from '@/lib/cache/reaction-updater';
 import type { ReactionType } from '@/lib/constants/enums';
 import { commentKeys } from './useComment';
-import { CommentWithMyReactionDto, GetCommentsResponseDto } from '@/lib/dtos';
+import {
+  CommentWithMyReactionDto,
+  GetCommentsResponseDto,
+} from '@/features/comment/services/comment.dto';
 
 type CommentUpdater = (
   oldComment: CommentWithMyReactionDto
@@ -23,7 +29,7 @@ export function useUpdateCommentCache() {
           ...oldData,
           pages: oldData.pages.map((page) => ({
             ...page,
-            data: page.data.map((comment) =>
+            data: page.data.map((comment: CommentWithMyReactionDto) =>
               comment._id === commentId ? updater(comment) : comment
             ),
           })),
@@ -38,8 +44,14 @@ export function useUpdateCommentCache() {
       newReaction: ReactionType | null,
       previousReaction?: ReactionType | null
     ) => {
-      updateCommentInAllCaches(commentId, (comment) =>
-        getUpdatedReactionState(comment, newReaction, previousReaction)
+      updateCommentInAllCaches(
+        commentId,
+        (comment) =>
+          getUpdatedReactionState(
+            comment as unknown as Reactable,
+            newReaction,
+            previousReaction
+          ) as CommentWithMyReactionDto
       );
     },
     incrementRepliesCount: (commentId: string) => {

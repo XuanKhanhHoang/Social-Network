@@ -6,7 +6,7 @@ import {
   useFriends,
   useUnfriend,
 } from '@/features/friendship/hooks/useFriendship';
-import { UserSummaryDto } from '@/lib/dtos/user';
+import { UserSummaryDto } from '@/features/user/services/user.dto';
 import { useStore } from '@/store';
 import { UserMinus, Search } from 'lucide-react';
 import FriendCard from '../cards/FriendCard';

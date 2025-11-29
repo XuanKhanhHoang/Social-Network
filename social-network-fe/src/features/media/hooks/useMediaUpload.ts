@@ -1,7 +1,7 @@
 // hooks/media/useMediaUpload.ts
-import { MediaItemWithHandlingStatus } from '@/components/features/media/type';
+import { MediaItemWithHandlingStatus } from '@/features/media/components/type';
 import { MediaType } from '@/lib/constants/enums';
-import { mediaService } from '@/services/media';
+import { mediaService } from '@/features/media/services/media.service';
 import { useState, useCallback, useRef, useEffect } from 'react';
 
 export interface UseMediaUploadOptions {

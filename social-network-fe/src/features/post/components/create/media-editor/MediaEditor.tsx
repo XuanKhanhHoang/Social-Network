@@ -16,10 +16,10 @@ import { formatFileSize } from '@/lib/utils/other';
 import {
   MediaItemWithHandlingStatus,
   UIMediaItem,
-} from '@/components/features/media/type';
-import MediaUploadItem from '@/components/features/media/uploader/UploadItem';
-import { MediaGrid } from '@/components/features/media/grid/Grid';
-import ContainedMedia from '@/components/features/media/common/ContainedMedia';
+} from '@/features/media/components/type';
+import MediaUploadItem from '@/features/media/components/uploader/UploadItem';
+import { MediaGrid } from '@/features/media/components/grid/Grid';
+import ContainedMedia from '@/features/media/components/common/ContainedMedia';
 
 export type PostEditorMediaProps = {
   media: MediaItemWithHandlingStatus[];

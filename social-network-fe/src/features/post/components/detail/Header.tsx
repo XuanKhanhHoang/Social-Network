@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { PostWithMyReaction } from '@/lib/interfaces/post';
+import { PostWithMyReaction } from '@/features/post/types/post';
 import { timeAgo } from '@/lib/utils/time';
 import { MoreHorizontal } from 'lucide-react';
 

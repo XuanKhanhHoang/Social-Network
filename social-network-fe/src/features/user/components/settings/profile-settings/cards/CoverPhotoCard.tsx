@@ -9,8 +9,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { ImagePlus } from 'lucide-react';
-import MediaUploadItem from '@/components/features/media/uploader/UploadItem';
-import { MediaItemWithHandlingStatus } from '@/components/features/media/type';
+import MediaUploadItem from '@/features/media/components/uploader/UploadItem';
+import { MediaItemWithHandlingStatus } from '@/features/media/components/type';
 import { UseMediaUploadReturn } from '@/features/media/hooks/useMediaUpload';
 
 interface CoverPhotoCardProps {
@@ -75,4 +75,3 @@ export function CoverPhotoCard({
     </Card>
   );
 }
-

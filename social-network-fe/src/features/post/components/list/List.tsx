@@ -3,8 +3,8 @@ import { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 import SkeletonPostItems from './SkeletonItems';
 import PostItem from './Item';
-import { transformToPostWithTopComment } from '@/lib/interfaces/post';
-import { PostWithTopCommentDto } from '@/lib/dtos';
+import { transformToPostWithTopComment } from '@/features/post/types/post';
+import { PostWithTopCommentDto } from '@/features/post/services/post.dto';
 
 interface PostListProps {
   posts: PostWithTopCommentDto[];

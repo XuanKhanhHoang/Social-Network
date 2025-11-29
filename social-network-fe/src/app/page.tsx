@@ -1,4 +1,4 @@
-import RightSidebar from '@/components/features/layout/RightSideBar';
+import RightSidebar from '@/components/layout/RightSideBar';
 import Feed from '@/features/post/components/feed/Feed';
 
 const SocialMediaUI = async () => {

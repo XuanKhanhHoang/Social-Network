@@ -11,7 +11,8 @@ import { friendshipKeys } from './friendshipKeys';
 import {
   AcceptFriendRequestDto,
   SendFriendRequestDto,
-} from '@/lib/dtos/friendship';
+  FriendshipDto,
+} from '@/features/friendship/services/friendship.dto';
 import { userKeys } from '@/features/user/hooks/useUser';
 import { mapFriendshipDtoToDomain } from '../types';
 
@@ -47,7 +48,9 @@ export function useFriendRequests() {
     queryFn: () => FriendshipService.getReceivedFriendRequests({ limit: 10 }),
     select: (data) => ({
       ...data,
-      data: data.data.map((item) => mapFriendshipDtoToDomain(item)),
+      data: data.data.map((item: FriendshipDto) =>
+        mapFriendshipDtoToDomain(item)
+      ),
     }),
   });
 }
@@ -58,7 +61,9 @@ export function useSentRequests() {
     queryFn: () => FriendshipService.getSentFriendRequests({ limit: 10 }),
     select: (data) => ({
       ...data,
-      data: data.data.map((item) => mapFriendshipDtoToDomain(item)),
+      data: data.data.map((item: FriendshipDto) =>
+        mapFriendshipDtoToDomain(item)
+      ),
     }),
   });
 }
@@ -73,9 +78,7 @@ export function useSuggestedFriends() {
       }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) =>
-      lastPage.pagination.hasMore && lastPage.pagination.nextCursor
-        ? lastPage.pagination.nextCursor
-        : undefined,
+      lastPage.hasNextPage && lastPage.cursor ? lastPage.cursor : undefined,
     placeholderData: (previousData) => previousData,
   });
 }
@@ -92,9 +95,7 @@ export function useFriends(username?: string, search?: string) {
       }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) =>
-      lastPage.pagination.hasMore && lastPage.pagination.nextCursor
-        ? lastPage.pagination.nextCursor
-        : undefined,
+      lastPage.hasNextPage && lastPage.cursor ? lastPage.cursor : undefined,
     enabled: !!username,
     placeholderData: (previousData) => previousData,
     gcTime: search ? 0 : 5 * 60 * 1000,
@@ -111,9 +112,7 @@ export function useBlockedUsers() {
       }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) =>
-      lastPage.pagination.hasMore && lastPage.pagination.nextCursor
-        ? lastPage.pagination.nextCursor
-        : undefined,
+      lastPage.hasNextPage && lastPage.cursor ? lastPage.cursor : undefined,
   });
 }
 

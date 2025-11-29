@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useStore } from '@/store';
-import { StoreUser } from '@/store/slices/authSlice';
+import { StoreUser } from '@/features/auth/store/authSlice';
 
 export function UserProvider({
   initialUser,
