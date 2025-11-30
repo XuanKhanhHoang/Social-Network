@@ -2,10 +2,12 @@
 
 import { Button } from '@/components/ui/button';
 import { SuggestedMessagingList } from '@/features/chat/components/SuggestedMessagingList';
+import { useChatContext } from '@/features/chat/context/ChatContext';
 import { SuggestedFriendSidebar } from '@/features/friendship/components/lists/SuggestedFriendSidebar';
 import { Search } from 'lucide-react';
 
 const RightSidebar = () => {
+  const { openSession } = useChatContext();
   return (
     <aside className="w-[320px] bg-white border-l border-gray-200 sticky top-0 h-screen flex flex-col p-4 space-y-5  flex-shrink-0 overflow-y-auto">
       <div className="shadow-sm  rounded-md p-3 h-1/2 flex flex-col">
@@ -16,7 +18,7 @@ const RightSidebar = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => {}}
+            onClick={() => openSession({ type: 'search' })}
             className="w-8 h-8 text-gray-500 hover:text-indigo-600"
           >
             <Search className="w-4 h-4" />

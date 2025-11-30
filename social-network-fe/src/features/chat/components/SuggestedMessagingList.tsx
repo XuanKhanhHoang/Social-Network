@@ -5,7 +5,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useSuggestedMessagingUsers } from '../hooks/useChat';
 import { UserAvatar } from '@/components/ui/user-avatar';
 
+import { useChatContext } from '@/features/chat/context/ChatContext';
+
 export const SuggestedMessagingList = () => {
+  const { openSession } = useChatContext();
   const { data, isFetchingNextPage, isLoading } = useSuggestedMessagingUsers({
     limit: 12,
   });
@@ -33,6 +36,18 @@ export const SuggestedMessagingList = () => {
       {users.map((user, index) => (
         <div
           key={user.id}
+          onClick={() =>
+            openSession({
+              type: 'private',
+              data: {
+                _id: user.id,
+                username: user.id, //TODO: fix this
+                firstName: user.name.split(' ').slice(0, -1).join(' '),
+                lastName: user.name.split(' ').slice(-1).join(' '),
+                avatar: user.avatar ? { url: user.avatar } : undefined,
+              },
+            })
+          }
           className="flex items-center p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
         >
           <div className="relative flex-shrink-0 mr-3">

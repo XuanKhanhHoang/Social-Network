@@ -11,6 +11,8 @@ import { ImageViewerProvider } from '@/components/provider/ImageViewerProvider';
 import { AuthGuard } from '@/features/auth/components/AuthGuard';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { SocketProvider } from '@/components/provider/SocketProvider';
+import { ChatProvider } from '@/features/chat/context/ChatContext';
+import { ChatDock } from '@/features/chat/components/dock/ChatDock';
 
 export const metadata: Metadata = {
   title: 'Vibe',
@@ -58,19 +60,22 @@ export default async function RootLayout({
           >
             <QueryProvider>
               <SocketProvider>
-                <EmojiPickerProvider>
-                  <ImageViewerProvider>
-                    <CreatePostProvider>
-                      <MainLayout
-                        isAuthenticated={isAuthenticated}
-                        modal={modal}
-                      >
-                        {children}
-                      </MainLayout>
-                    </CreatePostProvider>
-                  </ImageViewerProvider>
-                </EmojiPickerProvider>
-                <Toaster position="top-right" expand />
+                <ChatProvider>
+                  <EmojiPickerProvider>
+                    <ImageViewerProvider>
+                      <CreatePostProvider>
+                        <MainLayout
+                          isAuthenticated={isAuthenticated}
+                          modal={modal}
+                        >
+                          {children}
+                        </MainLayout>
+                        <ChatDock />
+                      </CreatePostProvider>
+                    </ImageViewerProvider>
+                  </EmojiPickerProvider>
+                  <Toaster position="top-right" expand />
+                </ChatProvider>
               </SocketProvider>
             </QueryProvider>
           </AuthGuard>
