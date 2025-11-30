@@ -7,6 +7,7 @@ export interface RankableUser {
   _id: Types.ObjectId;
   firstName: string;
   lastName: string;
+  username: string;
   avatar: SubMediaModel<Types.ObjectId>;
   lastActiveAt: Date;
   lastInteractiveAt?: Date;
@@ -16,6 +17,7 @@ export interface RankedUser {
   _id: Types.ObjectId;
   firstName: string;
   lastName: string;
+  username: string;
   avatar: SubMediaModel<Types.ObjectId>;
   isOnline: boolean;
   lastActiveAt: Date;
@@ -57,6 +59,7 @@ export class RankingHelper {
           _id: user._id,
           firstName: user.firstName,
           lastName: user.lastName,
+          username: user.username,
           avatar: user.avatar,
           isOnline,
           lastActiveAt: user.lastActiveAt,
@@ -78,6 +81,7 @@ export class RankingHelper {
         _id: friend._id,
         firstName: friend.firstName,
         lastName: friend.lastName,
+        username: friend.username,
         avatar: friend.avatar,
         lastActiveAt: friend.lastActiveAt,
       });
@@ -96,6 +100,7 @@ export class RankingHelper {
           _id: friend._id,
           firstName: friend.firstName,
           lastName: friend.lastName,
+          username: friend.username,
           avatar: friend.avatar,
           lastActiveAt: friend.lastActiveAt || existing?.lastActiveAt,
           lastInteractiveAt: conversation.lastInteractiveAt,

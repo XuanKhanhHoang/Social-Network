@@ -33,7 +33,7 @@ export const SuggestedMessagingList = () => {
 
   return (
     <ScrollArea className="flex-1 min-h-0">
-      {users.map((user, index) => (
+      {users.map((user) => (
         <div
           key={user.id}
           onClick={() =>
@@ -41,7 +41,7 @@ export const SuggestedMessagingList = () => {
               type: 'private',
               data: {
                 _id: user.id,
-                username: user.id, //TODO: fix this
+                username: user.username,
                 firstName: user.name.split(' ').slice(0, -1).join(' '),
                 lastName: user.name.split(' ').slice(-1).join(' '),
                 avatar: user.avatar ? { url: user.avatar } : undefined,

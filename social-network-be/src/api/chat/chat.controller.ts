@@ -22,7 +22,7 @@ export class ChatController {
     });
   }
 
-  @Get('search')
+  @Get('search-user')
   async searchUsers(
     @Req() req: any,
     @Query() query: CursorPaginationWithSearchQueryDto,

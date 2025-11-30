@@ -29,8 +29,19 @@ export class ChatRepository extends BaseRepository<ConversationDocument> {
 
   async searchConversations(
     userId: string,
-    keyword: string,
+    keyword?: string,
   ): Promise<ConversationDocument[]> {
+    if (!keyword || !keyword.trim()) {
+      return this.conversationModel
+        .find({ participants: userId })
+        .populate(
+          'participants',
+          'firstName lastName username avatar lastActiveAt',
+        )
+        .sort({ updatedAt: -1 })
+        .limit(100)
+        .exec();
+    }
     const searchRegex = new RegExp(keyword, 'i');
     return this.conversationModel
       .find({ participants: userId })

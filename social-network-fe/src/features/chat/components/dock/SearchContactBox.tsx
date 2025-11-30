@@ -2,26 +2,58 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useSuggestedFriends } from '@/features/friendship/hooks/useFriendship';
-import { UserSummaryDto } from '@/features/user/services/user.dto';
-import { Search, X } from 'lucide-react';
-import { useChatContext } from '../../context/ChatContext';
 import { UserAvatar } from '@/components/ui/user-avatar';
+import { UserSummaryDto } from '@/features/user/services/user.dto';
+import { debounce } from 'lodash';
+import { Search, X } from 'lucide-react';
+import { useCallback, useState } from 'react';
+import { useChatContext } from '../../context/ChatContext';
+import { useSearchContact } from '../../hooks/useSearchContact';
+import { SuggestedMessagingUser } from '../../types/chat';
 
 export const SearchContactBox = () => {
   const { closeSession, openSession } = useChatContext();
-  const { data } = useSuggestedFriends(10);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [displayValue, setDisplayValue] = useState('');
 
-  const handleUserClick = (user: UserSummaryDto) => {
-    openSession({ type: 'private', data: user });
+  const { data: searchData, isLoading: isSearching } =
+    useSearchContact(searchTerm);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedSearch = useCallback(
+    debounce((value: string) => {
+      setSearchTerm(value);
+    }, 800),
+    []
+  );
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setDisplayValue(value);
+    debouncedSearch(value);
+  };
+
+  const handleUserClick = (user: SuggestedMessagingUser) => {
+    const mappedUser: UserSummaryDto = {
+      _id: user.id,
+      username: user.username,
+      firstName: user.name,
+      lastName: '',
+      avatar: user.avatar
+        ? {
+            url: user.avatar,
+          }
+        : undefined,
+    };
+
+    openSession({ type: 'private', data: mappedUser });
     closeSession('search_contact');
   };
 
-  const suggestedUsers = data?.pages.flatMap((page) => page.data) || [];
+  const usersToDisplay = searchData?.data || [];
 
   return (
     <div className="w-[340px] h-[460px] bg-white border border-gray-200 rounded-t-md shadow-xl flex flex-col">
-      {/* Header */}
       <div className="px-4 py-3 flex justify-between items-start border-b border-gray-100/50">
         <div>
           <h3 className="font-semibold text-[16px] text-gray-900 leading-tight">
@@ -41,84 +73,55 @@ export const SearchContactBox = () => {
         </Button>
       </div>
 
-      {/* Search Input */}
       <div className="px-4 py-3">
         <div className="relative group">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 transition-colors duration-200" />
           <Input
             placeholder="Nhập tên người dùng..."
             className="pl-9 h-9 bg-gray-50 border-gray-200 rounded text-[14px] transition-all"
+            value={displayValue}
+            onChange={handleInputChange}
           />
         </div>
       </div>
 
-      {/* List */}
       <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-0.5 custom-scrollbar">
-        {/* Meta AI Item */}
-        <button className="w-full flex items-center p-2 hover:bg-gray-100 rounded-md transition-all duration-200 text-left group border border-transparent">
-          <div className="relative h-10 w-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center mr-3 flex-shrink-0 shadow-sm transition-all">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              className="w-5 h-5 text-white"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"
-                fill="currentColor"
-              />
-            </svg>
-            <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 bg-blue-500 rounded-full border-2 border-white flex items-center justify-center">
-              <svg
-                viewBox="0 0 12 12"
-                fill="none"
-                className="w-2 h-2 text-white"
-              >
-                <path
-                  d="M2.5 6L4.5 8L9.5 3"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
+        {isSearching ? (
+          <div className="p-4 text-center text-sm text-gray-500">
+            Đang tìm kiếm...
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex justify-between items-center">
-              <span className="font-medium text-[14px] text-gray-900 transition-colors">
-                Meta AI
-              </span>
-            </div>
-            <p className="text-[12px] text-gray-500 truncate">
-              Trợ lý ảo thông minh
-            </p>
-          </div>
-        </button>
-
-        {/* Suggested Users */}
-        {suggestedUsers.map((user) => (
-          <button
-            key={user._id}
-            onClick={() => handleUserClick(user)}
-            className="w-full flex items-center p-2 hover:bg-gray-100 rounded-md transition-all duration-200 text-left group border border-transparent"
-          >
-            <UserAvatar
-              src={user.avatar?.url}
-              name={user.firstName}
-              className="h-10 w-10 mr-3 border border-gray-100 transition-colors"
-              size={40}
-            />
-            <div className="flex-1 min-w-0">
-              <div className="font-medium text-[14px] text-gray-900 truncate transition-colors">
-                {user.firstName} {user.lastName}
+        ) : (
+          <>
+            {usersToDisplay.length === 0 ? (
+              <div className="p-4 text-center text-sm text-gray-500">
+                Không tìm thấy kết quả
               </div>
-              <p className="text-[12px] text-gray-500 truncate">
-                @{user.username}
-              </p>
-            </div>
-          </button>
-        ))}
+            ) : (
+              usersToDisplay.map((user) => (
+                <button
+                  key={user.id}
+                  onClick={() => handleUserClick(user)}
+                  className="w-full flex items-center p-2 hover:bg-gray-100 rounded-md transition-all duration-200 text-left group border border-transparent"
+                >
+                  <UserAvatar
+                    src={user.avatar}
+                    name={user.name}
+                    className="h-10 w-10 mr-3 border border-gray-100 transition-colors"
+                    size={40}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-[14px] text-gray-900 truncate transition-colors">
+                      {user.name}
+                    </div>
+                    <p className="text-[12px] text-gray-500 truncate">
+                      @{user.username}
+                    </p>
+                  </div>
+                </button>
+              ))
+            )}
+          </>
+        )}
       </div>
     </div>
   );

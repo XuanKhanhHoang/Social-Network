@@ -30,14 +30,7 @@ export class SearchMessagingUsersService extends BaseUseCaseService<
     input: SearchMessagingUsersServiceInput,
   ): Promise<SearchMessagingUsersServiceOutput> {
     const { currentUserId, search, limit = 12, cursor } = input;
-    const keyword = search?.trim() || '';
-
-    if (!keyword) {
-      return {
-        data: [],
-        pagination: { hasMore: false, nextCursor: undefined },
-      };
-    }
+    const keyword = search?.trim();
 
     const [conversations, friends] = await Promise.all([
       this.chatRepository.searchConversations(currentUserId, keyword),

@@ -2,6 +2,7 @@ export interface SuggestedMessagingUserDto {
   _id: string;
   firstName: string;
   lastName: string;
+  username: string;
   avatar: {
     url: string;
     type: string;

@@ -13,6 +13,7 @@ export const mapSuggestedUserDtoToDomain = (
   return {
     id: dto._id,
     name: `${dto.firstName} ${dto.lastName}`.trim(),
+    username: dto.username,
     avatar: dto.avatar?.url || '',
     isOnline: dto.isOnline,
     lastInteractiveAt: new Date(dto.lastInteractiveAt),

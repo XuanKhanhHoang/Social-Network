@@ -17,4 +17,21 @@ export const chatService = {
 
     return dto;
   },
+
+  async searchMessagingUsers(params: {
+    query: string;
+    limit?: number;
+    cursor?: string;
+  }): Promise<SuggestedMessagingUsersResponseDto> {
+    const query = new URLSearchParams();
+    query.append('search', params.query);
+    if (params.limit) query.append('limit', params.limit.toString());
+    if (params.cursor) query.append('cursor', params.cursor);
+
+    const dto = await ApiClient.get<SuggestedMessagingUsersResponseDto>(
+      `${CHAT_PREFIX}/search-user?${query.toString()}`
+    );
+
+    return dto;
+  },
 };

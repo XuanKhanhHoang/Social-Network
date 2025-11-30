@@ -355,96 +355,67 @@ export class FriendshipRepository extends BaseRepository<FriendshipDocument> {
 
   async searchFriends(
     userId: string,
-    keyword: string,
+    keyword?: string,
   ): Promise<UserMinimalModelWithLastActiveTime<Types.ObjectId>[]> {
     const userObjId = new Types.ObjectId(userId);
-    const searchRegex = new RegExp(keyword, 'i');
 
-    const docs = await this.friendshipModel
-      .aggregate([
-        {
-          $match: {
-            $or: [{ requester: userObjId }, { recipient: userObjId }],
-            status: FriendshipStatus.ACCEPTED,
-          },
+    const pipeline: any[] = [
+      {
+        $match: {
+          $or: [{ requester: userObjId }, { recipient: userObjId }],
+          status: FriendshipStatus.ACCEPTED,
         },
-        {
-          $lookup: {
-            from: 'users',
-            localField: 'requester',
-            foreignField: '_id',
-            as: 'requesterInfo',
-          },
-        },
-        { $unwind: '$requesterInfo' },
-        {
-          $lookup: {
-            from: 'users',
-            localField: 'recipient',
-            foreignField: '_id',
-            as: 'recipientInfo',
-          },
-        },
-        { $unwind: '$recipientInfo' },
-        {
-          $match: {
-            $or: [
-              {
-                'requesterInfo.firstName': searchRegex,
-                'requesterInfo._id': { $ne: userObjId },
-              },
-              {
-                'requesterInfo.lastName': searchRegex,
-                'requesterInfo._id': { $ne: userObjId },
-              },
-              {
-                'requesterInfo.username': searchRegex,
-                'requesterInfo._id': { $ne: userObjId },
-              },
-              //*----*//
-              {
-                'recipientInfo.firstName': searchRegex,
-                'recipientInfo._id': { $ne: userObjId },
-              },
-              {
-                'recipientInfo.lastName': searchRegex,
-                'recipientInfo._id': { $ne: userObjId },
-              },
-              {
-                'recipientInfo.username': searchRegex,
-                'recipientInfo._id': { $ne: userObjId },
-              },
-            ],
-          },
-        },
-        { $limit: 100 },
-        {
-          $project: {
-            friendInfo: {
-              $cond: {
-                if: { $eq: ['$requesterInfo._id', userObjId] },
-                then: '$recipientInfo',
-                else: '$requesterInfo',
-              },
+      },
+      {
+        $addFields: {
+          friendId: {
+            $cond: {
+              if: { $eq: ['$requester', userObjId] },
+              then: '$recipient',
+              else: '$requester',
             },
           },
         },
-        {
-          $replaceRoot: { newRoot: '$friendInfo' },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'friendId',
+          foreignField: '_id',
+          as: 'friendInfo',
         },
-        {
-          $project: {
-            _id: 1,
-            firstName: 1,
-            lastName: 1,
-            username: 1,
-            avatar: 1,
-            lastActiveAt: 1,
-          },
-        },
-      ])
-      .exec();
+      },
+      { $unwind: '$friendInfo' },
+    ];
 
-    return docs;
+    if (keyword && keyword.trim().length > 0) {
+      const searchRegex = new RegExp(keyword, 'i');
+      pipeline.push({
+        $match: {
+          $or: [
+            { 'friendInfo.firstName': searchRegex },
+            { 'friendInfo.lastName': searchRegex },
+            { 'friendInfo.username': searchRegex },
+          ],
+        },
+      });
+      pipeline.push({ $limit: 100 });
+    } else {
+      pipeline.push({ $sort: { updatedAt: -1 } });
+      pipeline.push({ $limit: 100 });
+    }
+
+    pipeline.push({
+      $project: {
+        _id: '$friendInfo._id',
+        firstName: '$friendInfo.firstName',
+        lastName: '$friendInfo.lastName',
+        username: '$friendInfo.username',
+        avatar: '$friendInfo.avatar',
+        lastActiveAt: '$friendInfo.lastActiveAt',
+      },
+    });
+
+    return this.friendshipModel.aggregate(pipeline).exec();
   }
 }
