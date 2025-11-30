@@ -68,12 +68,12 @@ export function useSentRequests() {
   });
 }
 
-export function useSuggestedFriends() {
+export function useSuggestedFriends(limit?: number) {
   return useInfiniteQuery({
     queryKey: friendshipKeys.suggested(),
     queryFn: ({ pageParam }) =>
       FriendshipService.getSuggestedFriends({
-        limit: 20,
+        limit: limit || 20,
         cursor: pageParam,
       }),
     initialPageParam: undefined as string | undefined,
