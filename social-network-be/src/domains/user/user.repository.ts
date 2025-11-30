@@ -377,4 +377,10 @@ export class UserRepository extends BaseRepository<UserDocument> {
 
     return this.model.aggregate(pipeline);
   }
+  async updateLastActive(userId: string, lastActiveAt: Date): Promise<void> {
+    await this.userModel.updateOne(
+      { _id: new Types.ObjectId(userId) },
+      { $set: { lastActiveAt } },
+    );
+  }
 }

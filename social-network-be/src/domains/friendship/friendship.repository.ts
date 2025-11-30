@@ -5,6 +5,7 @@ import { BaseRepository } from 'src/share/base-class/base-repository.service';
 import { FriendshipDocument } from 'src/schemas/friendship.schema';
 import { FriendshipStatus } from 'src/share/enums/friendship-status';
 import { FriendshipDocumentModelWithPopulatedUser } from './interfaces';
+import { UserMinimalModelWithLastActiveTime } from '../user/interfaces';
 
 @Injectable()
 export class FriendshipRepository extends BaseRepository<FriendshipDocument> {
@@ -319,5 +320,131 @@ export class FriendshipRepository extends BaseRepository<FriendshipDocument> {
       blockedUserIds,
       nextCursor,
     };
+  }
+  async findFriends(
+    userId: string,
+  ): Promise<UserMinimalModelWithLastActiveTime<Types.ObjectId>[]> {
+    const userObjId = new Types.ObjectId(userId);
+
+    const docs = await this.friendshipModel
+      .find({
+        $or: [{ requester: userObjId }, { recipient: userObjId }],
+        status: FriendshipStatus.ACCEPTED,
+      })
+      .sort({ updatedAt: -1 })
+      .limit(100)
+      .populate('requester', 'firstName lastName username avatar lastActiveAt')
+      .populate('recipient', 'firstName lastName username avatar lastActiveAt')
+      .lean()
+      .exec();
+
+    return docs.map((doc: any) => {
+      const isRequester = doc.requester._id.toString() === userId;
+      const friend = isRequester ? doc.recipient : doc.requester;
+
+      return {
+        _id: friend._id,
+        firstName: friend.firstName,
+        lastName: friend.lastName,
+        username: friend.username,
+        avatar: friend.avatar,
+        lastActiveAt: friend.lastActiveAt,
+      };
+    });
+  }
+
+  async searchFriends(
+    userId: string,
+    keyword: string,
+  ): Promise<UserMinimalModelWithLastActiveTime<Types.ObjectId>[]> {
+    const userObjId = new Types.ObjectId(userId);
+    const searchRegex = new RegExp(keyword, 'i');
+
+    const docs = await this.friendshipModel
+      .aggregate([
+        {
+          $match: {
+            $or: [{ requester: userObjId }, { recipient: userObjId }],
+            status: FriendshipStatus.ACCEPTED,
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'requester',
+            foreignField: '_id',
+            as: 'requesterInfo',
+          },
+        },
+        { $unwind: '$requesterInfo' },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'recipient',
+            foreignField: '_id',
+            as: 'recipientInfo',
+          },
+        },
+        { $unwind: '$recipientInfo' },
+        {
+          $match: {
+            $or: [
+              {
+                'requesterInfo.firstName': searchRegex,
+                'requesterInfo._id': { $ne: userObjId },
+              },
+              {
+                'requesterInfo.lastName': searchRegex,
+                'requesterInfo._id': { $ne: userObjId },
+              },
+              {
+                'requesterInfo.username': searchRegex,
+                'requesterInfo._id': { $ne: userObjId },
+              },
+              //*----*//
+              {
+                'recipientInfo.firstName': searchRegex,
+                'recipientInfo._id': { $ne: userObjId },
+              },
+              {
+                'recipientInfo.lastName': searchRegex,
+                'recipientInfo._id': { $ne: userObjId },
+              },
+              {
+                'recipientInfo.username': searchRegex,
+                'recipientInfo._id': { $ne: userObjId },
+              },
+            ],
+          },
+        },
+        { $limit: 100 },
+        {
+          $project: {
+            friendInfo: {
+              $cond: {
+                if: { $eq: ['$requesterInfo._id', userObjId] },
+                then: '$recipientInfo',
+                else: '$requesterInfo',
+              },
+            },
+          },
+        },
+        {
+          $replaceRoot: { newRoot: '$friendInfo' },
+        },
+        {
+          $project: {
+            _id: 1,
+            firstName: 1,
+            lastName: 1,
+            username: 1,
+            avatar: 1,
+            lastActiveAt: 1,
+          },
+        },
+      ])
+      .exec();
+
+    return docs;
   }
 }

@@ -105,6 +105,9 @@ export class UserDocument extends Document {
   @Prop({ type: Date, default: null })
   lastDetectedLocationUpdatedAt: Date;
 
+  @Prop({ type: Date, default: null, index: true })
+  lastActiveAt: Date;
+
   @Prop({ type: Number, default: 0 })
   friendCount: number;
   @Prop({

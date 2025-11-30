@@ -14,6 +14,14 @@ export type UserMinimalModel<T extends string | Types.ObjectId> = Pick<
 > & {
   _id: T;
 };
+export type UserMinimalModelWithLastActiveTime<
+  T extends string | Types.ObjectId,
+> = Pick<
+  UserDocument,
+  'username' | 'avatar' | 'firstName' | 'lastName' | 'lastActiveAt'
+> & {
+  _id: T;
+};
 export type UserMinimalWithEmailModel<T extends string | Types.ObjectId> =
   UserMinimalModel<T> & Pick<UserDocument, 'email'>;
 

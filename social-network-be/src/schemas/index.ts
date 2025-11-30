@@ -7,3 +7,4 @@ export * from './reaction.schema';
 export * from './sub-user.schema';
 export * from './sub-post-media.schema';
 export * from './sub-comment-media.schema';
+export * from './conversation.schema';

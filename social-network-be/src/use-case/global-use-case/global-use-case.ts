@@ -4,6 +4,7 @@ import { AuthModule } from 'src/domains/auth/auth.module';
 import { UserModule } from 'src/domains/user/user.module';
 import { IpLocationTrackingUseCaseModule } from '../ip-location-tracking/ip-location-tracking-use-case-module.module';
 import { IpLocationInterceptor } from 'src/others/interceptors/ip-location-tracking.interceptor';
+import { UserActivityInterceptor } from 'src/others/interceptors/user-activity.interceptor';
 import { JwtAuthGuard } from 'src/others/guards/jwt-auth.guard';
 
 @Module({
@@ -16,6 +17,10 @@ import { JwtAuthGuard } from 'src/others/guards/jwt-auth.guard';
     {
       provide: APP_INTERCEPTOR,
       useClass: IpLocationInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: UserActivityInterceptor,
     },
   ],
   exports: [IpLocationTrackingUseCaseModule],
