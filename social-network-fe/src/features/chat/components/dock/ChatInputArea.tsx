@@ -63,7 +63,7 @@ export const ChatInputArea = ({ onSend, className }: ChatInputAreaProps) => {
 
         <Button
           onClick={handleSend}
-          disabled={editor.isEmpty && !media}
+          disabled={editor.isEmpty && !media} //TODO: BUG Editor is not empty but disabled
           size="icon"
           className="h-10 w-10 bg-gray-900 hover:bg-black text-white rounded-lg flex-shrink-0 mb-0 shadow-sm transition-colors"
         >
