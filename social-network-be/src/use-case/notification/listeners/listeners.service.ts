@@ -48,6 +48,7 @@ export class NotificationEventListener {
 
   @OnEvent(PostEvents.liked)
   async handlePostLiked(payload: PostLikedEventPayload) {
+    if (payload.userId === payload.ownerId) return;
     await this.createNotificationService.execute({
       sender: { _id: payload.userId },
       receiver: payload.ownerId,
@@ -59,6 +60,7 @@ export class NotificationEventListener {
 
   @OnEvent(PostEvents.commented)
   async handlePostCommented(payload: PostCommentedEventPayload) {
+    if (payload.userId === payload.ownerId) return;
     await this.createNotificationService.execute({
       sender: { _id: payload.userId },
       receiver: payload.ownerId,
@@ -70,6 +72,7 @@ export class NotificationEventListener {
 
   @OnEvent(CommentEvents.liked)
   async handleCommentLiked(payload: CommentLikedEventPayload) {
+    if (payload.userId === payload.ownerId) return;
     await this.createNotificationService.execute({
       sender: { _id: payload.userId },
       receiver: payload.ownerId,
@@ -82,6 +85,7 @@ export class NotificationEventListener {
 
   @OnEvent(CommentEvents.replyCreated)
   async handleCommentReplyCreated(payload: CommentReplyCreatedEventPayload) {
+    if (payload.userId === payload.ownerId) return;
     await this.createNotificationService.execute({
       sender: { _id: payload.userId },
       receiver: payload.ownerId,
