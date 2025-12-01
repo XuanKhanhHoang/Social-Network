@@ -6,4 +6,4 @@ import { AuthUseCaseModule } from '../../use-case/auth/auth.use-case.module';
   imports: [AuthUseCaseModule],
   controllers: [AuthController],
 })
-export class AuthApiModuleModule {}
+export class AuthApiModule {}

@@ -10,8 +10,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as cookie from 'cookie';
 import { UpdateUserIpLocationService } from '../use-case/ip-location-tracking/update-user-ip-location/update-user-ip-location.service';
 
-import { SocketEvents } from 'src/share/constants/socket.constant';
-
 @WebSocketGateway({
   cors: {
     origin: process.env.FRONTEND_URL || 'http://localhost:3000',
@@ -19,13 +17,11 @@ import { SocketEvents } from 'src/share/constants/socket.constant';
   },
 })
 @Injectable()
-export class NotificationGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
-{
+export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  private readonly logger = new Logger(NotificationGateway.name);
+  private readonly logger = new Logger(AppGateway.name);
 
   constructor(
     private readonly jwtService: JwtService,
@@ -33,8 +29,11 @@ export class NotificationGateway
   ) {}
 
   async handleConnection(client: Socket) {
+    this.logger.log(`New connection attempt from ${client.id}`);
     try {
       const cookies = cookie.parse(client.handshake.headers.cookie || '');
+      this.logger.debug(`Cookies received: ${Object.keys(cookies)}`);
+
       const token = cookies['accessToken'];
 
       if (!token) {
@@ -44,6 +43,9 @@ export class NotificationGateway
       }
 
       const payload = await this.jwtService.verifyAsync(token);
+      this.logger.debug(
+        `Token verified for user: ${payload.sub || payload._id}`,
+      );
 
       client.data.user = payload;
       const userId = payload._id || payload.sub;
@@ -84,8 +86,8 @@ export class NotificationGateway
     this.logger.log(`Client disconnected: ${client.id}`);
   }
 
-  async sendToUser(userId: string, payload: any) {
+  emitToUser(userId: string, event: string, payload: any) {
     const roomName = `user_${userId}`;
-    this.server.to(roomName).emit(SocketEvents.NEW_NOTIFICATION, payload);
+    this.server.to(roomName).emit(event, payload);
   }
 }

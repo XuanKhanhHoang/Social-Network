@@ -9,6 +9,9 @@ import { useSocketCacheUpdater } from '@/features/notification/hooks/useSocketCa
 import { NotificationType } from '@/features/notification/const';
 import { NotificationDto } from '@/features/notification/services/notification.dto';
 import { mapNotificationDtoToDomain } from '@/features/notification/utils/mapper';
+import { useQueryClient } from '@tanstack/react-query';
+import { MessageResponseDto } from '@/features/chat/services/chat.dto';
+import { mapMessageDtoToDomain } from '@/features/chat/utils/chat.mapper';
 
 const SOCKET_URL =
   process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:3000';
@@ -38,6 +41,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const addNotification = useStore((state) => state.addNotification);
   const user = useStore((state) => state.user);
   const { handleSocketNotification } = useSocketCacheUpdater();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!user) {
@@ -50,28 +54,60 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
     if (!socketRef.current) {
       const origin = new URL(SOCKET_URL).origin;
-      socketRef.current = io(origin, {
-        withCredentials: true,
-        transports: ['websocket'],
-      });
 
-      socketRef.current.on('connect', () => {
-        console.log('Socket connected');
-      });
-      socketRef.current.on(
-        SocketEvents.NEW_NOTIFICATION,
-        (data: NotificationDto) => {
-          const notification = mapNotificationDtoToDomain(data);
-          addNotification(notification);
-          handleSocketNotification(notification, user.username);
+      const connectSocket = () => {
+        socketRef.current = io(origin, {
+          withCredentials: true,
+          transports: ['websocket'],
+          reconnection: true,
+          reconnectionAttempts: 5,
+          reconnectionDelay: 1000,
+        });
 
-          const message = getNotificationMessage(notification);
-          toast(message);
-        }
-      );
-      socketRef.current.on('disconnect', () => {
-        console.log('Socket disconnected');
-      });
+        socketRef.current.on('connect', () => {
+          console.log('Socket connected:', socketRef.current?.id);
+        });
+        socketRef.current.on('connect_error', (err) => {
+          console.error('Socket connection error:', err);
+        });
+        socketRef.current.on('error', (err) => {
+          console.error('Socket error:', err);
+        });
+        socketRef.current.on(
+          SocketEvents.NEW_NOTIFICATION,
+          (data: NotificationDto) => {
+            const notification = mapNotificationDtoToDomain(data);
+            addNotification(notification);
+            handleSocketNotification(notification, user.username);
+
+            const message = getNotificationMessage(notification);
+            toast(message);
+          }
+        );
+
+        socketRef.current.on(
+          SocketEvents.NEW_MESSAGE,
+          (data: MessageResponseDto) => {
+            const message = mapMessageDtoToDomain(data);
+
+            const friendId =
+              message.sender.id === user.id
+                ? message.conversationId
+                : message.sender.id;
+
+            queryClient.invalidateQueries({
+              queryKey: ['chat', 'messages', friendId],
+            });
+          }
+        );
+
+        socketRef.current.on('disconnect', () => {
+          console.log('Socket disconnected');
+        });
+      };
+
+      const timer = setTimeout(connectSocket, 500);
+      return () => clearTimeout(timer);
     }
 
     return () => {
@@ -80,7 +116,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         socketRef.current = null;
       }
     };
-  }, [user, addNotification, handleSocketNotification]);
+  }, [user, addNotification, handleSocketNotification, queryClient]);
 
   return <>{children}</>;
 };

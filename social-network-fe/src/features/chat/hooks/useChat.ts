@@ -1,11 +1,13 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { chatService } from '../services/chat.service';
-import { SuggestedMessagingUsersResponseDto } from '../types/chat.dto';
+import { SuggestedMessagingUsersResponseDto } from '../services/chat.dto';
 import { mapSuggestedUserDtoToDomain } from '../utils/chat.mapper';
 
 export const chatKeys = {
   all: ['chat'] as const,
   suggested: () => [...chatKeys.all, 'suggested'] as const,
+  messages: (sessionId: string) =>
+    [...chatKeys.all, 'messages', sessionId] as const,
 };
 
 export function useSuggestedMessagingUsers({

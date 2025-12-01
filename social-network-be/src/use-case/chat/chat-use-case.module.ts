@@ -1,12 +1,39 @@
 import { Module } from '@nestjs/common';
 import { ChatModule } from 'src/domains/chat/chat.module';
-import { FriendshipModule } from 'src/domains/friendship/friendship.module';
+import { GatewayModule } from 'src/gateway/gateway.module';
+import { MediaUploadModule } from 'src/domains/media-upload/media-upload.module';
+import { UserModule } from 'src/domains/user/user.module';
+import { SendMessageService } from './send-message/send-message.service';
+import { GetConversationsService } from './get-conversations/get-conversations.service';
+import { GetMessagesService } from './get-messages/get-messages.service';
 import { GetSuggestedMessagingUsersService } from './get-suggested-messaging-users/get-suggested-messaging-users.service';
 import { SearchMessagingUsersService } from './search-messaging-users/search-messaging-users.service';
+import { GetConversationByUserService } from './get-conversation-by-user/get-conversation-by-user.service';
+import { FriendshipModule } from 'src/domains/friendship/friendship.module';
 
 @Module({
-  imports: [ChatModule, FriendshipModule],
-  providers: [GetSuggestedMessagingUsersService, SearchMessagingUsersService],
-  exports: [GetSuggestedMessagingUsersService, SearchMessagingUsersService],
+  imports: [
+    ChatModule,
+    GatewayModule,
+    MediaUploadModule,
+    UserModule,
+    FriendshipModule,
+  ],
+  providers: [
+    SendMessageService,
+    GetConversationsService,
+    GetMessagesService,
+    GetSuggestedMessagingUsersService,
+    SearchMessagingUsersService,
+    GetConversationByUserService,
+  ],
+  exports: [
+    SendMessageService,
+    GetConversationsService,
+    GetMessagesService,
+    GetSuggestedMessagingUsersService,
+    SearchMessagingUsersService,
+    GetConversationByUserService,
+  ],
 })
 export class ChatUseCaseModule {}

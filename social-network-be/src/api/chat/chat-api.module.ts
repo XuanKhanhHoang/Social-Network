@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ChatUseCaseModule } from 'src/use-case/chat/chat-use-case.module';
 import { ChatController } from './chat.controller';
+import { ChatUseCaseModule } from 'src/use-case/chat/chat-use-case.module';
 
 @Module({
   imports: [ChatUseCaseModule],

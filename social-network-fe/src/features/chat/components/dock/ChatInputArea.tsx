@@ -11,9 +11,14 @@ interface ChatInputAreaProps {
     media?: { file: File; previewUrl: string }
   ) => void;
   className?: string;
+  disabled?: boolean;
 }
 
-export const ChatInputArea = ({ onSend, className }: ChatInputAreaProps) => {
+export const ChatInputArea = ({
+  onSend,
+  className,
+  disabled,
+}: ChatInputAreaProps) => {
   const { editor, media, handleFileSelect, removeMedia, handleSend, isEmpty } =
     useChatInput({
       onSend,
@@ -42,16 +47,27 @@ export const ChatInputArea = ({ onSend, className }: ChatInputAreaProps) => {
       )}
       <div className="flex items-end gap-3">
         <div className="flex items-center gap-3 pb-2">
-          <label className="cursor-pointer text-gray-500 hover:text-gray-700 transition-colors">
+          <label
+            className={cn(
+              'cursor-pointer text-gray-500 hover:text-gray-700 transition-colors',
+              disabled && 'opacity-50 cursor-not-allowed pointer-events-none'
+            )}
+          >
             <ImagePlus size={24} strokeWidth={1.5} />
             <input
               type="file"
               accept="image/*"
               className="hidden"
               onChange={handleFileSelect}
+              disabled={disabled}
             />
           </label>
-          <div className="text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+          <div
+            className={cn(
+              'text-gray-500 hover:text-gray-700 transition-colors cursor-pointer',
+              disabled && 'opacity-50 cursor-not-allowed pointer-events-none'
+            )}
+          >
             <EmojiButton editor={editor} />
           </div>
         </div>
@@ -65,7 +81,7 @@ export const ChatInputArea = ({ onSend, className }: ChatInputAreaProps) => {
 
         <Button
           onClick={handleSend}
-          disabled={isEmpty}
+          disabled={isEmpty || disabled}
           size="icon"
           className="h-10 w-10 bg-gray-900 hover:bg-black text-white rounded-lg flex-shrink-0 mb-0 shadow-sm transition-colors"
         >

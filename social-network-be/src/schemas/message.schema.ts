@@ -1,0 +1,51 @@
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose, { Document } from 'mongoose';
+import { UserDocument } from './user.schema';
+import { ConversationDocument } from './conversation.schema';
+
+export enum MessageType {
+  TEXT = 'text',
+  IMAGE = 'image',
+}
+
+@Schema({ timestamps: true, collection: 'messages' })
+export class MessageDocument extends Document {
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Conversation',
+    required: true,
+    index: true,
+  })
+  conversationId: ConversationDocument;
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    index: true,
+  })
+  sender: UserDocument;
+
+  @Prop({ type: String, enum: MessageType, required: true })
+  type: MessageType;
+
+  @Prop({ required: true })
+  content: string; // Encrypted Base64
+
+  @Prop({ required: true })
+  nonce: string; // Base64
+
+  @Prop({ type: String, default: null })
+  mediaUrl: string; // Cloudinary Raw URL
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    default: [],
+  })
+  readBy: UserDocument[];
+
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export const MessageSchema = SchemaFactory.createForClass(MessageDocument);

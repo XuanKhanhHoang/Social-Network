@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { NotificationModule } from 'src/domains/notification/notification.module';
-import { NotificationGatewayModule } from 'src/gateway/notification-gateway.module';
+import { GatewayModule } from 'src/gateway/gateway.module';
 import { UserModule } from 'src/domains/user/user.module';
 import {
   CreateNotificationService,
@@ -14,12 +14,7 @@ import { NotificationEventListener } from './listeners/listeners.service';
 import { FriendshipModule } from 'src/domains/friendship/friendship.module';
 
 @Module({
-  imports: [
-    NotificationModule,
-    UserModule,
-    NotificationGatewayModule,
-    FriendshipModule,
-  ],
+  imports: [NotificationModule, UserModule, GatewayModule, FriendshipModule],
   providers: [
     CreateNotificationService,
     GetNotificationsService,

@@ -3,8 +3,9 @@ import { NotificationRepository } from 'src/domains/notification/notification.re
 import { CreateNotificationData } from 'src/domains/notification/interfaces';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 import { NotificationDocument } from 'src/schemas/notification.schema';
-import { NotificationGateway } from 'src/gateway/notification.gateway';
+import { AppGateway } from 'src/gateway/app.gateway';
 import { UserRepository } from 'src/domains/user/user.repository';
+import { SocketEvents } from 'src/share/constants/socket.constant';
 
 export interface CreateNotificationInput
   extends Omit<CreateNotificationData, 'sender'> {
@@ -23,7 +24,7 @@ export class CreateNotificationService extends BaseUseCaseService<
 
   constructor(
     private readonly notificationRepository: NotificationRepository,
-    private readonly notificationGateway: NotificationGateway,
+    private readonly appGateway: AppGateway,
     private readonly userRepository: UserRepository,
   ) {
     super();
@@ -52,8 +53,9 @@ export class CreateNotificationService extends BaseUseCaseService<
     const notification =
       await this.notificationRepository.createNotification(notificationData);
 
-    await this.notificationGateway.sendToUser(
+    this.appGateway.emitToUser(
       notification.receiver._id.toString(),
+      SocketEvents.NEW_NOTIFICATION,
       notification,
     );
 

@@ -6,7 +6,8 @@ import { createContext, useContext, useState, ReactNode } from 'react';
 export type ChatSessionType = 'private' | 'search';
 
 export interface ChatSession {
-  id: string;
+  id: string; // This is the recipientId (userId)
+  conversationId?: string;
   type: ChatSessionType;
   data?: UserSummaryDto;
   isMinimized?: boolean;

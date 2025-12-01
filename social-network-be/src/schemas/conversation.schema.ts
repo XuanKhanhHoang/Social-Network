@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
 import { UserDocument } from './user.schema';
+import { MessageDocument } from './message.schema';
 
 @Schema({ timestamps: true, collection: 'conversations' })
 export class ConversationDocument extends Document {
@@ -10,7 +11,14 @@ export class ConversationDocument extends Document {
   })
   participants: UserDocument[];
 
-  @Prop({ type: Date, index: true })
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Message',
+    default: null,
+  })
+  lastMessage: MessageDocument;
+
+  @Prop({ type: Date, index: true, default: Date.now })
   lastInteractiveAt: Date;
 
   createdAt: Date;

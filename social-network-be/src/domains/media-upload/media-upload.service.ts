@@ -79,6 +79,15 @@ export class MediaUploadService {
     });
   }
 
+  async uploadRawStream(file: Express.Multer.File): Promise<string> {
+    const uploadResult = await this.uploadStream(file.buffer, {
+      resource_type: 'raw',
+      folder: 'e2ee_chat',
+      public_id: `raw_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+    });
+    return uploadResult.secure_url;
+  }
+
   async uploadTemporary(
     file: Express.Multer.File,
     userId: string,
