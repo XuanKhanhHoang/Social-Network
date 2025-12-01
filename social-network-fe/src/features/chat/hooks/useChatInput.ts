@@ -22,6 +22,7 @@ export const useChatInput = ({
   const [media, setMedia] = useState<{ file: File; previewUrl: string } | null>(
     null
   );
+  const [isEditorEmpty, setIsEditorEmpty] = useState(true);
 
   const editor = useEditor({
     extensions: [StarterKit, Placeholder.configure({ placeholder }), Emoji],
@@ -30,6 +31,9 @@ export const useChatInput = ({
       attributes: {
         class: 'focus:outline-none max-h-[150px] overflow-y-auto',
       },
+    },
+    onUpdate: ({ editor }) => {
+      setIsEditorEmpty(editor.isEmpty);
     },
     immediatelyRender: false,
   });
@@ -69,12 +73,13 @@ export const useChatInput = ({
     editor.commands.clearContent();
     if (media) setMedia(null);
   }, [editor, media, onSend]);
-
+  const isEmpty = isEditorEmpty && !media;
   return {
     editor,
     media,
     handleFileSelect,
     removeMedia,
     handleSend,
+    isEmpty,
   };
 };

@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { UserSummaryDto } from '@/features/user/services/user.dto';
-import { X } from 'lucide-react';
+import { Minus, X } from 'lucide-react';
 import { useChatContext } from '../../context/ChatContext';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { ChatInputArea } from './ChatInputArea';
@@ -61,31 +61,38 @@ export const MessageWindow = ({
 
   return (
     <div className="w-[328px] h-[500px] bg-white rounded-t-lg shadow-2xl flex flex-col border border-gray-200 font-sans">
-      <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center bg-white rounded-t-lg z-10">
-        <div className="flex items-center gap-3 cursor-pointer hover:opacity-80">
+      <div className="px-3 py-2 border-b border-gray-100 flex justify-between items-center shadow-sm z-10">
+        <div className="flex items-center cursor-pointer hover:opacity-80">
           <div className="relative">
             <UserAvatar
               src={user.avatar?.url}
               name={user.firstName}
-              className="h-9 w-9"
-              size={36}
+              className="h-8 w-8 mr-2"
+              size={32}
             />
-            <div className="absolute bottom-0 right-0 h-2.5 w-2.5 bg-green-500 rounded-full border-2 border-white"></div>
+            {/* Online Status Indicator (Mock) */}
+            <div className="absolute bottom-0 right-2 h-2.5 w-2.5 bg-green-500 rounded-full border-2 border-white"></div>
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-[15px] text-gray-900 leading-tight">
+            <span className="font-semibold text-[15px] leading-4">
               {user.firstName} {user.lastName}
             </span>
-            <span className="text-[12px] text-gray-500 font-medium">
-              Đang hoạt động
-            </span>
+            <span className="text-[11px] text-gray-500">Đang hoạt động</span>
           </div>
         </div>
-        <div className="flex items-center">
+        <div className="flex items-center gap-1">
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-gray-400 hover:text-gray-600 hover:bg-transparent"
+            className="h-7 w-7 text-gray-400 hover:bg-gray-100"
+            onClick={() => minimizeSession(sessionId)}
+          >
+            <Minus className="h-5 w-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-gray-400  hover:bg-gray-100"
             onClick={() => closeSession(sessionId)}
           >
             <X className="h-5 w-5" />

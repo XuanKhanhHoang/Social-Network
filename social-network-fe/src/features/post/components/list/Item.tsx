@@ -11,7 +11,7 @@ import { generateHTML } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { PostReactionButton } from '@/components/wrappers/PostReaction';
 import { PostWithTopComment } from '@/features/post/types/post';
-import CommentEditor from '@/features/comment/components/editor/Editor';
+import CommentEditor from '@/features/comment/components/editor/CommentEditor';
 import FeedCommentItem from '@/features/comment/components/feed/FeedCommentItem';
 import PostFeedMedia from '@/features/media/components/feed/FeedMedia';
 import { UserAvatar } from '@/components/ui/user-avatar';

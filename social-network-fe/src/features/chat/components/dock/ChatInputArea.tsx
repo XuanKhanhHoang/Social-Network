@@ -14,7 +14,7 @@ interface ChatInputAreaProps {
 }
 
 export const ChatInputArea = ({ onSend, className }: ChatInputAreaProps) => {
-  const { editor, media, handleFileSelect, removeMedia, handleSend } =
+  const { editor, media, handleFileSelect, removeMedia, handleSend, isEmpty } =
     useChatInput({
       onSend,
     });
@@ -22,7 +22,9 @@ export const ChatInputArea = ({ onSend, className }: ChatInputAreaProps) => {
   if (!editor) return null;
 
   return (
-    <div className={cn('p-3 bg-white border-t border-gray-100', className)}>
+    <div
+      className={cn('p-3 py-2 bg-white border-t border-gray-100', className)}
+    >
       {media && (
         <div className="mb-2 relative inline-block group">
           <img
@@ -54,7 +56,7 @@ export const ChatInputArea = ({ onSend, className }: ChatInputAreaProps) => {
           </div>
         </div>
 
-        <div className="flex-1 bg-white border border-gray-200 rounded-lg px-3 py-2 min-h-[40px] flex items-center focus-within:border-gray-400 transition-colors">
+        <div className="flex-1 bg-white border border-gray-200 rounded-md px-3 py-2 min-h-[40px] flex items-center  transition-colors">
           <EditorContent
             editor={editor}
             className="w-full text-[15px] max-h-[100px] overflow-y-auto [&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-[24px]"
@@ -63,7 +65,7 @@ export const ChatInputArea = ({ onSend, className }: ChatInputAreaProps) => {
 
         <Button
           onClick={handleSend}
-          disabled={editor.isEmpty && !media} //TODO: BUG Editor is not empty but disabled
+          disabled={isEmpty}
           size="icon"
           className="h-10 w-10 bg-gray-900 hover:bg-black text-white rounded-lg flex-shrink-0 mb-0 shadow-sm transition-colors"
         >

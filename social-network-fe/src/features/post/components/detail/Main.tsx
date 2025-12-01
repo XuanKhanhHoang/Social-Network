@@ -14,7 +14,7 @@ import MediasViewer from '@/features/media/components/viewers/MediasViewer';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ExpandableContent } from '@/components/ui/ExpandableContent';
 import { PostReactionButton } from '@/components/wrappers/PostReaction';
-import CommentEditor from '@/features/comment/components/editor/Editor';
+import CommentEditor from '@/features/comment/components/editor/CommentEditor';
 import { useReplyStore } from '@/features/comment/store/reply-comments/reply.store';
 import { Color, TextStyle } from '@tiptap/extension-text-style';
 import TextAlign from '@tiptap/extension-text-align';

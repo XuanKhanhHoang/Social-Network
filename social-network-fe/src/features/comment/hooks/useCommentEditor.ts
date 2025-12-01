@@ -1,23 +1,18 @@
-'use client';
-import Placeholder from '@tiptap/extension-placeholder';
-import { EditorContent, JSONContent, useEditor } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Placeholder from '@tiptap/extension-placeholder';
 import { Emoji } from '@/lib/editor/emoji-node';
-import { Button } from '@/components/ui/button';
-import { ImagePlus, Loader2, SendHorizontal } from 'lucide-react';
-import EmojiButton from '@/components/ui/emoji-button';
-import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
-import _ from 'lodash';
+import debounce from 'lodash/debounce';
+import { JSONContent } from '@tiptap/react';
 import { MediaItemWithHandlingStatus } from '@/features/media/components/type';
-import MediaUploadItem from '@/features/media/components/uploader/UploadItem';
+import { useMediaUpload } from '@/features/media/hooks/useMediaUpload';
 import { useUpdatePostCache } from '@/features/post/hooks/usePostCache';
 import { commentService } from '@/features/comment/services/comment.service';
 import { useUpdateCommentCache } from '@/features/comment/hooks/useCommentCache';
-import { useMediaUpload } from '@/features/media/hooks/useMediaUpload';
-export type CommentEditorProps = {
+
+export type UseCommentEditorProps = {
   postId: string;
   parentId?: string;
   data?: {
@@ -25,28 +20,21 @@ export type CommentEditorProps = {
     media?: MediaItemWithHandlingStatus;
     _id: string;
   };
-  className?: string;
   mode?: 'create' | 'edit';
   onSuccess?: () => void;
   placeholder?: string;
   autoFocus?: boolean;
-  allowMedia?: boolean;
-  variant?: 'minimal' | 'boxed';
-  placeholderSize?: 'xs' | 'sm' | 'base' | 'lg';
 };
-export default function CommentEditor({
+
+export const useCommentEditor = ({
   postId,
   parentId,
   data,
-  className,
   mode,
   onSuccess,
   placeholder = 'Thêm bình luận ...',
   autoFocus = false,
-  allowMedia = true,
-  placeholderSize = 'base',
-  variant = 'minimal',
-}: CommentEditorProps) {
+}: UseCommentEditorProps) => {
   const isUpdate = mode === 'edit';
 
   const {
@@ -71,7 +59,7 @@ export default function CommentEditor({
 
   const debouncedUpdate = useMemo(
     () =>
-      _.debounce(() => {
+      debounce(() => {
         setIsPendingDebounce(false);
       }, 300),
     []
@@ -82,12 +70,7 @@ export default function CommentEditor({
       debouncedUpdate.cancel();
     };
   }, [debouncedUpdate]);
-  const placeholderClass = {
-    xs: '[&_p.is-editor-empty:first-child::before]:text-xs',
-    sm: '[&_p.is-editor-empty:first-child::before]:text-sm',
-    base: '[&_p.is-editor-empty:first-child::before]:text-base',
-    lg: '[&_p.is-editor-empty:first-child::before]:text-lg',
-  }[placeholderSize];
+
   const editor = useEditor({
     extensions: [StarterKit, Placeholder.configure({ placeholder }), Emoji],
     content: data?.content,
@@ -160,9 +143,7 @@ export default function CommentEditor({
     }
   };
 
-  if (!editor) return null;
-
-  const canSubmit = !editor.isEmpty || !!singleMediaItem;
+  const canSubmit = !!editor && (!editor.isEmpty || !!singleMediaItem);
 
   const isDisabled =
     !canSubmit ||
@@ -172,69 +153,15 @@ export default function CommentEditor({
     hasUploadingFiles ||
     hasUploadErrors;
 
-  const containerClasses = cn({
-    'bg-gray-100 rounded-md': variant === 'boxed',
-    'bg-transparent': variant === 'minimal',
-  });
-
-  return (
-    <div className={className}>
-      <div className={`flex items-center w-full ${containerClasses}`}>
-        <div className="flex-1 flex items-center min-w-0">
-          <EditorContent
-            editor={editor}
-            className={cn(
-              'flex-1 min-w-0 [&_.ProseMirror]:outline-none [&_.ProseMirror]:py-2 [&_.ProseMirror]:px-3 [&_.ProseMirror]:bg-transparent',
-              '[&_.ProseMirror]:break-words',
-              placeholderClass
-            )}
-          />
-          <div className="flex items-center justify-end gap-1 pr-2">
-            {allowMedia && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 p-0"
-                asChild
-              >
-                <label>
-                  <ImagePlus size={16} />
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={onHookMediaUpload}
-                    disabled={isSubmitting || media.length > 0}
-                    className="hidden"
-                  />
-                </label>
-              </Button>
-            )}
-            <EmojiButton editor={editor} />
-          </div>
-        </div>
-        <Button
-          onClick={handleSubmit}
-          disabled={isDisabled}
-          variant="ghost"
-          size="sm"
-          className="px-2"
-        >
-          {isSubmitting ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <SendHorizontal size={16} />
-          )}
-        </Button>
-      </div>
-      {singleMediaItem && (
-        <div className="pl-3 pt-2">
-          <MediaUploadItem
-            handle={{ onRemove: handleRemoveMedia }}
-            item={singleMediaItem}
-            className={{ container: 'w-24 h-24' }}
-          />
-        </div>
-      )}
-    </div>
-  );
-}
+  return {
+    editor,
+    singleMediaItem,
+    isSubmitting,
+    isDisabled,
+    hasUploadingFiles,
+    hasUploadErrors,
+    onHookMediaUpload,
+    handleRemoveMedia,
+    handleSubmit,
+  };
+};
