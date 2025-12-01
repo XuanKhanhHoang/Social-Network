@@ -5,8 +5,12 @@ import {
   NotificationSlice,
   createNotificationSlice,
 } from '@/features/notification/store/notificationSlice';
+import {
+  CryptoSlice,
+  createCryptoSlice,
+} from '@/features/crypto/store/cryptoSlice';
 
-type StoreState = AuthSlice & NotificationSlice;
+type StoreState = AuthSlice & NotificationSlice & CryptoSlice;
 
 export const useStore = create<StoreState>()(
   devtools(
@@ -14,6 +18,7 @@ export const useStore = create<StoreState>()(
       (...a) => ({
         ...createAuthSlice(...a),
         ...createNotificationSlice(...a),
+        ...createCryptoSlice(...a),
       }),
       {
         name: 'app-storage',
@@ -24,9 +29,3 @@ export const useStore = create<StoreState>()(
     )
   )
 );
-export const useAuth = () =>
-  useStore((state) => ({
-    user: state.user,
-    setUser: state.setUser,
-    clearUser: state.clearUser,
-  }));

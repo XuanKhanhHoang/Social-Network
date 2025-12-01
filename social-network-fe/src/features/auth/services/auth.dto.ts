@@ -11,6 +11,29 @@ export interface RegisterResponseDto {
 export interface LoginResponseDto {
   message: string;
   user: UserSummaryAuth;
+  keyVault: {
+    salt: string;
+    iv: string;
+    ciphertext: string;
+  };
+}
+export interface GetMeResponseDto {
+  keyVault: {
+    salt: string;
+    iv: string;
+    ciphertext: string;
+  };
+  _id: string;
+  username: string;
+  avatar?: {
+    url: string;
+    width?: number;
+    height?: number;
+    mediaId?: string;
+  };
+  firstName: string;
+  lastName: string;
+  email: string;
 }
 
 export interface VerifyEmailResponseDto {
@@ -31,4 +54,10 @@ export interface RegisterRequestDto {
   password: string;
   birthDate: string;
   gender: Gender;
+  publicKey: string;
+  keyVault: {
+    salt: string;
+    iv: string;
+    ciphertext: string;
+  };
 }

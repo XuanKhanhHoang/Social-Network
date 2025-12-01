@@ -64,7 +64,17 @@ export class UserRepository extends BaseRepository<UserDocument> {
       projection: 'avatar email firstName lastName username',
     });
   }
-
+  async findKeyVaultAndUserBasicById(
+    userId: string,
+  ): Promise<Pick<
+    UserDocument,
+    'keyVault' | 'username' | 'avatar' | 'firstName' | 'lastName' | '_id'
+  > | null> {
+    return this.findOneLean(
+      { _id: new Types.ObjectId(userId) },
+      { projection: 'keyVault username avatar firstName lastName _id' },
+    );
+  }
   async findProfileByUsername(
     username: string,
   ): Promise<UserProfileModel<Types.ObjectId> | null> {

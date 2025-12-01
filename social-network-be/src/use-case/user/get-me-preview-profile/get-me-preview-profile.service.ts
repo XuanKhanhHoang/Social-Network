@@ -12,6 +12,11 @@ export interface GetMePreviewProfileOutput {
   lastName: string;
   username: string;
   avatar: SubMediaModel<string> | null;
+  keyVault: {
+    salt: string;
+    iv: string;
+    ciphertext: string;
+  };
 }
 
 @Injectable()
@@ -26,7 +31,7 @@ export class GetMePreviewProfileService extends BaseUseCaseService<
     input: GetMePreviewProfileInput,
   ): Promise<GetMePreviewProfileOutput> {
     const { userId } = input;
-    const res = await this.userRepository.findByIdBasic(userId);
+    const res = await this.userRepository.findKeyVaultAndUserBasicById(userId);
     return {
       _id: res._id.toString(),
       firstName: res.firstName,
@@ -39,6 +44,7 @@ export class GetMePreviewProfileService extends BaseUseCaseService<
         height: res.avatar?.height,
         mediaType: res.avatar?.mediaType,
       },
+      keyVault: res?.keyVault,
     };
   }
 }

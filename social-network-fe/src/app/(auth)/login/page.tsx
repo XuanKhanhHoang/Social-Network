@@ -22,6 +22,7 @@ interface FormErrors {
 const LoginForm = () => {
   const minPasswordLength = 6;
   const setUser = useStore((state) => state.setUser);
+  const setKeyVault = useStore((state) => state.setKeyVault);
 
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -71,6 +72,7 @@ const LoginForm = () => {
       try {
         const response = await authService.login(data.email, data.password);
         setUser(transformToStoreUser(response.user));
+        setKeyVault(response.keyVault);
         toast.success('Đăng nhập thành công !');
         router.push('/');
         router.refresh();
@@ -93,15 +95,13 @@ const LoginForm = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
       <div className="flex min-h-screen lg:flex-row flex-col">
-        {/* Left Side - Brand and Description */}
         <div className="flex-1 flex items-center justify-center px-8">
           <div className="max-w-lg">
             <div className="mb-6">
               <img src="logo.png" alt="ThreshCity Logo" className="h-36" />
             </div>
             <p className="text-gray-700 text-lg font-semibold lg:font-normal lg:text-2xl leading-relaxed">
-              ThreshCity giúp bạn kết nối và chia sẻ với mọi người trong cuộc
-              sống.
+              Vibe giúp bạn kết nối và chia sẻ với mọi người trong cuộc sống.
             </p>
           </div>
         </div>

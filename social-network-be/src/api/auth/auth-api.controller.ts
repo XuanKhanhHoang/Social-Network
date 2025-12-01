@@ -69,6 +69,7 @@ export class AuthController {
     return {
       message: data.message,
       user: data.user,
+      keyVault: data.keyVault,
     };
   }
 

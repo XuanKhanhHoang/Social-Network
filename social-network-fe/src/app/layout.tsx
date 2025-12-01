@@ -13,6 +13,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { SocketProvider } from '@/components/provider/SocketProvider';
 import { ChatProvider } from '@/features/chat/context/ChatContext';
 import { ChatDock } from '@/features/chat/components/dock/ChatDock';
+import { CryptoGuard } from '@/features/crypto/context/CryptoGuard';
 
 export const metadata: Metadata = {
   title: 'Vibe',
@@ -59,24 +60,26 @@ export default async function RootLayout({
             isSemiPublic={isSemiPublic}
           >
             <QueryProvider>
-              <SocketProvider>
-                <ChatProvider>
-                  <EmojiPickerProvider>
-                    <ImageViewerProvider>
-                      <CreatePostProvider>
-                        <MainLayout
-                          isAuthenticated={isAuthenticated}
-                          modal={modal}
-                        >
-                          {children}
-                        </MainLayout>
-                        <ChatDock />
-                      </CreatePostProvider>
-                    </ImageViewerProvider>
-                  </EmojiPickerProvider>
-                  <Toaster position="top-right" expand />
-                </ChatProvider>
-              </SocketProvider>
+              <CryptoGuard>
+                <SocketProvider>
+                  <ChatProvider>
+                    <EmojiPickerProvider>
+                      <ImageViewerProvider>
+                        <CreatePostProvider>
+                          <MainLayout
+                            isAuthenticated={isAuthenticated}
+                            modal={modal}
+                          >
+                            {children}
+                          </MainLayout>
+                          <ChatDock />
+                        </CreatePostProvider>
+                      </ImageViewerProvider>
+                    </EmojiPickerProvider>
+                    <Toaster position="top-right" expand />
+                  </ChatProvider>
+                </SocketProvider>
+              </CryptoGuard>
             </QueryProvider>
           </AuthGuard>
         </AppInitializer>

@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useStore } from '@/store';
 import { transformToStoreUser } from '@/features/auth/store/authSlice';
-import { UserSummaryWithEmailDto } from '@/features/user/services/user.dto';
-import { ApiClient } from '@/services/api';
+import { authService } from '../services/auth.service';
 
 interface AuthGuardProps {
   hasToken: boolean;
@@ -22,6 +21,7 @@ export function AuthGuard({
 }: AuthGuardProps) {
   const user = useStore((s) => s.user);
   const setUser = useStore((s) => s.setUser);
+  const setKeyVault = useStore((s) => s.setKeyVault);
 
   const router = useRouter();
 
@@ -31,16 +31,23 @@ export function AuthGuard({
   const [isLoading, setIsLoading] = useState(shouldFetchUser);
 
   useEffect(() => {
+    console.log(!user, hasToken, isPrivate);
     if (!shouldFetchUser) return;
 
     setIsLoading(true);
 
-    ApiClient.get<UserSummaryWithEmailDto>('/users/me')
+    authService
+      .verifyUser()
       .then((data) => {
         setUser(transformToStoreUser(data));
         if (!hasToken) {
           router.refresh();
         }
+        if (data.keyVault) {
+          setKeyVault(data.keyVault);
+        }
+
+        if (!hasToken) router.refresh();
       })
       .catch(() => {
         if (isPrivate) {
@@ -50,7 +57,15 @@ export function AuthGuard({
       .finally(() => {
         setIsLoading(false);
       });
-  }, [hasToken, user, setUser, router, isPrivate, shouldFetchUser]);
+  }, [
+    hasToken,
+    user,
+    setUser,
+    router,
+    isPrivate,
+    shouldFetchUser,
+    setKeyVault,
+  ]);
 
   if (isLoading) {
     return (

@@ -1,8 +1,6 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { authService } from '../services/auth.service';
 import { useStore } from '@/store';
-import { useEffect } from 'react';
-import { transformToStoreUser } from '@/features/auth/store/authSlice';
 
 export const authKeys = {
   all: ['auth'] as const,
@@ -10,40 +8,16 @@ export const authKeys = {
 };
 export const useLogout = () => {
   const clearUser = useStore((state) => state.clearUser);
+  const clearCrypto = useStore((state) => state.clearCrypto);
 
   return useMutation({
     mutationFn: () => authService.logout(),
     onSuccess: () => {
       clearUser();
+      clearCrypto();
     },
     onError: (error) => {
       console.error('Logout error:', error);
-      clearUser();
     },
   });
-};
-export const useVerifyUser = () => {
-  const { user, setUser, clearUser } = useStore();
-
-  const { data, isLoading, isError } = useQuery({
-    queryKey: authKeys.verifyUser(),
-    queryFn: () => authService.verifyUser(),
-    retry: false,
-    staleTime: 0,
-    refetchOnWindowFocus: false,
-  });
-
-  useEffect(() => {
-    if (data) {
-      setUser(transformToStoreUser(data));
-    } else if (isError) {
-      clearUser();
-    }
-  }, [data, isError, setUser, clearUser]);
-
-  return {
-    user,
-    isLoading,
-    isAuthenticated: !!data && !isError,
-  };
 };
