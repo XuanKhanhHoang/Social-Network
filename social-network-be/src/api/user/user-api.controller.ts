@@ -11,6 +11,7 @@ import {
   UpdateProfileService,
   GetSuggestFriendsService,
   GetMePreviewProfileService,
+  GetPublicKeyService,
 } from 'src/use-case/user';
 import { GetUserPostsQueryDto } from './dto/get-user-post.dto';
 import { GetAccountService } from 'src/use-case/user/get-account/get-account.service';
@@ -33,6 +34,7 @@ export class UserApiController {
     private readonly updateAccountService: UpdateAccountService,
     private readonly getSuggestFriendsService: GetSuggestFriendsService,
     private readonly getMeProfileService: GetMePreviewProfileService,
+    private readonly getPublicKeyService: GetPublicKeyService,
   ) {}
 
   @Get('me')
@@ -148,5 +150,10 @@ export class UserApiController {
       limit,
       cursor,
     });
+  }
+
+  @Get(':userId/public-key')
+  async getPublicKey(@Param('userId') userId: string) {
+    return this.getPublicKeyService.execute({ userId });
   }
 }

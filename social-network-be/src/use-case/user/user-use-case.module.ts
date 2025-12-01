@@ -17,6 +17,8 @@ import { FriendshipModule } from 'src/domains/friendship/friendship.module';
 import { GetSuggestFriendsService } from './get-suggest-friends/get-suggest-friends.service';
 import { UpdateProfileService } from './update-profile/update-profile.service';
 
+import { GetPublicKeyService } from './get-public-key/get-public-key.service';
+
 @Module({
   imports: [
     UserModule,
@@ -39,6 +41,7 @@ import { UpdateProfileService } from './update-profile/update-profile.service';
     UpdateAccountService,
     UpdateAccountService,
     GetSuggestFriendsService,
+    GetPublicKeyService,
   ],
   exports: [
     GetMePreviewProfileService,
@@ -53,6 +56,7 @@ import { UpdateProfileService } from './update-profile/update-profile.service';
     UpdateAccountService,
     UpdateAccountService,
     GetSuggestFriendsService,
+    GetPublicKeyService,
   ],
 })
 export class UserUseCaseModule {}

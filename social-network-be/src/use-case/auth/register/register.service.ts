@@ -15,6 +15,12 @@ export interface RegisterInput {
   lastName: string;
   birthDate: string;
   gender: Gender;
+  publicKey: string;
+  keyVault: {
+    salt: string;
+    iv: string;
+    ciphertext: string;
+  };
 }
 export interface RegisterOutput {
   message: string;

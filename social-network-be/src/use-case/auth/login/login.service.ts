@@ -19,6 +19,11 @@ export type LoginOutput = {
   };
   accessToken: string;
   refreshToken: string;
+  keyVault: {
+    salt: string;
+    iv: string;
+    ciphertext: string;
+  };
 };
 @Injectable()
 export class LoginService extends BaseUseCaseService<LoginInput, LoginOutput> {
@@ -32,7 +37,10 @@ export class LoginService extends BaseUseCaseService<LoginInput, LoginOutput> {
     const { email, password } = input;
 
     const user = (
-      await this.userRepository.findByEmailAndVerified(email)
+      await this.userRepository.findOne(
+        { email, isVerified: true },
+        { projection: '+password +keyVault' },
+      )
     )?.toObject();
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -59,6 +67,7 @@ export class LoginService extends BaseUseCaseService<LoginInput, LoginOutput> {
       },
       accessToken,
       refreshToken,
+      keyVault: user.keyVault,
     };
   }
 }

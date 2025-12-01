@@ -8,4 +8,10 @@ export interface CreateUserData {
   gender: Gender;
   birthDate: string;
   username: string;
+  publicKey: string;
+  keyVault: {
+    salt: string;
+    iv: string;
+    ciphertext: string;
+  };
 }

@@ -115,6 +115,16 @@ export class UserDocument extends Document {
     default: () => ({}),
   })
   privacySettings: PrivacySettings;
+
+  @Prop({ required: true })
+  publicKey: string;
+
+  @Prop({ type: Object, required: true, select: false })
+  keyVault: {
+    salt: string;
+    iv: string;
+    ciphertext: string;
+  };
   createdAt: Date;
   updatedAt: Date;
 }

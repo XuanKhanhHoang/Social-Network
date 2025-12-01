@@ -40,4 +40,15 @@ export class RegisterDto {
   @IsNotEmpty({ message: 'Gender is required' })
   @IsEnum(Gender, { message: 'Gender must be either "male" or "female"' })
   gender: Gender;
+
+  @IsNotEmpty({ message: 'Public key is required' })
+  @IsString({ message: 'Public key must be a string' })
+  publicKey: string;
+
+  @IsNotEmpty({ message: 'Key vault is required' })
+  keyVault: {
+    salt: string;
+    iv: string;
+    ciphertext: string;
+  };
 }

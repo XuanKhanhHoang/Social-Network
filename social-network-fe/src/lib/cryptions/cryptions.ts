@@ -79,3 +79,61 @@ export const decryptFile = (
     return null;
   }
 };
+
+const deriveKeyFromPin = async (pin: string, salt: Uint8Array) => {
+  const enc = new TextEncoder();
+  const keyMaterial = await window.crypto.subtle.importKey(
+    'raw',
+    enc.encode(pin),
+    { name: 'PBKDF2' },
+    false,
+    ['deriveKey']
+  );
+
+  const keyParams = await window.crypto.subtle.deriveKey(
+    {
+      name: 'PBKDF2',
+      salt: salt as unknown as BufferSource,
+      iterations: 100000,
+      hash: 'SHA-256',
+    },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    true,
+    ['encrypt', 'decrypt']
+  );
+
+  const rawKey = await window.crypto.subtle.exportKey('raw', keyParams);
+  return new Uint8Array(rawKey);
+};
+
+export const createKeyVault = async (secretKey: Uint8Array, pin: string) => {
+  const salt = nacl.randomBytes(16);
+  const pinKey = await deriveKeyFromPin(pin, salt);
+  const nonce = nacl.randomBytes(nacl.secretbox.nonceLength);
+
+  const ciphertext = nacl.secretbox(secretKey, nonce, pinKey);
+
+  return {
+    salt: encodeBase64(salt),
+    iv: encodeBase64(nonce),
+    ciphertext: encodeBase64(ciphertext),
+  };
+};
+export const restoreKeyVault = async (
+  vault: { salt: string; iv: string; ciphertext: string },
+  pin: string
+) => {
+  try {
+    const salt = decodeBase64(vault.salt);
+    const nonce = decodeBase64(vault.iv);
+    const ciphertext = decodeBase64(vault.ciphertext);
+
+    const pinKey = await deriveKeyFromPin(pin, salt);
+    const secretKey = nacl.secretbox.open(ciphertext, nonce, pinKey);
+    if (!secretKey) return null;
+    return secretKey;
+  } catch {
+    return null;
+  }
+};
