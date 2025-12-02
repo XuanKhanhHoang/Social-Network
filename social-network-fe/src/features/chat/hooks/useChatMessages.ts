@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { JSONContent } from '@tiptap/react';
 import { useChatSession } from './useChatSession';
 import { chatKeys } from './useChat';
@@ -8,11 +8,16 @@ import {
   useInfiniteQuery,
   useMutation,
   useQueryClient,
+  InfiniteData,
 } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { mapMessageDtoToDomain } from '../utils/chat.mapper';
 import { ChatMessage, SendMessageVariables } from '../types/chat';
-import { SendMessageRequestDto } from '../services/chat.dto';
+import {
+  MessageResponseDto,
+  MessagesResponseDto,
+  SendMessageRequestDto,
+} from '../services/chat.dto';
 import { useStore } from '@/store';
 
 export const useChatMessages = (
@@ -39,45 +44,131 @@ export const useChatMessages = (
         : undefined,
     initialPageParam: undefined as string | undefined,
     enabled: !!conversationId,
-    staleTime: 0,
+    staleTime: Infinity,
   });
 
-  const serverMessages: ChatMessage[] =
+  const messages: ChatMessage[] =
     data?.pages.flatMap((page) =>
       page.data.map((dto) => {
         const domainMsg = mapMessageDtoToDomain(dto);
         return {
           ...domainMsg,
-          content: null, // Will be decrypted by component
+          content: null,
           encryptedContent: domainMsg.content,
-          status: 'sent',
+          status: dto.status || 'sent',
           media: domainMsg.media,
         };
       })
     ) || [];
 
-  const [optimisticMessages, setOptimisticMessages] = useState<ChatMessage[]>(
-    []
-  );
-
   const sendMessageMutation = useMutation({
-    mutationFn: (variables: SendMessageVariables) =>
+    mutationFn: (variables: SendMessageVariables & { previewUrl?: string }) =>
       chatService.sendMessage(variables),
-    onSuccess: (data, variables) => {
-      setOptimisticMessages((prev) =>
-        prev.filter((msg) => msg.id !== variables.tempId)
-      );
-      queryClient.invalidateQueries({
+
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({
         queryKey: chatKeys.messages(conversationId),
       });
-    },
-    onError: (error, variables) => {
-      toast.error('Gửi tin nhắn thất bại');
-      setOptimisticMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === variables.tempId ? { ...msg, status: 'error' } : msg
-        )
+      const previousMessages = queryClient.getQueryData(
+        chatKeys.messages(conversationId)
       );
+
+      if (user) {
+        const optimisticMessageDto: MessageResponseDto = {
+          _id: variables.tempId,
+          conversationId: conversationId,
+          content: variables.content,
+          sender: {
+            _id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            username: user.username,
+            avatar: user.avatar,
+          },
+          nonce: variables.nonce,
+          type: variables.type,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          readBy: [],
+          media: variables.file
+            ? {
+                url: variables.previewUrl || '',
+                mediaType: 'image',
+                width: 0,
+                height: 0,
+                mediaId: '',
+              }
+            : null,
+          status: 'sending',
+        } as unknown as MessageResponseDto;
+
+        queryClient.setQueryData<InfiniteData<MessagesResponseDto>>(
+          chatKeys.messages(conversationId),
+          (old) => {
+            if (!old) {
+              return {
+                pages: [
+                  {
+                    data: [optimisticMessageDto],
+                    pagination: { hasMore: false, nextCursor: null, total: 1 },
+                  },
+                ],
+                pageParams: [undefined],
+              };
+            }
+            const newPages = [...old.pages];
+            if (newPages.length > 0) {
+              newPages[0] = {
+                ...newPages[0],
+                data: [optimisticMessageDto, ...newPages[0].data],
+              };
+            }
+            return { ...old, pages: newPages };
+          }
+        );
+      }
+      return { previousMessages };
+    },
+
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData(
+        chatKeys.messages(conversationId),
+        (old: InfiniteData<MessagesResponseDto, string | undefined>) => {
+          if (!old) return old;
+          const newPages = old.pages.map((page) => ({
+            ...page,
+            data: page.data.map((msg) => {
+              if (msg._id === variables.tempId) {
+                const finalMessage = { ...data, status: 'sent' };
+                const previewUrl = variables.previewUrl;
+                if (previewUrl && finalMessage.media) {
+                  finalMessage.media.url = previewUrl;
+                }
+                return finalMessage;
+              }
+              return msg;
+            }),
+          }));
+          return { ...old, pages: newPages };
+        }
+      );
+
+      if (data.conversationId && data.conversationId !== conversationId) {
+        queryClient.setQueryData(
+          chatKeys.conversationId(recipientId),
+          data.conversationId
+        );
+      }
+    },
+
+    onError: (err, variables, context) => {
+      toast.error('Gửi tin nhắn thất bại');
+      if (context?.previousMessages) {
+        queryClient.setQueryData(
+          chatKeys.messages(conversationId),
+          context.previousMessages
+        );
+      }
     },
   });
 
@@ -87,42 +178,18 @@ export const useChatMessages = (
       media?: { file: File; previewUrl: string }
     ) => {
       if (!sharedKey || !user) {
-        toast.error(
-          'Đang thiết lập kết nối bảo mật. Vui lòng thử lại sau giây lát.'
-        );
+        toast.error('Đang thiết lập kết nối bảo mật...');
         return;
       }
 
       const tempId = crypto.randomUUID();
       const contentStr = JSON.stringify(content || {});
-
       const { cipherText, nonce } = encryptText(contentStr, sharedKey);
       let encryptedFile: { blob: Blob; nonce: string } | undefined;
 
       if (media) {
         encryptedFile = await encryptFile(media.file, sharedKey);
       }
-
-      const newMessage: ChatMessage = {
-        id: tempId,
-        conversationId: conversationId,
-        sender: {
-          id: user.id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          username: user.username,
-          avatar: user.avatar,
-        },
-        type: media ? 'image' : 'text',
-        content,
-        encryptedContent: cipherText,
-        nonce,
-        createdAt: new Date().toISOString(),
-        status: 'sending',
-        media: media ? { url: media.previewUrl, type: 'image' } : undefined,
-      };
-
-      setOptimisticMessages((prev) => [newMessage, ...prev]);
 
       const sendMessageDto: SendMessageRequestDto = {
         receiverId: recipientId,
@@ -135,12 +202,11 @@ export const useChatMessages = (
       sendMessageMutation.mutate({
         ...sendMessageDto,
         tempId,
+        previewUrl: media?.previewUrl,
       });
     },
-    [conversationId, recipientId, sharedKey, sendMessageMutation]
+    [sharedKey, user, recipientId, sendMessageMutation]
   );
-
-  const messages = [...optimisticMessages, ...serverMessages];
 
   return {
     messages,

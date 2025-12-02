@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { UserSummaryDto } from '@/features/user/services/user.dto';
-import { Minus, X } from 'lucide-react';
+import { Minus, MoreHorizontal, Trash2, X } from 'lucide-react';
 import { useChatContext } from '../../context/ChatContext';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { ChatInputArea } from './ChatInputArea';
@@ -17,12 +17,30 @@ import { useConversationId } from '../../hooks/useConversationId';
 import { useInView } from 'react-intersection-observer';
 import { chatService } from '../../services/chat.service';
 import { useStore } from '@/store';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface MessageWindowProps {
   sessionId: string;
   user: UserSummaryDto;
   isMinimized?: boolean;
 }
+
+const ONE_HOUR = 60 * 60 * 1000;
+
+const formatDateTime = (dateString: string) => {
+  const date = new Date(dateString);
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  return `${hours}:${minutes} ${day}/${month}/${year}`;
+};
 
 const DecryptedMessageContent = ({
   message,
@@ -74,7 +92,7 @@ const DecryptedMessageContent = ({
 
   return (
     <div
-      className={`px-4 py-2.5 rounded-2xl text-[15px] leading-relaxed shadow-sm ${
+      className={`px-4 py-2.5 rounded-2xl text-[15px] leading-relaxed shadow-sm pointer-events-none ${
         isMe
           ? 'bg-gray-900 text-white rounded-br-none'
           : 'bg-gray-50 text-gray-900 rounded-bl-none'
@@ -100,10 +118,11 @@ export const MessageWindow = ({
 
   const { ref: topSentinelRef, inView: inViewTop } = useInView({
     threshold: 0,
-    rootMargin: '200px 0px 0px 0px',
+    rootMargin: '100px 0px 0px 0px',
   });
 
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
 
   const { data: conversationId, isLoading: isResolvingId } =
     useConversationId(sessionId);
@@ -127,7 +146,7 @@ export const MessageWindow = ({
 
   useEffect(() => {
     if (inViewTop && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage?.();
+      fetchNextPage();
     }
   }, [inViewTop, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
@@ -139,6 +158,14 @@ export const MessageWindow = ({
       }
     }
   }, [sortedMessages, conversationId, currentUser?.id]);
+
+  const handleRecallMessage = async (messageId: string) => {
+    console.log('Recall message:', messageId);
+  };
+
+  const toggleMessageTime = (id: string) => {
+    setActiveMessageId((prev) => (prev === id ? null : id));
+  };
 
   if (isMinimized) {
     return (
@@ -235,56 +262,127 @@ export const MessageWindow = ({
               </div>
             )}
 
-            {sortedMessages.map((msg) => {
+            {sortedMessages.map((msg, index) => {
               const isMsgFromMe = msg.sender.id === currentUser?.id;
+              const nextMsg = sortedMessages[index + 1];
+              let showTimeSeparator = false;
+              if (nextMsg) {
+                const currentMsgTime = new Date(msg.createdAt).getTime();
+                const nextMsgTime = new Date(nextMsg.createdAt).getTime();
+                if (currentMsgTime - nextMsgTime > ONE_HOUR) {
+                  showTimeSeparator = true;
+                }
+              } else {
+                showTimeSeparator = true;
+              }
+
+              const isTimeVisible =
+                activeMessageId === msg.id ||
+                msg.status === 'sending' ||
+                msg.status === 'error';
 
               return (
-                <div
-                  key={msg.id}
-                  className={`flex items-end gap-2 ${
-                    isMsgFromMe ? 'justify-end' : ''
-                  }`}
-                >
-                  {!isMsgFromMe && (
-                    <UserAvatar
-                      src={user.avatar?.url}
-                      name={user.firstName}
-                      className="h-8 w-8 mb-1 flex-shrink-0"
-                      size={32}
-                    />
+                <div key={msg.id} className="flex flex-col">
+                  {showTimeSeparator && (
+                    <div className="flex justify-center my-4">
+                      <span className="text-[11px] text-gray-400 bg-gray-50 px-2 py-1 rounded-full border border-gray-100">
+                        {formatDateTime(msg.createdAt)}
+                      </span>
+                    </div>
                   )}
+
                   <div
-                    className={`flex flex-col gap-1 max-w-[75%] ${
-                      isMsgFromMe ? 'items-end' : 'items-start'
+                    className={`group flex items-end gap-2 relative ${
+                      isMsgFromMe ? 'justify-end' : ''
                     }`}
                   >
-                    {msg.media && (
-                      <div className="mb-1">
-                        <img
-                          src={msg.media.url}
-                          alt="Media"
-                          className={`rounded-xl max-h-[200px] w-auto object-cover border border-gray-100 ${
-                            msg.status === 'sending' ? 'opacity-70' : ''
-                          }`}
-                        />
+                    {!isMsgFromMe && (
+                      <UserAvatar
+                        src={user.avatar?.url}
+                        name={user.firstName}
+                        className="h-8 w-8 mb-1 flex-shrink-0"
+                        size={32}
+                      />
+                    )}
+
+                    {isMsgFromMe && (
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity self-center">
+                        <DropdownMenu modal={false}>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 rounded-full hover:bg-gray-100"
+                            >
+                              <MoreHorizontal className="h-4 w-4 text-gray-400" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              className="text-red-600 focus:text-red-600 cursor-pointer"
+                              onClick={() => handleRecallMessage(msg.id)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Thu hồi tin nhắn
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     )}
 
-                    <DecryptedMessageContent
-                      message={msg}
-                      sharedKey={sharedKey}
-                      isMe={isMsgFromMe}
-                    />
+                    <div
+                      className={`flex flex-col gap-1 max-w-[75%] ${
+                        isMsgFromMe ? 'items-end' : 'items-start'
+                      }`}
+                    >
+                      {msg.media && (
+                        <div className="mb-1">
+                          <img
+                            src={msg.media.url}
+                            alt="Media"
+                            className={`rounded-xl max-h-[200px] w-auto object-cover border border-gray-100 ${
+                              msg.status === 'sending' ? 'opacity-70' : ''
+                            }`}
+                          />
+                        </div>
+                      )}
 
-                    {msg.status === 'sending' && (
-                      <span className="text-[10px] text-gray-400 px-1">
-                        Đang gửi...
-                      </span>
-                    )}
-                    {msg.status === 'error' && (
-                      <span className="text-[10px] text-red-500 px-1">
-                        Lỗi gửi
-                      </span>
+                      <div
+                        className="relative cursor-pointer"
+                        onClick={() => toggleMessageTime(msg.id)}
+                      >
+                        <DecryptedMessageContent
+                          message={msg}
+                          sharedKey={sharedKey}
+                          isMe={isMsgFromMe}
+                        />
+                      </div>
+
+                      <div
+                        className={`flex items-center gap-2 px-1 overflow-hidden transition-all duration-300 ease-in-out ${
+                          isTimeVisible
+                            ? 'max-h-[20px] opacity-100'
+                            : 'max-h-0 opacity-0'
+                        }`}
+                      >
+                        {msg.status === 'sending' ? (
+                          <span className="text-[10px] text-gray-400">
+                            Đang gửi...
+                          </span>
+                        ) : msg.status === 'error' ? (
+                          <span className="text-[10px] text-red-500">
+                            Lỗi gửi
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-gray-400 select-none">
+                            {formatDateTime(msg.createdAt)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {!isMsgFromMe && (
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity self-center"></div>
                     )}
                   </div>
                 </div>

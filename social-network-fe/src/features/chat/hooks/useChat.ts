@@ -8,6 +8,8 @@ export const chatKeys = {
   suggested: () => [...chatKeys.all, 'suggested'] as const,
   messages: (sessionId: string) =>
     [...chatKeys.all, 'messages', sessionId] as const,
+  conversationId: (userId?: string) =>
+    [...chatKeys.all, 'conversation-id', userId] as const,
 };
 
 export function useSuggestedMessagingUsers({

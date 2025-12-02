@@ -35,7 +35,7 @@ export interface SendMessageRequestDto {
 
 export interface MessageResponseDto {
   _id: string;
-  conversation: string;
+  conversationId: string;
   sender: UserSummaryDto;
   type: 'text' | 'image';
   content: string;
@@ -47,6 +47,9 @@ export interface MessageResponseDto {
   };
   createdAt: string;
   updatedAt: string;
+  readBy: string[];
+
+  status?: 'sent' | 'error' | 'sending';
 }
 
 export interface ConversationResponseDto {

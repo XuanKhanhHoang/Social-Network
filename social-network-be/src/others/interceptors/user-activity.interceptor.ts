@@ -23,7 +23,7 @@ export class UserActivityInterceptor implements NestInterceptor {
       const twoMinutesAgo = new Date(now.getTime() - 2 * 60 * 1000);
 
       if (user.lastActiveAt && new Date(user.lastActiveAt) > twoMinutesAgo) {
-        return;
+        return next.handle();
       }
 
       this.userRepository.updateLastActive(user._id, now).catch(() => {

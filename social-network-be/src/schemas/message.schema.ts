@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { Document } from 'mongoose';
+import mongoose, { Document, Types } from 'mongoose';
 import { UserDocument } from './user.schema';
 import { ConversationDocument } from './conversation.schema';
 
@@ -42,7 +42,7 @@ export class MessageDocument extends Document {
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     default: [],
   })
-  readBy: UserDocument[];
+  readBy: Types.ObjectId[];
 
   createdAt: Date;
   updatedAt: Date;

@@ -14,8 +14,9 @@ import {
   MessageResponseDto,
   MessagesResponseDto,
 } from '@/features/chat/services/chat.dto';
-import { mapMessageDtoToDomain } from '@/features/chat/utils/chat.mapper';
 import { useChatContext } from '@/features/chat/context/ChatContext';
+import { useNotificationSound } from '@/features/notification/hooks/usePlayNotificationSounds';
+import { chatKeys } from '@/features/chat/hooks/useChat';
 
 const SOCKET_URL =
   process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:3000';
@@ -47,11 +48,32 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
   const { handleSocketNotification } = useSocketCacheUpdater();
   const queryClient = useQueryClient();
   const { sessions, openSession } = useChatContext();
+  const { playSound } = useNotificationSound();
 
   const sessionsRef = useRef(sessions);
   useEffect(() => {
     sessionsRef.current = sessions;
   }, [sessions]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        queryClient.invalidateQueries({
+          queryKey: ['chat', 'messages'],
+          type: 'active',
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['chat', 'conversation-id'],
+          type: 'active',
+        });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [queryClient]);
 
   useEffect(() => {
     if (!user) {
@@ -77,37 +99,31 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
         socketRef.current.on('connect', () => {
           console.log('Socket connected:', socketRef.current?.id);
         });
-        socketRef.current.on('connect_error', (err) => {
-          console.error('Socket connection error:', err);
-        });
-        socketRef.current.on('error', (err) => {
-          console.error('Socket error:', err);
-        });
+
         socketRef.current.on(
           SocketEvents.NEW_NOTIFICATION,
           (data: NotificationDto) => {
             const notification = mapNotificationDtoToDomain(data);
             addNotification(notification);
             handleSocketNotification(notification, user.username);
-
             const message = getNotificationMessage(notification);
             toast(message);
+            playSound();
           }
         );
 
         socketRef.current.on(
           SocketEvents.NEW_MESSAGE,
           (data: MessageResponseDto) => {
-            const message = mapMessageDtoToDomain(data);
-            const senderId = message.sender.id;
+            const conversationId = data.conversationId;
+            const targetKey = chatKeys.messages(conversationId);
 
             queryClient.setQueryData<InfiniteData<MessagesResponseDto>>(
-              ['chat', 'messages', message.conversationId],
+              targetKey,
               (oldData) => {
                 if (!oldData) return undefined;
-
                 const exists = oldData.pages.some((page) =>
-                  page.data.some((m) => m._id === message.id)
+                  page.data.some((m) => m._id === data._id)
                 );
                 if (exists) return oldData;
 
@@ -118,36 +134,34 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
                     data: [data, ...newPages[0].data],
                   };
                 }
-
-                return {
-                  ...oldData,
-                  pages: newPages,
-                };
+                return { ...oldData, pages: newPages };
               }
             );
 
-            if (senderId === user.id) return;
+            queryClient.invalidateQueries({
+              queryKey: chatKeys.conversationId(data.sender._id),
+            });
 
+            if (data.sender._id === user.id) return;
+
+            playSound();
             let isOpen = false;
             sessionsRef.current.forEach((s) => {
-              if (s.id === senderId) {
+              if (s.id === data.sender._id) {
                 isOpen = true;
-                if (s.isMinimized) {
-                  s.isMinimized = false;
-                }
+                if (s.isMinimized) s.isMinimized = false;
               }
             });
+
             if (!isOpen) {
               openSession({
                 type: 'private',
                 data: {
-                  _id: message.sender.id,
-                  firstName: message.sender.firstName,
-                  lastName: message.sender.lastName,
-                  username: message.sender.username,
-                  avatar: {
-                    url: message.sender.avatar?.url || '',
-                  },
+                  _id: data.sender._id,
+                  firstName: data.sender.firstName,
+                  lastName: data.sender.lastName,
+                  username: data.sender.username,
+                  avatar: { url: data.sender.avatar?.url || '' },
                 },
               });
             }
@@ -157,9 +171,23 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
         socketRef.current.on(
           SocketEvents.MESSAGE_READ,
           (payload: { conversationId: string; readerId: string }) => {
-            queryClient.invalidateQueries({
-              queryKey: ['chat', 'messages', payload.conversationId],
-            });
+            const targetKey = chatKeys.messages(payload.conversationId);
+            queryClient.setQueriesData<InfiniteData<MessagesResponseDto>>(
+              { queryKey: targetKey },
+              (oldData) => {
+                if (!oldData) return undefined;
+                const newPages = oldData.pages.map((page) => ({
+                  ...page,
+                  data: page.data.map((msg) => ({
+                    ...msg,
+                    readBy: msg.readBy.includes(payload.readerId)
+                      ? msg.readBy
+                      : [...msg.readBy, payload.readerId],
+                  })),
+                }));
+                return { ...oldData, pages: newPages };
+              }
+            );
           }
         );
 

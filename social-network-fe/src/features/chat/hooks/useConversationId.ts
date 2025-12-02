@@ -4,7 +4,7 @@ import { chatKeys } from './useChat';
 
 export const useConversationId = (userId: string | undefined) => {
   return useQuery({
-    queryKey: [...chatKeys.all, 'conversation-id', userId],
+    queryKey: chatKeys.conversationId(userId),
     queryFn: async () => {
       if (!userId) return null;
       const conversation = await chatService.getConversationByUserId(userId);

@@ -37,7 +37,7 @@ export const mapSuggestedUsersResponseDtoToDomain = (
 export const mapMessageDtoToDomain = (dto: MessageResponseDto): Message => {
   return {
     id: dto._id,
-    conversationId: dto.conversation,
+    conversationId: dto.conversationId,
     sender: {
       id: dto.sender._id,
       firstName: dto.sender.firstName,
