@@ -46,6 +46,7 @@ export interface Message {
   mediaUrl?: string;
   status: 'sending' | 'sent' | 'error';
   createdAt: string;
+  readBy: string[];
 }
 
 export interface Conversation {

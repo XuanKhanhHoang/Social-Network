@@ -158,8 +158,9 @@ export const MessageWindow = ({
   useEffect(() => {
     if (latestMessage && conversationId) {
       if (
+        currentUser?.id &&
         latestMessage.sender.id !== currentUser?.id &&
-        latestMessage.id !== lastReadMessageIdRef.current
+        !latestMessage.readBy.includes(currentUser?.id)
       ) {
         chatService.markAsRead(conversationId);
         lastReadMessageIdRef.current = latestMessage.id;
