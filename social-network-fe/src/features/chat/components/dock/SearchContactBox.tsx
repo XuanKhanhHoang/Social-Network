@@ -53,7 +53,7 @@ export const SearchContactBox = () => {
   const usersToDisplay = searchData?.data || [];
 
   return (
-    <div className="w-[340px] h-[460px] bg-white border border-gray-200 rounded-t-md shadow-xl flex flex-col">
+    <div className="w-[340px] h-[500px] bg-white border border-gray-200 rounded-t-md shadow-xl flex flex-col">
       <div className="px-4 py-3 flex justify-between items-start border-b border-gray-100/50">
         <div>
           <h3 className="font-semibold text-[16px] text-gray-900 leading-tight">

@@ -1,3 +1,5 @@
+import { UserSummaryDto } from '@/lib/dtos';
+
 export interface CursorPaginatedResponse<T> {
   data: T[];
   pagination: {
@@ -34,11 +36,15 @@ export interface SendMessageRequestDto {
 export interface MessageResponseDto {
   _id: string;
   conversation: string;
-  sender: string;
+  sender: UserSummaryDto;
   type: 'text' | 'image';
   content: string;
   nonce: string;
-  mediaUrl?: string;
+  encryptedContent: string;
+  media?: {
+    url: string;
+    type: 'image' | 'video';
+  };
   createdAt: string;
   updatedAt: string;
 }

@@ -8,6 +8,8 @@ import {
   Param,
   Query,
   BadRequestException,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { SendMessageDto } from 'src/domains/chat/dto/send-message.dto';
@@ -20,6 +22,7 @@ import { GetSuggestedMessagingUsersService } from 'src/use-case/chat/get-suggest
 import { SearchMessagingUsersService } from 'src/use-case/chat/search-messaging-users/search-messaging-users.service';
 import { GetUserId } from 'src/share/decorators/user.decorator';
 import { GetConversationByUserService } from 'src/use-case/chat/get-conversation-by-user/get-conversation-by-user.service';
+import { MarkMessageAsReadService } from 'src/use-case/chat/mark-message-as-read/mark-message-as-read.service';
 
 @Controller('chat')
 export class ChatController {
@@ -30,6 +33,7 @@ export class ChatController {
     private readonly getSuggestedMessagingUsersService: GetSuggestedMessagingUsersService,
     private readonly searchMessagingUsersService: SearchMessagingUsersService,
     private readonly getConversationByUserService: GetConversationByUserService,
+    private readonly markMessageAsReadService: MarkMessageAsReadService,
   ) {}
 
   @Post('message')
@@ -112,6 +116,18 @@ export class ChatController {
     return this.getConversationByUserService.execute({
       currentUserId: userId,
       targetUserId: recipientId,
+    });
+  }
+
+  @Post('conversations/:id/read')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async markAsRead(
+    @GetUserId() userId: string,
+    @Param('id') conversationId: string,
+  ) {
+    return this.markMessageAsReadService.execute({
+      conversationId,
+      userId,
     });
   }
 }

@@ -66,6 +66,7 @@ export class ChatRepository extends BaseRepository<ConversationDocument> {
       .find(query)
       .sort({ createdAt: -1 })
       .limit(limit + 1)
+      .populate('sender', 'firstName lastName username avatar')
       .exec();
 
     const hasMore = messages.length > limit;
@@ -165,5 +166,20 @@ export class ChatRepository extends BaseRepository<ConversationDocument> {
       })
       .limit(100)
       .exec();
+  }
+
+  async markMessagesAsRead(
+    conversationId: string,
+    userId: string,
+  ): Promise<void> {
+    await this.messageModel.updateMany(
+      {
+        conversationId: new Types.ObjectId(conversationId),
+        readBy: { $ne: userId },
+      },
+      {
+        $addToSet: { readBy: userId },
+      },
+    );
   }
 }

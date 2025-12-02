@@ -15,6 +15,8 @@ import { decryptText } from '@/features/crypto/utils/cryptions';
 import { ChatMessage } from '../../types/chat';
 import { useConversationId } from '../../hooks/useConversationId';
 import { useInView } from 'react-intersection-observer';
+import { chatService } from '../../services/chat.service';
+import { useStore } from '@/store';
 
 interface MessageWindowProps {
   sessionId: string;
@@ -94,6 +96,7 @@ export const MessageWindow = ({
   isMinimized,
 }: MessageWindowProps) => {
   const { closeSession, minimizeSession } = useChatContext();
+  const currentUser = useStore((state) => state.user);
 
   const { ref: topSentinelRef, inView: inViewTop } = useInView({
     threshold: 0,
@@ -127,6 +130,15 @@ export const MessageWindow = ({
       fetchNextPage?.();
     }
   }, [inViewTop, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  useEffect(() => {
+    if (sortedMessages.length > 0 && conversationId) {
+      const lastMsg = sortedMessages[sortedMessages.length - 1];
+      if (lastMsg.sender.id !== currentUser?.id) {
+        chatService.markAsRead(conversationId);
+      }
+    }
+  }, [sortedMessages, conversationId, currentUser?.id]);
 
   if (isMinimized) {
     return (
@@ -224,8 +236,7 @@ export const MessageWindow = ({
             )}
 
             {sortedMessages.map((msg) => {
-              const isMsgFromMe =
-                msg.sender === 'me' || msg.sender !== sessionId;
+              const isMsgFromMe = msg.sender.id === currentUser?.id;
 
               return (
                 <div

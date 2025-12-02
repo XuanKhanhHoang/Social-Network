@@ -91,4 +91,10 @@ export const chatService = {
       `${CHAT_PREFIX}/recipient/${userId}`
     );
   },
+  async markAsRead(conversationId: string): Promise<void> {
+    return ApiClient.post(
+      `${CHAT_PREFIX}/conversations/${conversationId}/read`,
+      {}
+    );
+  },
 };

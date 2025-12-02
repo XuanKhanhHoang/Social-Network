@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { mapMessageDtoToDomain } from '../utils/chat.mapper';
 import { ChatMessage, SendMessageVariables } from '../types/chat';
 import { SendMessageRequestDto } from '../services/chat.dto';
+import { useStore } from '@/store';
 
 export const useChatMessages = (
   conversationId: string,
@@ -20,6 +21,7 @@ export const useChatMessages = (
 ) => {
   const { sharedKey, isLoading: isKeyLoading } = useChatSession(recipientId);
   const queryClient = useQueryClient();
+  const user = useStore((state) => state.user);
 
   const {
     data,
@@ -49,12 +51,7 @@ export const useChatMessages = (
           content: null, // Will be decrypted by component
           encryptedContent: domainMsg.content,
           status: 'sent',
-          media: domainMsg.mediaUrl
-            ? {
-                url: domainMsg.mediaUrl,
-                type: domainMsg.type as 'image' | 'video',
-              }
-            : undefined,
+          media: domainMsg.media,
         };
       })
     ) || [];
@@ -89,7 +86,7 @@ export const useChatMessages = (
       content: JSONContent | null,
       media?: { file: File; previewUrl: string }
     ) => {
-      if (!sharedKey) {
+      if (!sharedKey || !user) {
         toast.error(
           'Đang thiết lập kết nối bảo mật. Vui lòng thử lại sau giây lát.'
         );
@@ -109,13 +106,18 @@ export const useChatMessages = (
       const newMessage: ChatMessage = {
         id: tempId,
         conversationId: conversationId,
-        sender: 'me',
+        sender: {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          username: user.username,
+          avatar: user.avatar,
+        },
         type: media ? 'image' : 'text',
         content,
         encryptedContent: cipherText,
         nonce,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
         status: 'sending',
         media: media ? { url: media.previewUrl, type: 'image' } : undefined,
       };

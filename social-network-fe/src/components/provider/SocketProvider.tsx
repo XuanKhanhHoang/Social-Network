@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, ReactNode } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useStore } from '@/store';
 import { toast } from 'sonner';
@@ -9,9 +9,13 @@ import { useSocketCacheUpdater } from '@/features/notification/hooks/useSocketCa
 import { NotificationType } from '@/features/notification/const';
 import { NotificationDto } from '@/features/notification/services/notification.dto';
 import { mapNotificationDtoToDomain } from '@/features/notification/utils/mapper';
-import { useQueryClient } from '@tanstack/react-query';
-import { MessageResponseDto } from '@/features/chat/services/chat.dto';
+import { useQueryClient, InfiniteData } from '@tanstack/react-query';
+import {
+  MessageResponseDto,
+  MessagesResponseDto,
+} from '@/features/chat/services/chat.dto';
 import { mapMessageDtoToDomain } from '@/features/chat/utils/chat.mapper';
+import { useChatContext } from '@/features/chat/context/ChatContext';
 
 const SOCKET_URL =
   process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:3000';
@@ -36,12 +40,18 @@ const getNotificationMessage = (notification: Notification): string => {
   }
 };
 
-export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
+export const SocketProvider = ({ children }: { children: ReactNode }) => {
   const socketRef = useRef<Socket | null>(null);
   const addNotification = useStore((state) => state.addNotification);
   const user = useStore((state) => state.user);
   const { handleSocketNotification } = useSocketCacheUpdater();
   const queryClient = useQueryClient();
+  const { sessions, openSession } = useChatContext();
+
+  const sessionsRef = useRef(sessions);
+  useEffect(() => {
+    sessionsRef.current = sessions;
+  }, [sessions]);
 
   useEffect(() => {
     if (!user) {
@@ -89,14 +99,66 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
           SocketEvents.NEW_MESSAGE,
           (data: MessageResponseDto) => {
             const message = mapMessageDtoToDomain(data);
+            const senderId = message.sender.id;
 
-            const friendId =
-              message.sender.id === user.id
-                ? message.conversationId
-                : message.sender.id;
+            queryClient.setQueryData<InfiniteData<MessagesResponseDto>>(
+              ['chat', 'messages', message.conversationId],
+              (oldData) => {
+                if (!oldData) return undefined;
 
+                const exists = oldData.pages.some((page) =>
+                  page.data.some((m) => m._id === message.id)
+                );
+                if (exists) return oldData;
+
+                const newPages = [...oldData.pages];
+                if (newPages.length > 0) {
+                  newPages[0] = {
+                    ...newPages[0],
+                    data: [data, ...newPages[0].data],
+                  };
+                }
+
+                return {
+                  ...oldData,
+                  pages: newPages,
+                };
+              }
+            );
+
+            if (senderId === user.id) return;
+
+            let isOpen = false;
+            sessionsRef.current.forEach((s) => {
+              if (s.id === senderId) {
+                isOpen = true;
+                if (s.isMinimized) {
+                  s.isMinimized = false;
+                }
+              }
+            });
+            if (!isOpen) {
+              openSession({
+                type: 'private',
+                data: {
+                  _id: message.sender.id,
+                  firstName: message.sender.firstName,
+                  lastName: message.sender.lastName,
+                  username: message.sender.username,
+                  avatar: {
+                    url: message.sender.avatar?.url || '',
+                  },
+                },
+              });
+            }
+          }
+        );
+
+        socketRef.current.on(
+          SocketEvents.MESSAGE_READ,
+          (payload: { conversationId: string; readerId: string }) => {
             queryClient.invalidateQueries({
-              queryKey: ['chat', 'messages', friendId],
+              queryKey: ['chat', 'messages', payload.conversationId],
             });
           }
         );
@@ -116,7 +178,13 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         socketRef.current = null;
       }
     };
-  }, [user, addNotification, handleSocketNotification, queryClient]);
+  }, [
+    user,
+    addNotification,
+    handleSocketNotification,
+    queryClient,
+    openSession,
+  ]);
 
   return <>{children}</>;
 };

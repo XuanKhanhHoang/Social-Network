@@ -10,6 +10,7 @@ import { GetSuggestedMessagingUsersService } from './get-suggested-messaging-use
 import { SearchMessagingUsersService } from './search-messaging-users/search-messaging-users.service';
 import { GetConversationByUserService } from './get-conversation-by-user/get-conversation-by-user.service';
 import { FriendshipModule } from 'src/domains/friendship/friendship.module';
+import { MarkMessageAsReadService } from './mark-message-as-read/mark-message-as-read.service';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { FriendshipModule } from 'src/domains/friendship/friendship.module';
     GetSuggestedMessagingUsersService,
     SearchMessagingUsersService,
     GetConversationByUserService,
+    MarkMessageAsReadService,
   ],
   exports: [
     SendMessageService,
@@ -34,6 +36,7 @@ import { FriendshipModule } from 'src/domains/friendship/friendship.module';
     GetSuggestedMessagingUsersService,
     SearchMessagingUsersService,
     GetConversationByUserService,
+    MarkMessageAsReadService,
   ],
 })
 export class ChatUseCaseModule {}

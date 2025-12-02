@@ -6,6 +6,7 @@ import { SocketEvents } from 'src/share/constants/socket.constant';
 import { SendMessageDto } from 'src/domains/chat/dto/send-message.dto';
 import { ChatRepository } from 'src/domains/chat/chat.repository';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
+import { UserMinimalModel } from 'src/domains/user/interfaces';
 
 export type SendMessageInput = {
   senderId: string;
@@ -75,7 +76,15 @@ export class SendMessageService extends BaseUseCaseService<
       lastInteractiveAt: new Date(),
     });
 
-    this.appGateway.emitToUser(receiverId, SocketEvents.NEW_MESSAGE, message);
+    await message.populate('sender', 'firstName lastName username avatar');
+
+    this.appGateway.emitToUser(
+      receiverId,
+      SocketEvents.NEW_MESSAGE,
+      message as Omit<MessageDocument, 'sender'> & {
+        sender: UserMinimalModel<string>;
+      },
+    );
 
     return message;
   }

@@ -17,6 +17,7 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
+    minimumCacheTTL: 31536000,
   },
   turbopack: {
     rules: {

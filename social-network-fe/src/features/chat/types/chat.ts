@@ -3,6 +3,7 @@ import {
   SendMessageRequestDto,
   SuggestedMessagingUserResponseDto,
 } from '../services/chat.dto';
+import { UserSummary } from '@/lib/interfaces';
 
 export interface SuggestedMessagingUser {
   id: string;
@@ -36,13 +37,17 @@ export const mapSuggestedMessagingUserDtoToDomain = (
 export interface Message {
   id: string;
   conversationId: string;
-  sender: string;
+  sender: UserSummary;
   type: 'text' | 'image';
   content: string; // Encrypted
   nonce: string;
-  mediaUrl?: string;
+  encryptedContent: string;
+  media?: {
+    url: string;
+    type: 'image' | 'video';
+  };
+  status: 'sending' | 'sent' | 'error';
   createdAt: string;
-  updatedAt: string;
 }
 
 export interface Conversation {
@@ -60,7 +65,8 @@ export interface SendMessageVariables extends SendMessageRequestDto {
   tempId: string;
 }
 
-export interface ChatMessage extends Omit<Message, 'content' | 'id'> {
+export interface ChatMessage
+  extends Omit<Message, 'content' | 'id' | 'encryptedContent'> {
   id: string;
   content: JSONContent | null; // Decrypted content (for optimistic UI)
   encryptedContent?: string; // Encrypted content (from server)

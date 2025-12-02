@@ -61,8 +61,8 @@ export default async function RootLayout({
           >
             <QueryProvider>
               <CryptoGuard>
-                <SocketProvider>
-                  <ChatProvider>
+                <ChatProvider>
+                  <SocketProvider>
                     <EmojiPickerProvider>
                       <ImageViewerProvider>
                         <CreatePostProvider>
@@ -77,8 +77,8 @@ export default async function RootLayout({
                       </ImageViewerProvider>
                     </EmojiPickerProvider>
                     <Toaster position="top-right" expand />
-                  </ChatProvider>
-                </SocketProvider>
+                  </SocketProvider>
+                </ChatProvider>
               </CryptoGuard>
             </QueryProvider>
           </AuthGuard>

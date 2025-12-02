@@ -38,13 +38,20 @@ export const mapMessageDtoToDomain = (dto: MessageResponseDto): Message => {
   return {
     id: dto._id,
     conversationId: dto.conversation,
-    sender: dto.sender,
+    sender: {
+      id: dto.sender._id,
+      firstName: dto.sender.firstName,
+      lastName: dto.sender.lastName,
+      username: dto.sender.username,
+      avatar: dto.sender.avatar,
+    },
     type: dto.type,
     content: dto.content,
     nonce: dto.nonce,
-    mediaUrl: dto.mediaUrl,
+    encryptedContent: dto.encryptedContent,
+    media: dto.media,
+    status: 'sent',
     createdAt: dto.createdAt,
-    updatedAt: dto.updatedAt,
   };
 };
 

@@ -65,7 +65,7 @@ export interface UserSummary {
   };
   firstName: string;
   lastName: string;
-  fullName: string;
+  fullName?: string;
 }
 export type UserSummaryWidthAvatarUrl = Omit<UserSummary, 'avatar'> & {
   avatar?: string;
