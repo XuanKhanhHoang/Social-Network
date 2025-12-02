@@ -296,7 +296,7 @@ export class MediaUploadService {
   }
   public async deleteFromCloud(
     mediaCloudinaryPublicId: string,
-    mediaType: MediaType,
+    mediaType?: MediaType,
   ) {
     try {
       await this.cloudinaryInstance.uploader.destroy(mediaCloudinaryPublicId, {

@@ -9,6 +9,7 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { SendMessageDto } from 'src/api/chat/dto/send-message.dto';
@@ -22,6 +23,8 @@ import { SearchMessagingUsersService } from 'src/use-case/chat/search-messaging-
 import { GetUserId } from 'src/share/decorators/user.decorator';
 import { GetConversationByUserService } from 'src/use-case/chat/get-conversation-by-user/get-conversation-by-user.service';
 import { MarkMessageAsReadService } from 'src/use-case/chat/mark-message-as-read/mark-message-as-read.service';
+import { RecallMessageService } from 'src/use-case/chat/recall-message/recall-message.service';
+import { MessageType } from 'src/schemas/message.schema';
 
 @Controller('chat')
 export class ChatController {
@@ -33,6 +36,7 @@ export class ChatController {
     private readonly searchMessagingUsersService: SearchMessagingUsersService,
     private readonly getConversationByUserService: GetConversationByUserService,
     private readonly markMessageAsReadService: MarkMessageAsReadService,
+    private readonly recallMessageService: RecallMessageService,
   ) {}
 
   @Post('message')
@@ -48,6 +52,12 @@ export class ChatController {
     @Body() dto: SendMessageDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
+    if (dto.type === MessageType.TEXT && !dto.content) {
+      throw new BadRequestException('Content is required');
+    }
+    if (dto.type === MessageType.IMAGE && !file) {
+      throw new BadRequestException('File is required');
+    }
     return this.sendMessageService.execute({
       senderId,
       dto,
@@ -120,6 +130,18 @@ export class ChatController {
     return this.markMessageAsReadService.execute({
       conversationId,
       userId,
+    });
+  }
+
+  @Post('messages/:id/recall')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async recallMessage(
+    @GetUserId() userId: string,
+    @Param('id') messageId: string,
+  ) {
+    return this.recallMessageService.execute({
+      userId,
+      messageId,
     });
   }
 }

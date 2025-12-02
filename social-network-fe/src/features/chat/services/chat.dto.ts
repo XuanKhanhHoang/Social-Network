@@ -28,8 +28,8 @@ export type SuggestedMessagingUsersResponseDto =
 export interface SendMessageRequestDto {
   receiverId: string;
   type: 'text' | 'image';
-  content: string; // Encrypted Base64
-  nonce: string; // Base64
+  content?: string; // Encrypted Base64
+  nonce?: string; // Base64
   mediaNonce?: string; // Base64 for media
   file?: Blob; // Encrypted Blob
 }
@@ -39,14 +39,15 @@ export interface MessageResponseDto {
   conversationId: string;
   sender: UserSummaryDto;
   type: 'text' | 'image';
-  content: string;
-  nonce: string;
+  content?: string;
+  nonce?: string;
   mediaNonce?: string;
   encryptedContent: string;
   mediaUrl?: string;
   createdAt: string;
   updatedAt: string;
   readBy: string[];
+  isRecovered?: boolean;
 
   status?: 'sent' | 'error' | 'sending';
 }

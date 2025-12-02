@@ -56,12 +56,17 @@ const DecryptedMessageContent = ({
 
   useEffect(() => {
     const decrypt = async () => {
-      if (message.content) {
-        setDecryptedHtml(generateHTML(message.content, [StarterKit, Emoji]));
+      if (message.isRecovered) {
+        return;
+      }
+      if (message.decryptedContent) {
+        setDecryptedHtml(
+          generateHTML(message.decryptedContent, [StarterKit, Emoji])
+        );
         return;
       }
 
-      if (message.encryptedContent && message.nonce && sharedKey) {
+      if (!!message.encryptedContent && !!message.nonce && sharedKey) {
         try {
           const decryptedJsonStr = decryptText(
             message.nonce,
@@ -78,6 +83,7 @@ const DecryptedMessageContent = ({
           }
         } catch (e) {
           console.error('Decryption failed', e);
+          console.log(message);
           setDecryptedHtml(
             '<span class="text-red-500 italic">Lỗi giải mã</span>'
           );
@@ -87,6 +93,18 @@ const DecryptedMessageContent = ({
 
     decrypt();
   }, [message, sharedKey]);
+
+  if (message.isRecovered) {
+    return (
+      <div
+        className={`px-4 py-2.5 rounded-2xl text-[15px] leading-relaxed shadow-sm pointer-events-none italic text-gray-500 border border-gray-200 ${
+          isMe ? 'bg-gray-100 rounded-br-none' : 'bg-gray-50 rounded-bl-none'
+        }`}
+      >
+        Tin nhắn đã thu hồi
+      </div>
+    );
+  }
 
   if (!decryptedHtml)
     return <div className="h-4 w-20 bg-gray-200 animate-pulse rounded"></div>;
@@ -124,7 +142,7 @@ export const MessageWindow = ({
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
-  const lastReadMessageIdRef = useRef<string | null>(null); // Ref để tránh gọi API trùng lặp
+  const lastReadMessageIdRef = useRef<string | null>(null);
 
   const { data: conversationId, isLoading: isResolvingId } =
     useConversationId(sessionId);
@@ -137,6 +155,7 @@ export const MessageWindow = ({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    recallMessage,
   } = useChatMessages(conversationId || '', sessionId);
 
   const sortedMessages = useMemo(() => {
@@ -179,7 +198,7 @@ export const MessageWindow = ({
   }, [latestMessageId]);
 
   const handleRecallMessage = async (messageId: string) => {
-    console.log('Recall message:', messageId);
+    await recallMessage(messageId);
   };
 
   const toggleMessageTime = (id: string) => {
@@ -324,7 +343,7 @@ export const MessageWindow = ({
                       />
                     )}
 
-                    {isMsgFromMe && (
+                    {isMsgFromMe && !msg.isRecovered && (
                       <div className="opacity-0 group-hover:opacity-100 transition-opacity self-center">
                         <DropdownMenu modal={false}>
                           <DropdownMenuTrigger asChild>
@@ -353,12 +372,13 @@ export const MessageWindow = ({
                       className={`flex flex-col gap-1 max-w-[75%] ${
                         isMsgFromMe ? 'items-end' : 'items-start'
                       }`}
+                      onClick={() => toggleMessageTime(msg.id)}
                     >
-                      {msg.mediaUrl && (
+                      {msg.mediaUrl && !msg.isRecovered && (
                         <div className="mb-1">
                           <DecryptedImage
                             url={msg.mediaUrl}
-                            nonce={msg.mediaNonce || msg.nonce}
+                            nonce={msg.mediaNonce || ''}
                             sharedKey={sharedKey || new Uint8Array()}
                             alt="Media"
                             className={`rounded-xl max-h-[200px] w-auto object-cover border border-gray-100 ${
@@ -368,15 +388,14 @@ export const MessageWindow = ({
                         </div>
                       )}
 
-                      <div
-                        className="relative cursor-pointer"
-                        onClick={() => toggleMessageTime(msg.id)}
-                      >
-                        <DecryptedMessageContent
-                          message={msg}
-                          sharedKey={sharedKey}
-                          isMe={isMsgFromMe}
-                        />
+                      <div className="relative cursor-pointer">
+                        {(!!msg.encryptedContent || !!msg.decryptedContent) && (
+                          <DecryptedMessageContent
+                            message={msg}
+                            sharedKey={sharedKey}
+                            isMe={isMsgFromMe}
+                          />
+                        )}
                       </div>
 
                       <div

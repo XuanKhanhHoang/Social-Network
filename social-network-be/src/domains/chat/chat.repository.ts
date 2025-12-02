@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { BaseRepository } from 'src/share/base-class/base-repository.service';
+import { FilterQuery, Model, Types } from 'mongoose';
+import {
+  BaseQueryOptions,
+  BaseRepository,
+} from 'src/share/base-class/base-repository.service';
 import { ConversationDocument } from 'src/schemas/conversation.schema';
 import { MessageDocument } from 'src/schemas/message.schema';
 
@@ -39,6 +42,16 @@ export class ChatRepository extends BaseRepository<ConversationDocument> {
     return message.save();
   }
 
+  async findMessageById(id: string): Promise<MessageDocument | null> {
+    return this.messageModel.findById(id).exec();
+  }
+
+  async findMessages(
+    query: FilterQuery<MessageDocument>,
+    options?: BaseQueryOptions<MessageDocument>,
+  ): Promise<MessageDocument[] | null> {
+    return this.messageModel.find(query).exec();
+  }
   async updateConversation(
     id: string,
     update: any,

@@ -29,10 +29,10 @@ export class MessageDocument extends Document {
   @Prop({ type: String, enum: MessageType, required: true })
   type: MessageType;
 
-  @Prop({ required: true })
+  @Prop({})
   content: string; // Encrypted Base64
 
-  @Prop({ required: true })
+  @Prop({})
   nonce: string; // Base64
 
   @Prop({ type: String, default: null })
@@ -46,6 +46,9 @@ export class MessageDocument extends Document {
     default: [],
   })
   readBy: Types.ObjectId[];
+
+  @Prop({ type: Boolean, default: false })
+  isRecovered: boolean;
 
   createdAt: Date;
   updatedAt: Date;

@@ -169,6 +169,38 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
         );
 
         socketRef.current.on(
+          SocketEvents.MESSAGE_RECALLED,
+          (payload: { messageId: string; conversationId: string }) => {
+            const targetKey = chatKeys.messages(payload.conversationId);
+            queryClient.setQueriesData<InfiniteData<MessagesResponseDto>>(
+              { queryKey: targetKey },
+              (oldData) => {
+                if (!oldData) return undefined;
+                const newPages = oldData.pages.map((page) => ({
+                  ...page,
+                  data: page.data.map((msg) => {
+                    if (msg._id === payload.messageId) {
+                      return {
+                        ...msg,
+                        isRecovered: true,
+                        content: '',
+                        encryptedContent: '',
+                        nonce: '',
+                        mediaNonce: undefined,
+                        mediaUrl: undefined,
+                        media: undefined,
+                      };
+                    }
+                    return msg;
+                  }),
+                }));
+                return { ...oldData, pages: newPages };
+              }
+            );
+          }
+        );
+
+        socketRef.current.on(
           SocketEvents.MESSAGE_READ,
           (payload: { conversationId: string; readerId: string }) => {
             const targetKey = chatKeys.messages(payload.conversationId);

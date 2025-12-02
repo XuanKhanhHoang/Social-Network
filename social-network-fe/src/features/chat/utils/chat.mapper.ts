@@ -33,7 +33,19 @@ export const mapSuggestedUsersResponseDtoToDomain = (
     nextCursor: dto.pagination.nextCursor,
   };
 };
-
+export const mapSuggestedMessagingUserDtoToDomain = (
+  dto: SuggestedMessagingUserResponseDto
+): SuggestedMessagingUser => {
+  return {
+    id: dto._id,
+    name: `${dto.lastName} ${dto.firstName}`.trim(),
+    username: dto.username,
+    avatar: dto.avatar?.url || '',
+    isOnline: dto.isOnline,
+    lastInteractiveAt: new Date(dto.lastInteractiveAt),
+    score: dto.score,
+  };
+};
 export const mapMessageDtoToDomain = (dto: MessageResponseDto): Message => {
   return {
     id: dto._id,
@@ -46,13 +58,12 @@ export const mapMessageDtoToDomain = (dto: MessageResponseDto): Message => {
       avatar: dto.sender.avatar,
     },
     type: dto.type,
-    content: dto.content,
-    nonce: dto.nonce,
-    mediaNonce: dto.mediaNonce,
-    encryptedContent: dto.encryptedContent,
-    mediaUrl: dto.mediaUrl,
-    readBy: dto.readBy,
-    status: 'sent',
+    encryptedContent: dto?.content,
+    nonce: dto?.nonce,
+    mediaNonce: dto?.mediaNonce,
+    mediaUrl: dto?.mediaUrl,
+    readBy: dto?.readBy,
+    isRecovered: dto?.isRecovered,
     createdAt: dto.createdAt,
   };
 };

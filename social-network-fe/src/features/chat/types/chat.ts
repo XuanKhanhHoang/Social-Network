@@ -1,8 +1,4 @@
 import { JSONContent } from '@tiptap/react';
-import {
-  SendMessageRequestDto,
-  SuggestedMessagingUserResponseDto,
-} from '../services/chat.dto';
 import { UserSummary } from '@/lib/interfaces';
 
 export interface SuggestedMessagingUser {
@@ -20,33 +16,18 @@ export interface SuggestedMessagingUsersResponse {
   nextCursor?: string | null;
 }
 
-export const mapSuggestedMessagingUserDtoToDomain = (
-  dto: SuggestedMessagingUserResponseDto
-): SuggestedMessagingUser => {
-  return {
-    id: dto._id,
-    name: `${dto.lastName} ${dto.firstName}`.trim(),
-    username: dto.username,
-    avatar: dto.avatar?.url || '',
-    isOnline: dto.isOnline,
-    lastInteractiveAt: new Date(dto.lastInteractiveAt),
-    score: dto.score,
-  };
-};
-
 export interface Message {
   id: string;
   conversationId: string;
   sender: UserSummary;
   type: 'text' | 'image';
-  content: string; // Encrypted
-  nonce: string;
+  nonce?: string;
   mediaNonce?: string;
-  encryptedContent: string;
+  encryptedContent?: string;
   mediaUrl?: string;
-  status: 'sending' | 'sent' | 'error';
   createdAt: string;
   readBy: string[];
+  isRecovered?: boolean;
 }
 
 export interface Conversation {
@@ -60,14 +41,11 @@ export interface Conversation {
   lastMessage?: Message;
   updatedAt: string;
 }
-export interface SendMessageVariables extends SendMessageRequestDto {
-  tempId: string;
-}
 
 export interface ChatMessage
   extends Omit<Message, 'content' | 'id' | 'encryptedContent'> {
   id: string;
-  content: JSONContent | null; // Decrypted content (for optimistic UI)
-  encryptedContent?: string; // Encrypted content (from server)
+  encryptedContent?: string;
+  decryptedContent?: JSONContent | null;
   status: 'sending' | 'sent' | 'error';
 }

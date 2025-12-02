@@ -1,6 +1,6 @@
 import { chatService } from '@/features/chat/services/chat.service';
 import { useQuery } from '@tanstack/react-query';
-import { mapSuggestedMessagingUserDtoToDomain } from '../types/chat';
+import { mapSuggestedMessagingUserDtoToDomain } from '../utils/chat.mapper';
 
 export const useSearchContact = (query: string) => {
   const isDefaultList = !query || query.trim().length === 0;

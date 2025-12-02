@@ -11,12 +11,12 @@ export class SendMessageDto {
   type: MessageType;
 
   @IsString()
-  @IsNotEmpty()
-  content: string; // Base64
+  @IsOptional()
+  content?: string; // Base64
 
   @IsString()
-  @IsNotEmpty()
-  nonce: string; // Base64
+  @IsOptional()
+  nonce?: string; // Base64
 
   @IsString()
   @IsOptional()

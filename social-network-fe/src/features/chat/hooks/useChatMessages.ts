@@ -12,7 +12,7 @@ import {
 } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { mapMessageDtoToDomain } from '../utils/chat.mapper';
-import { ChatMessage, SendMessageVariables } from '../types/chat';
+import { ChatMessage } from '../types/chat';
 import {
   MessageResponseDto,
   MessagesResponseDto,
@@ -50,20 +50,21 @@ export const useChatMessages = (
   const messages: ChatMessage[] =
     data?.pages.flatMap((page) =>
       page.data.map((dto) => {
-        const domainMsg = mapMessageDtoToDomain(dto);
+        const msg = mapMessageDtoToDomain(dto);
         return {
-          ...domainMsg,
-          content: null,
-          encryptedContent: domainMsg.content,
+          ...msg,
+          encryptedContent: msg.encryptedContent,
+          decryptedContent: null,
           status: dto.status || 'sent',
-          mediaUrl: domainMsg.mediaUrl,
-        };
+          mediaUrl: msg.mediaUrl,
+        } as ChatMessage;
       })
     ) || [];
 
   const sendMessageMutation = useMutation({
-    mutationFn: (variables: SendMessageVariables & { previewUrl?: string }) =>
-      chatService.sendMessage(variables),
+    mutationFn: (
+      variables: SendMessageRequestDto & { tempId: string; previewUrl?: string }
+    ) => chatService.sendMessage(variables),
 
     onMutate: async (variables) => {
       await queryClient.cancelQueries({
@@ -77,7 +78,7 @@ export const useChatMessages = (
         const optimisticMessageDto: MessageResponseDto = {
           _id: variables.tempId,
           conversationId: conversationId,
-          content: variables.content,
+          content: variables?.content,
           sender: {
             _id: user.id,
             firstName: user.firstName,
@@ -176,8 +177,14 @@ export const useChatMessages = (
       }
 
       const tempId = crypto.randomUUID();
-      const contentStr = JSON.stringify(content || {});
-      const { cipherText, nonce } = encryptText(contentStr, sharedKey);
+      let contentStr, nonce, cipherText;
+      if (content != null) {
+        contentStr = JSON.stringify(content || {});
+        const data = encryptText(contentStr, sharedKey);
+        cipherText = data.cipherText;
+        nonce = data.nonce;
+      }
+
       let encryptedFile: { blob: Blob; nonce: string } | undefined;
 
       if (media) {
@@ -202,6 +209,58 @@ export const useChatMessages = (
     [sharedKey, user, recipientId, sendMessageMutation]
   );
 
+  const recallMessageMutation = useMutation({
+    mutationFn: (messageId: string) => chatService.recallMessage(messageId),
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({
+        queryKey: chatKeys.messages(conversationId),
+      });
+      const previousMessages = queryClient.getQueryData(
+        chatKeys.messages(conversationId)
+      );
+      queryClient.setQueriesData<InfiniteData<MessagesResponseDto>>(
+        {
+          queryKey: chatKeys.messages(conversationId),
+        },
+        (old) => {
+          if (!old) return old;
+          const newPages = old.pages.map((page) => ({
+            ...page,
+            data: page.data.map((msg) => {
+              if (msg._id == variables) {
+                if (msg.mediaUrl?.startsWith('blob:')) {
+                  URL.revokeObjectURL(msg.mediaUrl);
+                }
+                return {
+                  ...msg,
+                  isRecovered: true,
+                  decryptedContent: null,
+                  encryptedContent: 'recalled',
+                  nonce: 'recalled',
+                  mediaUrl: undefined,
+                  mediaNonce: undefined,
+                };
+              }
+              return msg;
+            }),
+          }));
+          return { ...old, pages: newPages };
+        }
+      );
+      return { previousMessages };
+    },
+    onError: (err, variables, context) => {
+      toast.error('Lỗi khi thu hồi tin nhắn');
+      console.error(err);
+    },
+  });
+
+  const recallMessage = useCallback(
+    async (messageId: string) => {
+      recallMessageMutation.mutate(messageId);
+    },
+    [recallMessageMutation]
+  );
   return {
     messages,
     sendMessage,
@@ -210,5 +269,6 @@ export const useChatMessages = (
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    recallMessage,
   };
 };

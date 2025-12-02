@@ -71,8 +71,11 @@ export const chatService = {
     const formData = new FormData();
     formData.append('receiverId', data.receiverId);
     formData.append('type', data.type);
-    formData.append('content', data.content);
-    formData.append('nonce', data.nonce);
+    if (data.content) {
+      formData.append('content', data.content);
+      if (!data.nonce) throw new Error('nonce is required');
+      formData.append('nonce', data.nonce);
+    }
 
     if (data.file) {
       formData.append('file', data.file);
@@ -98,5 +101,9 @@ export const chatService = {
       `${CHAT_PREFIX}/conversations/${conversationId}/read`,
       {}
     );
+  },
+
+  async recallMessage(messageId: string): Promise<void> {
+    return ApiClient.post(`${CHAT_PREFIX}/messages/${messageId}/recall`, {});
   },
 };
