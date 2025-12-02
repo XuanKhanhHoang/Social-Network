@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString, IsOptional } from 'class-validator';
 import { MessageType } from 'src/schemas/message.schema';
 
 export class SendMessageDto {
@@ -17,4 +17,8 @@ export class SendMessageDto {
   @IsString()
   @IsNotEmpty()
   nonce: string; // Base64
+
+  @IsString()
+  @IsOptional()
+  mediaNonce?: string;
 }

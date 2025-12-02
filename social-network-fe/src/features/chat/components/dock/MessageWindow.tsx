@@ -7,6 +7,7 @@ import { useChatContext } from '../../context/ChatContext';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { ChatInputArea } from './ChatInputArea';
 import { useChatMessages } from '../../hooks/useChatMessages';
+import { DecryptedImage } from './DecryptedImage';
 import { generateHTML } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Emoji } from '@/lib/editor/emoji-node';
@@ -123,6 +124,7 @@ export const MessageWindow = ({
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
+  const lastReadMessageIdRef = useRef<string | null>(null); // Ref để tránh gọi API trùng lặp
 
   const { data: conversationId, isLoading: isResolvingId } =
     useConversationId(sessionId);
@@ -144,6 +146,9 @@ export const MessageWindow = ({
     );
   }, [messages]);
 
+  const latestMessage = sortedMessages[0];
+  const latestMessageId = latestMessage?.id;
+
   useEffect(() => {
     if (inViewTop && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
@@ -151,13 +156,26 @@ export const MessageWindow = ({
   }, [inViewTop, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   useEffect(() => {
-    if (sortedMessages.length > 0 && conversationId) {
-      const lastMsg = sortedMessages[sortedMessages.length - 1];
-      if (lastMsg.sender.id !== currentUser?.id) {
+    if (latestMessage && conversationId) {
+      if (
+        latestMessage.sender.id !== currentUser?.id &&
+        latestMessage.id !== lastReadMessageIdRef.current
+      ) {
         chatService.markAsRead(conversationId);
+        lastReadMessageIdRef.current = latestMessage.id;
       }
     }
-  }, [sortedMessages, conversationId, currentUser?.id]);
+  }, [latestMessage, conversationId, currentUser?.id]);
+
+  useEffect(() => {
+    if (latestMessageId) {
+      const timeout = setTimeout(
+        () => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }),
+        50
+      );
+      return () => clearTimeout(timeout);
+    }
+  }, [latestMessageId]);
 
   const handleRecallMessage = async (messageId: string) => {
     console.log('Recall message:', messageId);
@@ -335,10 +353,12 @@ export const MessageWindow = ({
                         isMsgFromMe ? 'items-end' : 'items-start'
                       }`}
                     >
-                      {msg.media && (
+                      {msg.mediaUrl && (
                         <div className="mb-1">
-                          <img
-                            src={msg.media.url}
+                          <DecryptedImage
+                            url={msg.mediaUrl}
+                            nonce={msg.mediaNonce || msg.nonce}
+                            sharedKey={sharedKey || new Uint8Array()}
                             alt="Media"
                             className={`rounded-xl max-h-[200px] w-auto object-cover border border-gray-100 ${
                               msg.status === 'sending' ? 'opacity-70' : ''
@@ -402,8 +422,8 @@ export const MessageWindow = ({
       </div>
 
       <ChatInputArea
-        onSend={(content) => {
-          sendMessage(content);
+        onSend={(content, media) => {
+          sendMessage(content, media);
           setTimeout(
             () => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }),
             50

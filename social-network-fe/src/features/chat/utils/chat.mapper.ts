@@ -48,8 +48,9 @@ export const mapMessageDtoToDomain = (dto: MessageResponseDto): Message => {
     type: dto.type,
     content: dto.content,
     nonce: dto.nonce,
+    mediaNonce: dto.mediaNonce,
     encryptedContent: dto.encryptedContent,
-    media: dto.media,
+    mediaUrl: dto.mediaUrl,
     status: 'sent',
     createdAt: dto.createdAt,
   };

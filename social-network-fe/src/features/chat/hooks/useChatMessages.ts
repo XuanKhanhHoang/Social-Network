@@ -56,7 +56,7 @@ export const useChatMessages = (
           content: null,
           encryptedContent: domainMsg.content,
           status: dto.status || 'sent',
-          media: domainMsg.media,
+          mediaUrl: domainMsg.mediaUrl,
         };
       })
     ) || [];
@@ -86,19 +86,12 @@ export const useChatMessages = (
             avatar: user.avatar,
           },
           nonce: variables.nonce,
+          mediaNonce: variables.mediaNonce,
           type: variables.type,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           readBy: [],
-          media: variables.file
-            ? {
-                url: variables.previewUrl || '',
-                mediaType: 'image',
-                width: 0,
-                height: 0,
-                mediaId: '',
-              }
-            : null,
+          mediaUrl: variables.previewUrl,
           status: 'sending',
         } as unknown as MessageResponseDto;
 
@@ -141,8 +134,8 @@ export const useChatMessages = (
               if (msg._id === variables.tempId) {
                 const finalMessage = { ...data, status: 'sent' };
                 const previewUrl = variables.previewUrl;
-                if (previewUrl && finalMessage.media) {
-                  finalMessage.media.url = previewUrl;
+                if (previewUrl && finalMessage.mediaUrl) {
+                  finalMessage.mediaUrl = previewUrl;
                 }
                 return finalMessage;
               }
@@ -196,6 +189,7 @@ export const useChatMessages = (
         type: media ? 'image' : 'text',
         content: cipherText,
         nonce: nonce,
+        mediaNonce: encryptedFile?.nonce,
         file: encryptedFile?.blob,
       };
 

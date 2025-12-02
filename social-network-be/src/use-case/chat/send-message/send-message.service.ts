@@ -3,7 +3,7 @@ import { MessageDocument, MessageType } from 'src/schemas/message.schema';
 import { AppGateway } from 'src/gateway/app.gateway';
 import { MediaUploadService } from 'src/domains/media-upload/media-upload.service';
 import { SocketEvents } from 'src/share/constants/socket.constant';
-import { SendMessageDto } from 'src/domains/chat/dto/send-message.dto';
+import { SendMessageDto } from 'src/api/chat/dto/send-message.dto';
 import { ChatRepository } from 'src/domains/chat/chat.repository';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 import { UserMinimalModel } from 'src/domains/user/interfaces';
@@ -33,7 +33,7 @@ export class SendMessageService extends BaseUseCaseService<
 
   async execute(input: SendMessageInput): Promise<SendMessageOutput> {
     const { senderId, dto, file } = input;
-    const { receiverId, type, content, nonce } = dto;
+    const { receiverId, type, content, nonce, mediaNonce } = dto;
 
     if (type === MessageType.IMAGE && !file) {
       throw new BadRequestException('Image message requires a file');
@@ -68,6 +68,7 @@ export class SendMessageService extends BaseUseCaseService<
       content,
       nonce,
       mediaUrl,
+      mediaNonce: mediaNonce,
       readBy: [senderId as any],
     });
 

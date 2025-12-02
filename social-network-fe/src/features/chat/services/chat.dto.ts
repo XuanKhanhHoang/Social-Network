@@ -30,6 +30,7 @@ export interface SendMessageRequestDto {
   type: 'text' | 'image';
   content: string; // Encrypted Base64
   nonce: string; // Base64
+  mediaNonce?: string; // Base64 for media
   file?: Blob; // Encrypted Blob
 }
 
@@ -40,11 +41,9 @@ export interface MessageResponseDto {
   type: 'text' | 'image';
   content: string;
   nonce: string;
+  mediaNonce?: string;
   encryptedContent: string;
-  media?: {
-    url: string;
-    type: 'image' | 'video';
-  };
+  mediaUrl?: string;
   createdAt: string;
   updatedAt: string;
   readBy: string[];

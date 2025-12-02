@@ -41,11 +41,9 @@ export interface Message {
   type: 'text' | 'image';
   content: string; // Encrypted
   nonce: string;
+  mediaNonce?: string;
   encryptedContent: string;
-  media?: {
-    url: string;
-    type: 'image' | 'video';
-  };
+  mediaUrl?: string;
   status: 'sending' | 'sent' | 'error';
   createdAt: string;
 }
@@ -71,9 +69,4 @@ export interface ChatMessage
   content: JSONContent | null; // Decrypted content (for optimistic UI)
   encryptedContent?: string; // Encrypted content (from server)
   status: 'sending' | 'sent' | 'error';
-  media?: {
-    url: string;
-    type: 'image' | 'video';
-    encryptedBlob?: Blob;
-  };
 }

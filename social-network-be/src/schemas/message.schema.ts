@@ -38,6 +38,9 @@ export class MessageDocument extends Document {
   @Prop({ type: String, default: null })
   mediaUrl: string; // Cloudinary Raw URL
 
+  @Prop({ type: String, default: null })
+  mediaNonce: string; // Base64 for media encryption
+
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     default: [],

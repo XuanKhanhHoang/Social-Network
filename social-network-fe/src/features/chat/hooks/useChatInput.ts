@@ -14,7 +14,7 @@ export const useChatInput = ({
   onSend,
 }: {
   placeholder?: string;
-  onSend?: (
+  onSend: (
     content: JSONContent | null,
     media?: { file: File; previewUrl: string }
   ) => void;
@@ -68,7 +68,7 @@ export const useChatInput = ({
 
     const content = isEmpty ? null : editor.getJSON();
 
-    onSend?.(content, media || undefined);
+    onSend(content, media || undefined);
 
     editor.commands.clearContent();
     if (media) setMedia(null);

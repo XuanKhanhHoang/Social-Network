@@ -7,12 +7,11 @@ import {
   UseInterceptors,
   Param,
   Query,
-  BadRequestException,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { SendMessageDto } from 'src/domains/chat/dto/send-message.dto';
+import { SendMessageDto } from 'src/api/chat/dto/send-message.dto';
 import { SendMessageService } from 'src/use-case/chat/send-message/send-message.service';
 import { GetConversationsService } from 'src/use-case/chat/get-conversations/get-conversations.service';
 import { GetMessagesService } from 'src/use-case/chat/get-messages/get-messages.service';
@@ -40,14 +39,7 @@ export class ChatController {
   @UseInterceptors(
     FileInterceptor('file', {
       limits: {
-        fileSize: 200 * 1024 * 1024,
-      },
-      fileFilter: (req, file, cb) => {
-        if (file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
-          cb(null, true);
-        } else {
-          cb(new BadRequestException('Only images are allowed'), false);
-        }
+        fileSize: 20 * 1024 * 1024,
       },
     }),
   )

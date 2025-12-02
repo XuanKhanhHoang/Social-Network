@@ -76,6 +76,8 @@ export const chatService = {
 
     if (data.file) {
       formData.append('file', data.file);
+      if (!data.mediaNonce) throw new Error('mediaNonce is required');
+      formData.append('mediaNonce', data.mediaNonce);
     }
 
     return ApiClient.post<MessageResponseDto>(
