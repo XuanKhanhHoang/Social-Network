@@ -1,13 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import NextImage from 'next/image';
 import { Button } from '@/components/ui/button';
 import {
   Home,
   Search,
-  Compass,
   MessageCircle,
   Bell,
   Users,
@@ -32,23 +30,21 @@ import {
 import { NotificationSheet } from '@/features/notification/components/NotificationSheet';
 import { ChatSheet } from '@/features/chat/components/ChatSheet';
 import { GlobalBadge } from '@/features/chat/components/GlobalBadge';
+import { usePathname, useRouter } from 'next/navigation';
 
 const NAV_ITEMS = [
   { id: 'home', label: 'Trang chủ', icon: Home, href: '/' },
-  { id: 'search', label: 'Tìm kiếm', icon: Search, href: '#' },
-  { id: 'explore', label: 'Khám phá', icon: Compass, href: '#' },
+  { id: 'search', label: 'Tìm kiếm', icon: Search, href: '/search' },
   {
     id: 'messages',
     label: 'Tin nhắn',
     icon: MessageCircle,
-    href: '#',
     badge: 3,
   },
   {
     id: 'notifications',
     label: 'Thông báo',
     icon: Bell,
-    href: '/notifications',
   },
   { id: 'friends', label: 'Bạn bè', icon: Users, href: '/friends' },
   { id: 'profile', label: 'Trang cá nhân', icon: User, href: '/user/' },
@@ -141,7 +137,8 @@ const SidebarFooter = ({ isExpanded }: { isExpanded: boolean }) => {
 };
 
 const LeftSidebar = () => {
-  const [activeItem, setActiveItem] = useState('home');
+  const pathname = usePathname();
+  const router = useRouter();
   const user = useStore((s) => s.user);
   const userName = `${user?.lastName || ''} ${user?.firstName || ''}`.trim();
   const { openCreate } = useCreatePostContext();
@@ -158,6 +155,12 @@ const LeftSidebar = () => {
   };
 
   const unreadNotifyCount = useStore((s) => s.unreadCount);
+
+  const handleNavigation = (href: string) => {
+    if (pathname === href) {
+      router.refresh();
+    }
+  };
 
   return (
     <aside
@@ -199,16 +202,27 @@ const LeftSidebar = () => {
       <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 scrollbar-hide flex flex-col items-center gap-1">
         <TooltipProvider delayDuration={0}>
           {NAV_ITEMS.map((item) => {
-            const isActive = item.id === activeItem;
+            const targetHref =
+              item.id === 'profile'
+                ? `/user/${user?.username}`
+                : item.href || '#';
+
+            let isActive = false;
+            if (item.id === 'home') {
+              isActive = pathname === '/';
+            } else if (item.href && item.href !== '/' && item.href !== '#') {
+              isActive = pathname.startsWith(item.href);
+            } else if (item.id === 'profile' && user?.username) {
+              isActive = pathname.startsWith(`/user/${user.username}`);
+            }
+
             const Icon = item.icon;
 
             const LinkContent = (
               <Link
                 key={item.id}
-                href={
-                  item.id === 'profile' ? `/user/${user?.username}` : item.href
-                }
-                onClick={() => setActiveItem(item.id)}
+                href={targetHref}
+                onClick={() => handleNavigation(targetHref)}
                 className={cn(
                   'flex items-center transition-all duration-200 relative group flex-shrink-0',
                   'h-11',
@@ -273,7 +287,6 @@ const LeftSidebar = () => {
                         ? 'bg-blue-50 text-gray-900'
                         : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
                     )}
-                    onClick={() => setActiveItem(item.id)}
                   >
                     <Icon
                       className={cn(
@@ -330,7 +343,6 @@ const LeftSidebar = () => {
                         ? 'bg-blue-50 text-gray-900'
                         : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
                     )}
-                    onClick={() => setActiveItem(item.id)}
                   >
                     <div className="relative">
                       <Icon

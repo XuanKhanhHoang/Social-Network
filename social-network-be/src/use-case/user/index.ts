@@ -8,3 +8,4 @@ export * from './get-user-posts/get-user-posts.service';
 export * from './update-profile/update-profile.service';
 export * from './get-suggest-friends/get-suggest-friends.service';
 export * from './get-public-key/get-public-key.service';
+export * from './search-user/search-user.service';

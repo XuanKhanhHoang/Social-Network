@@ -12,6 +12,7 @@ import {
   GetSuggestFriendsService,
   GetMePreviewProfileService,
   GetPublicKeyService,
+  SearchUserService,
 } from 'src/use-case/user';
 import { GetUserPostsQueryDto } from './dto/get-user-post.dto';
 import { GetAccountService } from 'src/use-case/user/get-account/get-account.service';
@@ -35,6 +36,7 @@ export class UserApiController {
     private readonly getSuggestFriendsService: GetSuggestFriendsService,
     private readonly getMeProfileService: GetMePreviewProfileService,
     private readonly getPublicKeyService: GetPublicKeyService,
+    private readonly searchUserService: SearchUserService,
   ) {}
 
   @Get('me')
@@ -155,5 +157,18 @@ export class UserApiController {
   @Get(':userId/public-key')
   async getPublicKey(@Param('userId') userId: string) {
     return this.getPublicKeyService.execute({ userId });
+  }
+
+  @Get('search')
+  async searchUsers(
+    @GetUserId() userId: string,
+    @Query() query: CursorPaginationWithSearchQueryDto,
+  ) {
+    return this.searchUserService.execute({
+      userId,
+      query: query.search,
+      limit: Number(query.limit || 10),
+      cursor: query.cursor,
+    });
   }
 }

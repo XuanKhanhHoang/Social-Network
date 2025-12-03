@@ -18,6 +18,7 @@ import { GetSuggestFriendsService } from './get-suggest-friends/get-suggest-frie
 import { UpdateProfileService } from './update-profile/update-profile.service';
 
 import { GetPublicKeyService } from './get-public-key/get-public-key.service';
+import { SearchUserService } from './search-user/search-user.service';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { GetPublicKeyService } from './get-public-key/get-public-key.service';
     UpdateAccountService,
     GetSuggestFriendsService,
     GetPublicKeyService,
+    SearchUserService,
   ],
   exports: [
     GetMePreviewProfileService,
@@ -57,6 +59,7 @@ import { GetPublicKeyService } from './get-public-key/get-public-key.service';
     UpdateAccountService,
     GetSuggestFriendsService,
     GetPublicKeyService,
+    SearchUserService,
   ],
 })
 export class UserUseCaseModule {}

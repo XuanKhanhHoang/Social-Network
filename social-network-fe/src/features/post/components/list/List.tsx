@@ -8,9 +8,9 @@ import { PostWithTopCommentDto } from '@/features/post/services/post.dto';
 
 interface PostListProps {
   posts: PostWithTopCommentDto[];
-  fetchNextPage: () => void;
-  hasNextPage: boolean;
-  isFetchingNextPage: boolean;
+  fetchNextPage?: () => void;
+  hasNextPage?: boolean;
+  isFetchingNextPage?: boolean;
   isPending: boolean;
 }
 
@@ -24,7 +24,7 @@ function PostList({
   const { ref, inView } = useInView();
 
   useEffect(() => {
-    if (inView && hasNextPage && !isFetchingNextPage) {
+    if (inView && hasNextPage && !isFetchingNextPage && fetchNextPage) {
       fetchNextPage();
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);

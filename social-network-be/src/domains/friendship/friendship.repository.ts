@@ -418,4 +418,18 @@ export class FriendshipRepository extends BaseRepository<FriendshipDocument> {
 
     return this.friendshipModel.aggregate(pipeline).exec();
   }
+
+  async findAllBlockedUserIds(userId: string): Promise<string[]> {
+    const userObjId = new Types.ObjectId(userId);
+    const blockedFriendships = await this.friendshipModel
+      .find({
+        recipient: userObjId,
+        status: FriendshipStatus.BLOCKED,
+      })
+      .select('requester')
+      .lean()
+      .exec();
+
+    return blockedFriendships.map((f) => f.requester.toString());
+  }
 }

@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { FriendshipRepository } from 'src/domains/friendship/friendship.repository';
 import { SearchPostCursorData } from 'src/domains/post/interfaces';
 import { PostRepository } from 'src/domains/post/post.repository';
+import { BeCursorPaginated } from 'src/share/dto/res/be-paginated.dto';
+import { PostDocument } from 'src/schemas/post.schema';
 
 @Injectable()
 export class SearchPostService {
@@ -20,7 +22,7 @@ export class SearchPostService {
     query: string;
     limit: number;
     cursor?: string;
-  }) {
+  }): Promise<BeCursorPaginated<PostDocument>> {
     const friendIds = await this.friendshipRepository.findAllFriendIds(userId);
 
     let parsedCursor: SearchPostCursorData | undefined;
@@ -32,23 +34,21 @@ export class SearchPostService {
           lastCreatedAt: new Date(lastCreatedAt),
           lastIsFriend: lastIsFriend === 'true',
         };
-      } catch (e) {
-        // Invalid cursor, ignore or throw
-      }
+      } catch (e) {}
     }
 
     const posts = await this.postRepository.searchPosts({
       query,
       userId,
       friendIds,
-      limit: limit + 1, // Fetch one more to check if there is next page
+      limit: limit + 1,
       cursor: parsedCursor,
     });
 
     let nextCursor: string | null = null;
     if (posts.length > limit) {
       const nextItem = posts[limit - 1];
-      posts.pop(); // Remove the extra item
+      posts.pop();
       const cursorData = `${nextItem.createdAt.toISOString()}|${
         nextItem.isFriend
       }`;
@@ -57,7 +57,10 @@ export class SearchPostService {
 
     return {
       data: posts,
-      nextCursor,
+      pagination: {
+        nextCursor,
+        hasMore: nextCursor !== null,
+      },
     };
   }
 }

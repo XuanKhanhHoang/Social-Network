@@ -14,6 +14,7 @@ import { UpdatePostService } from 'src/use-case/post/update-post/update-post.ser
 import { GetPostFullService } from 'src/use-case/post/get-post-full/get-post-full.service';
 import { SearchPostService } from 'src/use-case/post/search-post/search-post.service';
 import { CreatePostDto, UpdatePostDto } from './dto';
+import { CursorPaginationWithSearchQueryDto } from 'src/share/dto/req/cursor-pagination-with-search-query.dto';
 
 @Controller('posts')
 export class PostController {
@@ -27,15 +28,13 @@ export class PostController {
   @Get('search')
   async searchPosts(
     @GetUserId() userId: string,
-    @Query('q') query: string,
-    @Query('limit') limit: number = 10,
-    @Query('cursor') cursor?: string,
+    @Query() query: CursorPaginationWithSearchQueryDto,
   ) {
     return this.searchPostService.execute({
       userId,
-      query: query || '',
-      limit: Number(limit),
-      cursor,
+      query: query.search,
+      limit: Number(query.limit || 10),
+      cursor: query.cursor,
     });
   }
 
