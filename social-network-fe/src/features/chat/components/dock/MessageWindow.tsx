@@ -16,7 +16,6 @@ import { decryptText } from '@/features/crypto/utils/cryptions';
 import { ChatMessage } from '../../types/chat';
 import { useConversationId } from '../../hooks/useConversationId';
 import { useInView } from 'react-intersection-observer';
-import { chatService } from '../../services/chat.service';
 import { useStore } from '@/store';
 import {
   DropdownMenu,
@@ -156,6 +155,7 @@ export const MessageWindow = ({
     hasNextPage,
     isFetchingNextPage,
     recallMessage,
+    markAsRead,
   } = useChatMessages(conversationId || '', sessionId);
 
   const sortedMessages = useMemo(() => {
@@ -181,11 +181,11 @@ export const MessageWindow = ({
         latestMessage.sender.id !== currentUser?.id &&
         !latestMessage.readBy.includes(currentUser?.id)
       ) {
-        chatService.markAsRead(conversationId);
+        markAsRead(conversationId);
         lastReadMessageIdRef.current = latestMessage.id;
       }
     }
-  }, [latestMessage, conversationId, currentUser?.id]);
+  }, [latestMessage, conversationId, currentUser?.id, markAsRead]);
 
   useEffect(() => {
     if (latestMessageId) {

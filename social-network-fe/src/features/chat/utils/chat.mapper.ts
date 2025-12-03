@@ -3,13 +3,56 @@ import {
   SuggestedMessagingUsersResponseDto,
   MessageResponseDto,
   ConversationResponseDto,
+  ConversationItemInSearchConversationResponseDto,
 } from '../services/chat.dto';
 import {
   SuggestedMessagingUser,
   SuggestedMessagingUsersResponse,
   Message,
   Conversation,
+  SearchConversation,
 } from '../types/chat';
+
+export const mapSearchConversationDtoToDomain = (
+  dto: ConversationItemInSearchConversationResponseDto
+): SearchConversation => {
+  return {
+    id: dto._id,
+    participants: dto.participants.map((p) => ({
+      id: p._id,
+      firstName: p.firstName,
+      lastName: p.lastName,
+      username: p.username,
+      avatar: p.avatar,
+      publicKey: p.publicKey,
+    })),
+    lastMessage:
+      dto.lastMessage && dto.lastMessage._id && dto.lastMessage.sender
+        ? {
+            id: dto.lastMessage._id,
+            conversationId: dto._id,
+            sender: {
+              id: dto.lastMessage.sender._id,
+              firstName: dto.lastMessage.sender.firstName,
+              lastName: dto.lastMessage.sender.lastName,
+              username: dto.lastMessage.sender.username,
+              avatar: dto.lastMessage.sender.avatar,
+            },
+            type: dto.lastMessage.type,
+            encryptedContent: dto.lastMessage.content,
+            nonce: dto.lastMessage.nonce,
+            mediaNonce: dto.lastMessage.mediaNonce,
+            mediaUrl: dto.lastMessage.mediaUrl,
+            readBy: dto.lastMessage.readBy,
+            createdAt: dto.lastMessage.createdAt,
+            isRecovered: dto.lastMessage.isRecovered || false,
+          }
+        : undefined,
+    lastInteractiveAt: dto.lastInteractiveAt,
+    hasRead: dto.hasRead,
+    updatedAt: dto.updatedAt,
+  };
+};
 
 export const mapSuggestedUserDtoToDomain = (
   dto: SuggestedMessagingUserResponseDto

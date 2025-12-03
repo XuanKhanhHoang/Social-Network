@@ -16,7 +16,7 @@ export const mapNotificationDtoToDomain = (
     type: dto.type,
     isRead: dto.isRead,
     createdAt: dto.createdAt,
-    relatedId: dto.relatedId,
+    relatedId: dto.relatedId._id,
     relatedModel: dto.relatedModel,
     metadata: dto.metadata,
   };

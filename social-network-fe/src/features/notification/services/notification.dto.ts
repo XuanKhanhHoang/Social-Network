@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { CursorPaginationResponse } from '@/lib/dtos/common/pagination';
 import { NotificationType } from '../const';
 
@@ -13,9 +14,8 @@ export type NotificationDto = {
   type: NotificationType;
   isRead: boolean;
   createdAt: string;
-  relatedId?: string;
+  relatedId?: any;
   relatedModel?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata: any;
 };
 

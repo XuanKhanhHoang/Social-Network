@@ -67,3 +67,50 @@ export interface ConversationResponseDto {
 export type MessagesResponseDto = CursorPaginatedResponse<MessageResponseDto>;
 export type ConversationsResponseDto =
   CursorPaginatedResponse<ConversationResponseDto>;
+
+export interface ConversationItemInSearchConversationResponseDto {
+  _id: string;
+  participants: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    username: string;
+    avatar: {
+      url: string;
+      width?: number;
+      height?: number;
+      mediaId?: string;
+    };
+    publicKey: string;
+  }[];
+  lastMessage?: {
+    _id: string;
+    sender: {
+      _id: string;
+      firstName: string;
+      lastName: string;
+      username: string;
+      avatar: {
+        url: string;
+        width?: number;
+        height?: number;
+        mediaId?: string;
+      };
+    };
+    isRecovered?: boolean;
+    type: 'text' | 'image';
+    content?: string;
+    nonce?: string;
+    mediaUrl?: string;
+    mediaNonce?: string;
+    readBy: string[];
+    createdAt: string;
+  };
+  lastInteractiveAt: string;
+  hasRead: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type SearchConversationsResponseDto =
+  CursorPaginatedResponse<ConversationItemInSearchConversationResponseDto>;

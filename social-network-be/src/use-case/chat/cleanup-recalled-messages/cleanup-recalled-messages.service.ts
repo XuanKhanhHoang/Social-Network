@@ -35,12 +35,19 @@ export class CleanupRecalledMessagesService {
 
     for (const message of messagesToClean) {
       try {
+        const mediaUrl = message.mediaUrl;
+        if (!mediaUrl) {
+          continue;
+        }
         message.mediaUrl = null;
         message.mediaNonce = null;
         await message.save();
 
-        const match = message.mediaUrl.match(/\/upload\/(?:v\d+\/)?(.*)$/);
+        const match = mediaUrl.match(/\/upload\/(?:v\d+\/)?(.*)$/);
         const publicId = match ? match[1] : null;
+        if (!publicId) {
+          continue;
+        }
         this.mediaUploadService.deleteFromCloud(publicId);
 
         this.logger.log(

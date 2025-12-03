@@ -13,6 +13,8 @@ import { FriendshipModule } from 'src/domains/friendship/friendship.module';
 import { MarkMessageAsReadService } from './mark-message-as-read/mark-message-as-read.service';
 import { CleanupRecalledMessagesService } from './cleanup-recalled-messages/cleanup-recalled-messages.service';
 import { RecallMessageService } from './recall-message/recall-message.service';
+import { CheckUnreadMessagesService } from './check-unread-messages/check-unread-messages.service';
+import { SearchConversationsService } from './search-conversations/search-conversations.service';
 
 @Module({
   imports: [
@@ -32,6 +34,8 @@ import { RecallMessageService } from './recall-message/recall-message.service';
     MarkMessageAsReadService,
     CleanupRecalledMessagesService,
     RecallMessageService,
+    CheckUnreadMessagesService,
+    SearchConversationsService,
   ],
   exports: [
     SendMessageService,
@@ -42,6 +46,8 @@ import { RecallMessageService } from './recall-message/recall-message.service';
     GetConversationByUserService,
     MarkMessageAsReadService,
     RecallMessageService,
+    CheckUnreadMessagesService,
+    SearchConversationsService,
   ],
 })
 export class ChatUseCaseModule {}

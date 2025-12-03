@@ -25,6 +25,8 @@ import { GetConversationByUserService } from 'src/use-case/chat/get-conversation
 import { MarkMessageAsReadService } from 'src/use-case/chat/mark-message-as-read/mark-message-as-read.service';
 import { RecallMessageService } from 'src/use-case/chat/recall-message/recall-message.service';
 import { MessageType } from 'src/schemas/message.schema';
+import { CheckUnreadMessagesService } from 'src/use-case/chat/check-unread-messages/check-unread-messages.service';
+import { SearchConversationsService } from 'src/use-case/chat/search-conversations/search-conversations.service';
 
 @Controller('chat')
 export class ChatController {
@@ -37,6 +39,8 @@ export class ChatController {
     private readonly getConversationByUserService: GetConversationByUserService,
     private readonly markMessageAsReadService: MarkMessageAsReadService,
     private readonly recallMessageService: RecallMessageService,
+    private readonly checkUnreadMessagesService: CheckUnreadMessagesService,
+    private readonly searchConversationsService: SearchConversationsService,
   ) {}
 
   @Post('message')
@@ -73,6 +77,24 @@ export class ChatController {
     return this.getConversationsService.execute({
       userId,
       ...query,
+    });
+  }
+
+  @Get('conversations/search')
+  async searchConversations(
+    @GetUserId() userId: string,
+    @Query() query: CursorPaginationWithSearchQueryDto,
+  ) {
+    return this.searchConversationsService.execute({
+      userId,
+      ...query,
+    });
+  }
+
+  @Get('unread-status')
+  async checkUnreadStatus(@GetUserId() userId: string) {
+    return this.checkUnreadMessagesService.execute({
+      userId,
     });
   }
 

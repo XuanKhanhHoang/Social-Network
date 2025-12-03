@@ -16,6 +16,7 @@ import { ChatMessage } from '../types/chat';
 import {
   MessageResponseDto,
   MessagesResponseDto,
+  SearchConversationsResponseDto,
   SendMessageRequestDto,
 } from '../services/chat.dto';
 import { useStore } from '@/store';
@@ -153,9 +154,13 @@ export const useChatMessages = (
           data.conversationId
         );
       }
+
+      queryClient.invalidateQueries({
+        queryKey: chatKeys.conversations(),
+      });
     },
 
-    onError: (err, variables, context) => {
+    onError: (_err, _variables, context) => {
       toast.error('Gửi tin nhắn thất bại');
       if (context?.previousMessages) {
         queryClient.setQueryData(
@@ -252,6 +257,12 @@ export const useChatMessages = (
     onError: (err, variables, context) => {
       toast.error('Lỗi khi thu hồi tin nhắn');
       console.error(err);
+      if (context?.previousMessages) {
+        queryClient.setQueryData(
+          chatKeys.messages(conversationId),
+          context.previousMessages
+        );
+      }
     },
   });
 
@@ -260,6 +271,100 @@ export const useChatMessages = (
       recallMessageMutation.mutate(messageId);
     },
     [recallMessageMutation]
+  );
+  const markAsReadMutation = useMutation({
+    mutationFn: (conversationId: string) =>
+      chatService.markAsRead(conversationId),
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({
+        queryKey: chatKeys.conversations(),
+      });
+      await queryClient.cancelQueries({
+        queryKey: chatKeys.messages(conversationId),
+      });
+
+      const previousConversations = queryClient.getQueryData(
+        chatKeys.conversations()
+      );
+      const previousMessages = queryClient.getQueryData(
+        chatKeys.messages(conversationId)
+      );
+
+      queryClient.setQueriesData<InfiniteData<SearchConversationsResponseDto>>(
+        {
+          queryKey: chatKeys.conversations(''),
+        },
+        (old) => {
+          if (!old) return old;
+          const newPages = old.pages.map((page) => ({
+            ...page,
+            data: page.data.map((conv) => {
+              if (conv._id === variables) {
+                return {
+                  ...conv,
+                  hasRead: true,
+                };
+              }
+              return conv;
+            }),
+          }));
+          return { ...old, pages: newPages };
+        }
+      );
+
+      if (user) {
+        queryClient.setQueryData<InfiniteData<MessagesResponseDto>>(
+          chatKeys.messages(conversationId),
+          (old) => {
+            if (!old) return old;
+            const newPages = old.pages.map((page) => ({
+              ...page,
+              data: page.data.map((msg) => {
+                if (!msg.readBy.includes(user.id)) {
+                  return {
+                    ...msg,
+                    readBy: [...msg.readBy, user.id],
+                  };
+                }
+                return msg;
+              }),
+            }));
+            return { ...old, pages: newPages };
+          }
+        );
+      }
+
+      return { previousConversations, previousMessages };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: chatKeys.unreadStatus(),
+      });
+    },
+    onError: (err, variables, context) => {
+      toast.error('Lỗi khi đánh dấu tin nhắn đã đọc');
+      console.error(err);
+      if (context?.previousConversations) {
+        queryClient.setQueryData(
+          chatKeys.conversations(),
+          context.previousConversations
+        );
+      }
+      if (context?.previousMessages) {
+        queryClient.setQueryData(
+          chatKeys.messages(conversationId),
+          context.previousMessages
+        );
+      }
+    },
+  });
+
+  const markAsRead = useCallback(
+    async (conversationId: string) => {
+      markAsReadMutation.mutate(conversationId);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
   );
   return {
     messages,
@@ -270,5 +375,6 @@ export const useChatMessages = (
     hasNextPage,
     isFetchingNextPage,
     recallMessage,
+    markAsRead,
   };
 };

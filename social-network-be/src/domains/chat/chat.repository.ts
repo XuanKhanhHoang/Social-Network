@@ -7,6 +7,7 @@ import {
 } from 'src/share/base-class/base-repository.service';
 import { ConversationDocument } from 'src/schemas/conversation.schema';
 import { MessageDocument } from 'src/schemas/message.schema';
+import { SearchConversationsWithPaginationResults } from './interfaces/search-conversations-result.interface';
 
 @Injectable()
 export class ChatRepository extends BaseRepository<ConversationDocument> {
@@ -194,5 +195,183 @@ export class ChatRepository extends BaseRepository<ConversationDocument> {
         $addToSet: { readBy: userId },
       },
     );
+  }
+
+  async searchConversationsWithPagination(
+    userId: string,
+    keyword?: string,
+    cursor?: string,
+    limit: number = 20,
+  ): Promise<{
+    data: SearchConversationsWithPaginationResults[];
+    pagination: { nextCursor: string | null; hasMore: boolean };
+  }> {
+    const userObjectId = new Types.ObjectId(userId);
+
+    const pipeline: any[] = [
+      { $match: { participants: userObjectId } },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'participants',
+          foreignField: '_id',
+          as: 'participants',
+          pipeline: [
+            {
+              $project: {
+                firstName: 1,
+                lastName: 1,
+                username: 1,
+                avatar: 1,
+                publicKey: 1,
+              },
+            },
+          ],
+        },
+      },
+    ];
+
+    if (keyword) {
+      const searchRegex = new RegExp(keyword, 'i');
+
+      pipeline.push({
+        $match: {
+          participants: {
+            $elemMatch: {
+              _id: { $ne: userObjectId },
+              $or: [
+                { firstName: { $regex: searchRegex } },
+                { lastName: { $regex: searchRegex } },
+                { username: { $regex: searchRegex } },
+              ],
+            },
+          },
+        },
+      });
+    }
+    pipeline.push(
+      ...[
+        { $sort: { lastInteractiveAt: -1 } },
+        ...(cursor
+          ? [{ $match: { lastInteractiveAt: { $lt: new Date(cursor) } } }]
+          : []),
+
+        { $limit: limit + 1 },
+
+        {
+          $lookup: {
+            from: 'messages',
+            localField: 'lastMessage',
+            foreignField: '_id',
+            as: 'lastMessage',
+          },
+        },
+        {
+          $unwind: {
+            path: '$lastMessage',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'lastMessage.sender',
+            foreignField: '_id',
+            as: 'lastMessage.sender',
+            pipeline: [
+              {
+                $project: {
+                  firstName: 1,
+                  lastName: 1,
+                  username: 1,
+                  avatar: 1,
+                },
+              },
+            ],
+          },
+        },
+        {
+          $unwind: {
+            path: '$lastMessage.sender',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+
+        {
+          $addFields: {
+            hasRead: {
+              $cond: {
+                if: {
+                  $or: [
+                    { $not: ['$lastMessage'] },
+                    { $not: ['$lastMessage._id'] },
+                  ],
+                },
+                then: true,
+                else: {
+                  $or: [
+                    { $eq: ['$lastMessage.sender._id', userObjectId] },
+                    {
+                      $in: [
+                        userObjectId,
+                        { $ifNull: ['$lastMessage.readBy', []] },
+                      ],
+                    },
+                  ],
+                },
+              },
+            },
+            lastMessage: {
+              $cond: {
+                if: {
+                  $or: [
+                    { $not: ['$lastMessage'] },
+                    { $not: ['$lastMessage._id'] },
+                  ],
+                },
+                then: null,
+                else: '$lastMessage',
+              },
+            },
+          },
+        },
+      ],
+    );
+
+    const conversations = await this.conversationModel
+      .aggregate(pipeline)
+      .exec();
+
+    const hasMore = conversations.length > limit;
+    const data = hasMore ? conversations.slice(0, limit) : conversations;
+    const nextCursor =
+      hasMore && data.length > 0
+        ? data[data.length - 1].lastInteractiveAt.toISOString()
+        : null;
+
+    return {
+      data,
+      pagination: {
+        nextCursor,
+        hasMore,
+      },
+    };
+  }
+
+  async checkUnreadMessages(userId: string): Promise<boolean> {
+    const conversations = (await this.searchConversations(userId))
+      .map((c) => c.lastMessage || null)
+      .filter((c) => !!c);
+    const unreadMessage = await this.messageModel
+      .findOne({
+        _id: { $in: conversations },
+        readBy: { $ne: userId },
+        sender: { $ne: userId },
+      })
+      .select('_id')
+      .lean();
+
+    return !!unreadMessage;
   }
 }

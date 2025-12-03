@@ -4,6 +4,7 @@ import {
   ConversationsResponseDto,
   MessageResponseDto,
   MessagesResponseDto,
+  SearchConversationsResponseDto,
   SendMessageRequestDto,
   SuggestedMessagingUsersResponseDto,
 } from './chat.dto';
@@ -51,6 +52,21 @@ export const chatService = {
 
     return ApiClient.get<ConversationsResponseDto>(
       `${CHAT_PREFIX}/conversations?${query.toString()}`
+    );
+  },
+
+  async searchConversations(params: {
+    limit?: number;
+    cursor?: string;
+    search?: string;
+  }): Promise<SearchConversationsResponseDto> {
+    const query = new URLSearchParams();
+    if (params.limit) query.append('limit', params.limit.toString());
+    if (params.cursor) query.append('cursor', params.cursor);
+    if (params.search) query.append('search', params.search);
+
+    return ApiClient.get<SearchConversationsResponseDto>(
+      `${CHAT_PREFIX}/conversations/search?${query.toString()}`
     );
   },
 
@@ -105,5 +121,11 @@ export const chatService = {
 
   async recallMessage(messageId: string): Promise<void> {
     return ApiClient.post(`${CHAT_PREFIX}/messages/${messageId}/recall`, {});
+  },
+
+  async checkUnreadStatus(): Promise<{ hasUnread: boolean }> {
+    return ApiClient.get<{ hasUnread: boolean }>(
+      `${CHAT_PREFIX}/unread-status`
+    );
   },
 };

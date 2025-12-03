@@ -49,3 +49,47 @@ export interface ChatMessage
   decryptedContent?: JSONContent | null;
   status: 'sending' | 'sent' | 'error';
 }
+
+export interface SearchConversation {
+  id: string;
+  participants: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    username: string;
+    avatar: {
+      url: string;
+      width?: number;
+      height?: number;
+      mediaId?: string;
+    };
+    publicKey: string;
+  }[];
+  lastMessage?: {
+    id: string;
+    conversationId: string;
+    sender: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      username: string;
+      avatar: {
+        url: string;
+        width?: number;
+        height?: number;
+        mediaId?: string;
+      };
+    };
+    isRecovered: boolean;
+    type: 'text' | 'image';
+    encryptedContent?: string;
+    nonce?: string;
+    mediaNonce?: string;
+    mediaUrl?: string;
+    readBy: string[];
+    createdAt: string;
+  };
+  lastInteractiveAt: string;
+  hasRead: boolean;
+  updatedAt: string;
+}

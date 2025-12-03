@@ -13,6 +13,9 @@ import { useQueryClient, InfiniteData } from '@tanstack/react-query';
 import {
   MessageResponseDto,
   MessagesResponseDto,
+  ConversationsResponseDto,
+  SearchConversationsResponseDto,
+  ConversationItemInSearchConversationResponseDto,
 } from '@/features/chat/services/chat.dto';
 import { useChatContext } from '@/features/chat/context/ChatContext';
 import { useNotificationSound } from '@/features/notification/hooks/usePlayNotificationSounds';
@@ -138,9 +141,77 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
               }
             );
 
+            queryClient.setQueryData<
+              InfiniteData<SearchConversationsResponseDto>
+            >(chatKeys.conversations(), (oldData) => {
+              if (!oldData) return undefined;
+
+              let updatedConversation: ConversationItemInSearchConversationResponseDto | null =
+                null;
+
+              const newPages = oldData.pages.map((page) => {
+                const existingItem = page.data.find(
+                  (c) => c._id === conversationId
+                );
+
+                if (existingItem) {
+                  updatedConversation = {
+                    ...existingItem,
+                    lastMessage: {
+                      _id: data._id,
+                      sender: {
+                        _id: data.sender._id,
+                        firstName: data.sender.firstName,
+                        lastName: data.sender.lastName,
+                        username: data.sender.username,
+                        avatar: {
+                          url: data?.sender?.avatar?.url || '',
+                          height: data?.sender?.avatar?.height,
+                          width: data?.sender?.avatar?.width,
+                          mediaId: data?.sender?.avatar?.mediaId,
+                        },
+                      },
+                      type: data.type,
+                      content: data.content,
+                      nonce: data.nonce,
+                      mediaUrl: data.mediaUrl,
+                      mediaNonce: data.mediaNonce,
+                      readBy: data.readBy,
+                      createdAt: data.createdAt,
+                    },
+                    hasRead: data.sender._id == user.id,
+                    updatedAt: new Date().toISOString(),
+                  };
+
+                  return {
+                    ...page,
+                    data: page.data.filter((c) => c._id !== conversationId),
+                  };
+                }
+
+                return page;
+              });
+
+              if (updatedConversation && newPages.length > 0) {
+                newPages[0].data.unshift(updatedConversation);
+              }
+
+              return {
+                ...oldData,
+                pages: newPages,
+              };
+            });
+
             queryClient.invalidateQueries({
               queryKey: chatKeys.conversationId(data.sender._id),
             });
+
+            if (data.sender._id !== user.id) {
+              queryClient.setQueryData<{ hasUnread: boolean }>(
+                chatKeys.unreadStatus(),
+                () => ({ hasUnread: true })
+              );
+            }
 
             if (data.sender._id === user.id) return;
 
@@ -220,6 +291,41 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
                 return { ...oldData, pages: newPages };
               }
             );
+
+            // Update Conversation List Manually
+            queryClient.setQueryData<InfiniteData<ConversationsResponseDto>>(
+              chatKeys.conversations(),
+              (oldData) => {
+                if (!oldData) return undefined;
+                const newPages = oldData.pages.map((page) => ({
+                  ...page,
+                  data: page.data.map((conv) => {
+                    if (conv._id === payload.conversationId) {
+                      // Update lastMessage readBy if it exists
+                      if (conv.lastMessage) {
+                        const readBy = conv.lastMessage.readBy || [];
+                        if (!readBy.includes(payload.readerId)) {
+                          return {
+                            ...conv,
+                            lastMessage: {
+                              ...conv.lastMessage,
+                              readBy: [...readBy, payload.readerId],
+                            },
+                          };
+                        }
+                      }
+                    }
+                    return conv;
+                  }),
+                }));
+                return { ...oldData, pages: newPages };
+              }
+            );
+
+            // Invalidate Unread Status to re-check
+            queryClient.invalidateQueries({
+              queryKey: chatKeys.unreadStatus(),
+            });
           }
         );
 
@@ -244,6 +350,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
     handleSocketNotification,
     queryClient,
     openSession,
+    playSound,
   ]);
 
   return <>{children}</>;
