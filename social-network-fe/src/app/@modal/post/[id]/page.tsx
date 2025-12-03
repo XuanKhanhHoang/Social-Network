@@ -1,7 +1,7 @@
 'use client';
 import PostDetail from '@/features/post/components/detail/Main';
 import { usePost } from '@/features/post/hooks/usePost';
-import { transformToPostWithMyReaction } from '@/features/post/types/post';
+import { transformToPostWithMyReaction } from '@/features/post/utils/mapper';
 import { useParams, useSearchParams } from 'next/navigation';
 
 export default function PostDetailPage() {

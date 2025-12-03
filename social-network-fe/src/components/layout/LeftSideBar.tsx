@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '@/store';
 import { useLogout } from '@/features/auth/hooks/useAuth';
-import { useCreatePostContext } from '@/features/post/components/feed/FeedContext';
+import { usePostModalContext } from '@/features/post/contexts/PostModalContext';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { useAppSidebarContext } from '@/components/provider/AppSidebarProvider';
 import { cn } from '@/lib/utils';
@@ -141,7 +141,7 @@ const LeftSidebar = () => {
   const router = useRouter();
   const user = useStore((s) => s.user);
   const userName = `${user?.lastName || ''} ${user?.firstName || ''}`.trim();
-  const { openCreate } = useCreatePostContext();
+  const { openCreate } = usePostModalContext();
   const { isExpanded, expandSidebar, collapseSidebar } = useAppSidebarContext();
 
   const userHandle = user?.username ? `@${user.username}` : '';

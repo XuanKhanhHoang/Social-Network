@@ -42,6 +42,7 @@ const usePostEditor = ({
   const [showTextColorPicker, setShowTextColorPicker] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPendingDebounce, setIsPendingDebounce] = useState(false);
+  const [isEditorEmpty, setIsEditorEmpty] = useState(true);
 
   const create = useCreatePost();
 
@@ -57,7 +58,7 @@ const usePostEditor = ({
     initialMedia:
       post?.media?.map((item) => ({
         ...item,
-        isConfirmed: true,
+        id: item.mediaId,
       })) || [],
     initialCaptions:
       post?.media?.reduce<Record<number, string>>((acc, item, idx) => {
@@ -82,6 +83,19 @@ const usePostEditor = ({
     };
   }, [debouncedUpdate]);
 
+  // Parse initial content properly
+  const initialContent = useMemo(() => {
+    if (!post?.content) return '';
+    if (typeof post.content === 'string') {
+      try {
+        return JSON.parse(post.content);
+      } catch {
+        return post.content;
+      }
+    }
+    return post.content;
+  }, [post?.content]);
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -96,15 +110,16 @@ const usePostEditor = ({
       }),
       Emoji,
     ],
-    content: post?.content || '',
+    content: initialContent,
     immediatelyRender: false,
     onCreate: () => {
       isEditorInitialized.current = true;
     },
-    onUpdate: () => {
+    onUpdate: ({ editor }) => {
       if (isEditorInitialized.current) {
         setIsPendingDebounce(true);
         debouncedUpdate();
+        setIsEditorEmpty(editor.isEmpty);
       }
     },
   });
@@ -128,18 +143,23 @@ const usePostEditor = ({
           ? JSON.parse(original.content)
           : original.content;
     } catch {
-      originalContent = {};
+      originalContent = { type: 'doc', content: [] };
     }
-    const contentChanged = !_.isEqual(editor.getJSON(), originalContent);
 
-    const bgChanged = bg !== original.backgroundValue;
+    const currentContent = editor.getJSON();
+    const contentChanged = !_.isEqual(currentContent, originalContent);
+
+    const bgChanged = bg !== (original.backgroundValue || 'bg-white');
 
     const originalMediaIds = original.media?.map((m) => m.mediaId).sort() || [];
     const currentMediaIds = media
-      .filter((m) => m.id)
+      .filter((m) => m.id && !m.isUploading && !m.uploadError)
       .map((m) => m.id)
       .sort();
-    const mediaChanged = !_.isEqual(originalMediaIds, currentMediaIds);
+
+    const hasUploadingOrNewFiles = media.some((m) => m.isUploading || !m.id);
+    const mediaChanged =
+      hasUploadingOrNewFiles || !_.isEqual(originalMediaIds, currentMediaIds);
 
     const originalCaptions =
       original.media?.reduce<Record<string, string>>((acc, item) => {
@@ -149,7 +169,9 @@ const usePostEditor = ({
 
     const currentCaptions = media.reduce<Record<string, string>>(
       (acc, item, idx) => {
-        if (item.id) acc[item.id] = captions[idx] || '';
+        if (item.id && !item.isUploading && !item.uploadError) {
+          acc[item.id] = captions[idx] || '';
+        }
         return acc;
       },
       {}
@@ -157,11 +179,17 @@ const usePostEditor = ({
     const captionsChanged = !_.isEqual(originalCaptions, currentCaptions);
 
     return contentChanged || bgChanged || mediaChanged || captionsChanged;
-  }, [isEditMode, bg, media, captions, editor]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditMode, bg, media, captions, editor?.state.doc]);
 
   const handleSubmit = useCallback(async () => {
     if (editor?.isEmpty && media.length === 0) return;
     if (isEditMode && !hasChanges) return;
+
+    if (isEditMode && !post) {
+      toast.error('Lỗi dữ liệu bài viết');
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -185,12 +213,14 @@ const usePostEditor = ({
           media: mediaInfo,
         });
         queryClient.invalidateQueries({ queryKey: postKeys.detail(post!.id) });
+        queryClient.invalidateQueries({ queryKey: postKeys.lists() });
       } else {
         await create.mutateAsync({
           content: editor!.getJSON(),
           backgroundValue: bg,
           media: mediaInfo,
         });
+        queryClient.invalidateQueries({ queryKey: postKeys.lists() });
       }
 
       toast.success(
@@ -217,7 +247,7 @@ const usePostEditor = ({
     create,
   ]);
 
-  const canSubmit = !editor?.isEmpty || media.length > 0;
+  const canSubmit = !isEditorEmpty || media.length > 0;
   const isDisabled =
     hasUploadingFiles ||
     !canSubmit ||
@@ -380,4 +410,3 @@ export default function PostEditor(props: PostEditorProps) {
     </div>
   );
 }
-

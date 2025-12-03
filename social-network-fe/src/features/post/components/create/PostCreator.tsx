@@ -1,14 +1,13 @@
 'use client';
 import { Image, Smile, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import PostEditor from './text-editor/Editor';
-import { useCreatePostContext } from '@/features/post/components/feed/FeedContext';
 import { useStore } from '@/store';
 import { UserAvatar } from '@/components/ui/user-avatar';
+import { usePostModalContext } from '@/features/post/contexts/PostModalContext';
 
 export default function PostCreator() {
   const user = useStore((state) => state.user);
-  const { closeCreate, isOpen, openCreate } = useCreatePostContext();
+  const { openCreate } = usePostModalContext();
 
   return (
     <>
@@ -64,7 +63,6 @@ export default function PostCreator() {
           </Button>
         </div>
       </div>
-      {isOpen && <PostEditor handleClose={closeCreate} />}
     </>
   );
 }

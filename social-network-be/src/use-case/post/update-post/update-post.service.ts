@@ -55,11 +55,6 @@ export class UpdatePostService extends BaseUseCaseService<
       const { postId, userId, data } = input;
       const result = await session.withTransaction(async () => {
         const post = await this.validateOwnership(postId, userId, session);
-        if (post.author._id.toString() != userId)
-          throw new ForbiddenException(
-            'You are not allowed to update this post',
-          );
-
         const { mediaToDelete } = this.calculateMediaChanges(post, data?.media);
 
         let deletedMedias = [];
@@ -183,7 +178,7 @@ export class UpdatePostService extends BaseUseCaseService<
       throw new NotFoundException('Post not found');
     }
 
-    if (post.author.toString() !== userId) {
+    if (post.author._id.toString() != userId) {
       throw new ForbiddenException('You are not allowed to update this post');
     }
 

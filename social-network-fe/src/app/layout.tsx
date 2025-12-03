@@ -6,7 +6,6 @@ import { QueryProvider } from '@/components/provider/QueryProvider';
 import { cookies, headers } from 'next/headers';
 import { authService } from '@/features/auth/services/auth.service';
 import { AppInitializer } from '@/components/layout/AppInitializer';
-import { CreatePostProvider } from '@/features/post/components/feed/FeedContext';
 import { ImageViewerProvider } from '@/components/provider/ImageViewerProvider';
 import { AuthGuard } from '@/features/auth/components/AuthGuard';
 import { MainLayout } from '@/components/layout/MainLayout';
@@ -14,6 +13,7 @@ import { SocketProvider } from '@/components/provider/SocketProvider';
 import { ChatProvider } from '@/features/chat/context/ChatContext';
 import { ChatDock } from '@/features/chat/components/dock/ChatDock';
 import { CryptoGuard } from '@/features/crypto/context/CryptoGuard';
+import { PostModalProvider } from '@/features/post/contexts/PostModalContext';
 
 export const metadata: Metadata = {
   title: 'Vibe',
@@ -65,7 +65,7 @@ export default async function RootLayout({
                   <SocketProvider>
                     <EmojiPickerProvider>
                       <ImageViewerProvider>
-                        <CreatePostProvider>
+                        <PostModalProvider>
                           <MainLayout
                             isAuthenticated={isAuthenticated}
                             modal={modal}
@@ -73,7 +73,7 @@ export default async function RootLayout({
                             {children}
                           </MainLayout>
                           <ChatDock />
-                        </CreatePostProvider>
+                        </PostModalProvider>
                       </ImageViewerProvider>
                     </EmojiPickerProvider>
                     <Toaster position="top-right" expand />

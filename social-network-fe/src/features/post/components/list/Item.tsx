@@ -1,4 +1,12 @@
-import { MessageCircle, MoreHorizontal, Send } from 'lucide-react';
+'use client';
+
+import {
+  MessageCircle,
+  MoreHorizontal,
+  Send,
+  Pencil,
+  Trash,
+} from 'lucide-react';
 import { memo } from 'react';
 import { formatDisplayTime } from '@/lib/utils/time';
 import Link from 'next/link';
@@ -15,12 +23,27 @@ import CommentEditor from '@/features/comment/components/editor/CommentEditor';
 import FeedCommentItem from '@/features/comment/components/feed/FeedCommentItem';
 import PostFeedMedia from '@/features/media/components/feed/FeedMedia';
 import { UserAvatar } from '@/components/ui/user-avatar';
+import { useStore } from '@/store';
+import { usePostModalContext } from '../../contexts/PostModalContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { toast } from 'sonner';
+
+import { transformToPostInEditor } from '@/features/post/components/create/text-editor/type';
 
 export type PostItemProps = {
   post: PostWithTopComment;
 };
 
 function PostItem({ post }: PostItemProps) {
+  const user = useStore((state) => state.user);
+  const isAuthor = user?.id === post.author.id;
+  const { openEdit } = usePostModalContext();
+
   const contentHtml = generateHTML(post.content, [
     StarterKit,
     TextStyle,
@@ -28,6 +51,18 @@ function PostItem({ post }: PostItemProps) {
     TextAlign.configure({ types: ['heading', 'paragraph'] }),
     Emoji,
   ]);
+
+  const handleEdit = () => {
+    openEdit(transformToPostInEditor(post));
+  };
+
+  const handleDelete = () => {
+    if (confirm('Bạn có chắc chắn muốn xóa bài viết này không?')) {
+      console.log('Delete post:', post.id);
+      toast.info('Tính năng xóa đang phát triển');
+    }
+  };
+
   return (
     <div className="bg-white rounded-sm shadow-sm p-0 mb-4 border border-gray-100">
       <div className="flex items-start justify-between mb-3 p-3">
@@ -49,13 +84,33 @@ function PostItem({ post }: PostItemProps) {
             </span>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-gray-400 hover:bg-gray-100 h-8 w-8"
-        >
-          <MoreHorizontal className="w-5 h-5" />
-        </Button>
+
+        {isAuthor && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-gray-400 hover:bg-gray-100 h-8 w-8"
+              >
+                <MoreHorizontal className="w-5 h-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleEdit} className="cursor-pointer">
+                <Pencil className="mr-2 h-4 w-4" />
+                <span>Chỉnh sửa bài viết</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleDelete}
+                className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
+              >
+                <Trash className="mr-2 h-4 w-4" />
+                <span>Xóa bài viết</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
       <div className="px-3 pb-3">
