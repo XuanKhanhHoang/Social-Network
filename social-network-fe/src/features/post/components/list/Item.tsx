@@ -34,6 +34,7 @@ import {
 import { toast } from 'sonner';
 
 import { transformToPostInEditor } from '@/features/post/components/create/text-editor/type';
+import SharedPostCard from './SharedPostCard';
 
 export type PostItemProps = {
   post: PostWithTopComment;
@@ -42,7 +43,7 @@ export type PostItemProps = {
 function PostItem({ post }: PostItemProps) {
   const user = useStore((state) => state.user);
   const isAuthor = user?.id === post.author.id;
-  const { openEdit } = usePostModalContext();
+  const { openEdit, openShare } = usePostModalContext();
 
   const contentHtml = generateHTML(post.content, [
     StarterKit,
@@ -119,6 +120,8 @@ function PostItem({ post }: PostItemProps) {
 
       <div className="py-1"></div>
 
+      {!!post.parentPost && <SharedPostCard post={post.parentPost} />}
+
       {post.media && post.media.length > 0 && (
         <PostFeedMedia postId={post.id} media={post.media} />
       )}
@@ -139,7 +142,10 @@ function PostItem({ post }: PostItemProps) {
           <MessageCircle className="w-5 h-5" />
           <span className="text-sm font-medium">{post.commentsCount}</span>
         </Link>
-        <button className="flex items-center space-x-2 hover:text-green-500 transition-colors">
+        <button
+          onClick={() => openShare(post)}
+          className="flex items-center space-x-2 hover:text-green-500 transition-colors"
+        >
           <Send className="w-5 h-5" />
           <span className="text-sm font-medium">{post.sharesCount}</span>
         </button>

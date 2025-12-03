@@ -4,7 +4,17 @@ import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import Color from '@tiptap/extension-color';
-import { Smile, ImageIcon, MoreHorizontal, X } from 'lucide-react';
+import {
+  Smile,
+  ImageIcon,
+  MoreHorizontal,
+  X,
+  Globe,
+  Users,
+  Lock,
+  ChevronDown,
+  Check,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { postService } from '@/features/post/services/post.service';
@@ -20,24 +30,43 @@ import TextAlign from '@tiptap/extension-text-align';
 import { Emoji } from '@/lib/editor/emoji-node';
 import { PostInEditor } from './type';
 import PostEditorMedia from '../media-editor/MediaEditor';
+import { useStore } from '@/store';
+import { UserAvatar } from '@/components/ui/user-avatar';
+import { VisibilityPrivacy } from '@/lib/constants/enums/visibility-privacy';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
+import { Post } from '@/features/post/types/post';
+import SharedPostCard from '../../list/SharedPostCard';
 
 export type PostEditorProps = {
   handleClose: () => void;
-  mode?: 'create' | 'edit';
+  mode?: 'create' | 'edit' | 'share';
   post?: PostInEditor;
+  sharedPost?: Post;
 };
 
 const usePostEditor = ({
   handleClose,
   mode = 'create',
   post,
+  sharedPost,
 }: PostEditorProps) => {
   const isEditMode = mode === 'edit';
+  const isShareMode = mode === 'share';
   const queryClient = useQueryClient();
   const initialPost = useRef(post);
   const isEditorInitialized = useRef(false);
 
   const [bg, setBg] = useState(post?.backgroundValue || 'bg-white');
+  const [visibility, setVisibility] = useState<VisibilityPrivacy>(
+    post?.visibility || VisibilityPrivacy.PUBLIC
+  );
+
+  const [openPrivacy, setOpenPrivacy] = useState(false);
   const [showBgPicker, setShowBgPicker] = useState(false);
   const [showTextColorPicker, setShowTextColorPicker] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -83,7 +112,6 @@ const usePostEditor = ({
     };
   }, [debouncedUpdate]);
 
-  // Parse initial content properly
   const initialContent = useMemo(() => {
     if (!post?.content) return '';
     if (typeof post.content === 'string') {
@@ -150,6 +178,8 @@ const usePostEditor = ({
     const contentChanged = !_.isEqual(currentContent, originalContent);
 
     const bgChanged = bg !== (original.backgroundValue || 'bg-white');
+    const visibilityChanged =
+      visibility !== (original.visibility || VisibilityPrivacy.PUBLIC);
 
     const originalMediaIds = original.media?.map((m) => m.mediaId).sort() || [];
     const currentMediaIds = media
@@ -178,9 +208,15 @@ const usePostEditor = ({
     );
     const captionsChanged = !_.isEqual(originalCaptions, currentCaptions);
 
-    return contentChanged || bgChanged || mediaChanged || captionsChanged;
+    return (
+      contentChanged ||
+      bgChanged ||
+      mediaChanged ||
+      captionsChanged ||
+      visibilityChanged
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEditMode, bg, media, captions, editor?.state.doc]);
+  }, [isEditMode, bg, media, captions, editor?.state.doc, visibility]);
 
   const handleSubmit = useCallback(async () => {
     if (editor?.isEmpty && media.length === 0) return;
@@ -211,25 +247,46 @@ const usePostEditor = ({
           content: editor!.getJSON(),
           backgroundValue: bg,
           media: mediaInfo,
+          visibility,
         });
         queryClient.invalidateQueries({ queryKey: postKeys.detail(post!.id) });
+        queryClient.invalidateQueries({ queryKey: postKeys.lists() });
+      } else if (isShareMode && sharedPost) {
+        await create.mutateAsync({
+          content: editor!.getJSON(),
+          backgroundValue: bg,
+          media: [],
+          visibility,
+          parentPostId: sharedPost.id,
+        });
         queryClient.invalidateQueries({ queryKey: postKeys.lists() });
       } else {
         await create.mutateAsync({
           content: editor!.getJSON(),
           backgroundValue: bg,
           media: mediaInfo,
+          visibility,
         });
         queryClient.invalidateQueries({ queryKey: postKeys.lists() });
       }
 
       toast.success(
-        isEditMode ? 'Cập nhật bài thành công!' : 'Đăng bài thành công!'
+        isEditMode
+          ? 'Cập nhật bài thành công!'
+          : isShareMode
+          ? 'Chia sẻ bài viết thành công!'
+          : 'Đăng bài thành công!'
       );
       handleClose();
     } catch (error) {
       console.error('Post operation failed:', error);
-      toast.error(isEditMode ? 'Cập nhật bài thất bại!' : 'Đăng bài thất bại!');
+      toast.error(
+        isEditMode
+          ? 'Cập nhật bài thất bại!'
+          : isShareMode
+          ? 'Chia sẻ bài viết thất bại!'
+          : 'Đăng bài thất bại!'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -238,6 +295,7 @@ const usePostEditor = ({
     media,
     captions,
     bg,
+    visibility,
     isEditMode,
     hasChanges,
     post,
@@ -245,9 +303,11 @@ const usePostEditor = ({
     hasUploadingFiles,
     queryClient,
     create,
+    isShareMode,
+    sharedPost,
   ]);
 
-  const canSubmit = !isEditorEmpty || media.length > 0;
+  const canSubmit = !isEditorEmpty || media.length > 0 || isShareMode;
   const isDisabled =
     hasUploadingFiles ||
     !canSubmit ||
@@ -260,6 +320,10 @@ const usePostEditor = ({
     editor,
     bg,
     setBg,
+    visibility,
+    setVisibility,
+    openPrivacy,
+    setOpenPrivacy,
     showBgPicker,
     setShowBgPicker,
     showTextColorPicker,
@@ -273,6 +337,8 @@ const usePostEditor = ({
     retryUpload,
     hasUploadingFiles,
     isEditMode,
+    isShareMode,
+    sharedPost,
     handleSubmit,
     isDisabled,
   };
@@ -283,6 +349,10 @@ export default function PostEditor(props: PostEditorProps) {
     editor,
     bg,
     setBg,
+    visibility,
+    setVisibility,
+    openPrivacy,
+    setOpenPrivacy,
     showBgPicker,
     setShowBgPicker,
     showTextColorPicker,
@@ -296,10 +366,13 @@ export default function PostEditor(props: PostEditorProps) {
     retryUpload,
     hasUploadingFiles,
     isEditMode,
+    isShareMode,
+    sharedPost,
     handleSubmit,
     isDisabled,
   } = usePostEditor(props);
 
+  const user = useStore((state) => state.user);
   if (!editor) return null;
 
   return (
@@ -308,7 +381,7 @@ export default function PostEditor(props: PostEditorProps) {
         <div className="flex items-center justify-between p-2 border-b">
           <div className="w-6"></div>
           <h2 className="text-xl font-semibold">
-            {isEditMode ? 'Cập nhật' : 'Tạo'} bài viết
+            {isEditMode ? 'Cập nhật' : isShareMode ? 'Chia sẻ' : 'Tạo'} bài viết
           </h2>
           <button
             onClick={props.handleClose}
@@ -320,12 +393,78 @@ export default function PostEditor(props: PostEditorProps) {
 
         <div className="bg-white shadow-sm border border-gray-200 max-w-lg mx-auto">
           <div className="flex items-center gap-3 p-4 border-b border-gray-100">
-            <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-semibold">U</span>
-            </div>
+            <UserAvatar
+              name={user!.firstName}
+              src={user!.avatar?.url}
+              className="w-10 h-10"
+              size={128}
+            />
             <div className="flex-1">
-              <div className="font-medium text-gray-900">Bạn</div>
-              <div className="text-sm text-gray-500">Công khai</div>
+              <div className="font-medium text-gray-900">{user!.firstName}</div>
+
+              <Popover open={openPrivacy} onOpenChange={setOpenPrivacy}>
+                <PopoverTrigger asChild>
+                  <button className="flex items-center gap-1 rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-200 transition-colors outline-none">
+                    {visibility === VisibilityPrivacy.PUBLIC && (
+                      <Globe className="h-3.5 w-3.5" />
+                    )}
+                    {visibility === VisibilityPrivacy.FRIENDS && (
+                      <Users className="h-3.5 w-3.5" />
+                    )}
+                    {visibility === VisibilityPrivacy.PRIVATE && (
+                      <Lock className="h-3.5 w-3.5" />
+                    )}
+                    <span>
+                      {visibility === VisibilityPrivacy.PUBLIC
+                        ? 'Công khai'
+                        : visibility === VisibilityPrivacy.FRIENDS
+                        ? 'Bạn bè'
+                        : 'Chỉ mình tôi'}
+                    </span>
+                    <ChevronDown className="h-3 w-3 text-gray-500" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-48 p-1" align="start">
+                  <div className="flex flex-col gap-0.5">
+                    {[
+                      {
+                        value: VisibilityPrivacy.PUBLIC,
+                        label: 'Công khai',
+                        icon: <Globe className="h-4 w-4" />,
+                      },
+                      {
+                        value: VisibilityPrivacy.FRIENDS,
+                        label: 'Bạn bè',
+                        icon: <Users className="h-4 w-4" />,
+                      },
+                      {
+                        value: VisibilityPrivacy.PRIVATE,
+                        label: 'Chỉ mình tôi',
+                        icon: <Lock className="h-4 w-4" />,
+                      },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => {
+                          setVisibility(option.value);
+                          setOpenPrivacy(false);
+                        }}
+                        className={cn(
+                          'flex w-full items-center gap-2 rounded-sm px-2 py-2 text-sm hover:bg-gray-100 transition-colors text-left',
+                          visibility === option.value &&
+                            'bg-blue-50 text-blue-600'
+                        )}
+                      >
+                        {option.icon}
+                        <span className="flex-1">{option.label}</span>
+                        {visibility === option.value && (
+                          <Check className="h-4 w-4" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 
@@ -335,11 +474,19 @@ export default function PostEditor(props: PostEditorProps) {
             >
               <EditorContent
                 editor={editor}
-                className="min-h-[120px] p-4 prose prose-sm max-w-none [&_.ProseMirror]:outline-none [&_.ProseMirror]:focus:outline-none [&_.ProseMirror]:border-none"
+                className={`${
+                  isShareMode ? 'min-h-[30px]' : 'min-h-[120px]'
+                } p-4 prose prose-sm max-w-none [&_.ProseMirror]:outline-none [&_.ProseMirror]:focus:outline-none [&_.ProseMirror]:border-none`}
               />
             </div>
 
-            {media.length > 0 && (
+            {isShareMode && sharedPost && (
+              <div className="mt-3">
+                <SharedPostCard post={sharedPost} />
+              </div>
+            )}
+
+            {!isShareMode && media.length > 0 && (
               <div className="mt-3">
                 <PostEditorMedia
                   media={media}
@@ -353,40 +500,46 @@ export default function PostEditor(props: PostEditorProps) {
               </div>
             )}
 
-            <PostEditorToolbar
-              editor={editor}
-              bg={bg}
-              setBg={setBg}
-              showBgPicker={showBgPicker}
-              setShowBgPicker={setShowBgPicker}
-              showTextColorPicker={showTextColorPicker}
-              setShowTextColorPicker={setShowTextColorPicker}
-            />
+            {!isShareMode && (
+              <PostEditorToolbar
+                editor={editor}
+                bg={bg}
+                setBg={setBg}
+                showBgPicker={showBgPicker}
+                setShowBgPicker={setShowBgPicker}
+                showTextColorPicker={showTextColorPicker}
+                setShowTextColorPicker={setShowTextColorPicker}
+              />
+            )}
           </div>
 
           <div className="flex items-center justify-between p-3 border-t border-gray-100">
             <div className="flex items-center gap-3">
-              <label className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors">
-                <ImageIcon className="w-5 h-5 text-green-500" />
-                <span className="text-sm font-medium">Ảnh/Video</span>
-                <Input
-                  type="file"
-                  accept="image/*,video/*"
-                  multiple
-                  onChange={handleMediaUpload}
-                  disabled={hasUploadingFiles || isSubmitting}
-                  className="hidden"
-                />
-              </label>
+              {!isShareMode && (
+                <>
+                  <label className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors">
+                    <ImageIcon className="w-5 h-5 text-green-500" />
+                    <span className="text-sm font-medium">Ảnh/Video</span>
+                    <Input
+                      type="file"
+                      accept="image/*,video/*"
+                      multiple
+                      onChange={handleMediaUpload}
+                      disabled={hasUploadingFiles || isSubmitting}
+                      className="hidden"
+                    />
+                  </label>
 
-              <button className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                <Smile className="w-5 h-5 text-yellow-500" />
-                <span className="text-sm font-medium">Cảm xúc</span>
-              </button>
+                  <button className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                    <Smile className="w-5 h-5 text-yellow-500" />
+                    <span className="text-sm font-medium">Cảm xúc</span>
+                  </button>
 
-              <button className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                <MoreHorizontal className="w-5 h-5 text-gray-400" />
-              </button>
+                  <button className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                    <MoreHorizontal className="w-5 h-5 text-gray-400" />
+                  </button>
+                </>
+              )}
             </div>
 
             <Button
@@ -397,11 +550,15 @@ export default function PostEditor(props: PostEditorProps) {
               {isSubmitting
                 ? isEditMode
                   ? 'Đang cập nhật...'
+                  : isShareMode
+                  ? 'Đang chia sẻ...'
                   : 'Đang đăng...'
                 : isPendingDebounce
                 ? 'Đang xử lý...'
                 : isEditMode
                 ? 'Cập nhật'
+                : isShareMode
+                ? 'Chia sẻ'
                 : 'Đăng'}
             </Button>
           </div>

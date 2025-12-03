@@ -188,7 +188,6 @@ const RegisterPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex flex-col">
       <div className="flex flex-1 lg:flex-row flex-col">
-        {/* Left Side: Branding */}
         <div className="flex-1 flex items-center justify-center px-8 py-10">
           <div className="max-w-lg">
             <div className="mb-6">
@@ -200,7 +199,6 @@ const RegisterPage = () => {
           </div>
         </div>
 
-        {/* Right Side: Form */}
         <div className="flex-1 flex items-center justify-center px-4 lg:px-8 pb-10">
           <div className="w-full max-w-md">
             <Card className="shadow-2xl border-none">
@@ -219,7 +217,6 @@ const RegisterPage = () => {
                     onSubmit={form.handleSubmit(onFormSubmit)}
                     className="space-y-4"
                   >
-                    {/* Tên - Họ (2 Cột) */}
                     <div className="grid grid-cols-2 gap-3">
                       <FormField
                         control={form.control}
@@ -255,7 +252,6 @@ const RegisterPage = () => {
                       />
                     </div>
 
-                    {/* Email */}
                     <FormField
                       control={form.control}
                       name="email"
@@ -274,7 +270,6 @@ const RegisterPage = () => {
                       )}
                     />
 
-                    {/* Password */}
                     <FormField
                       control={form.control}
                       name="password"
@@ -308,13 +303,11 @@ const RegisterPage = () => {
                       )}
                     />
 
-                    {/* Ngày sinh */}
                     <div className="space-y-2">
                       <FormLabel className="text-xs text-gray-500 font-normal ml-1">
                         Ngày sinh
                       </FormLabel>
                       <div className="grid grid-cols-3 gap-2">
-                        {/* Day */}
                         <FormField
                           control={form.control}
                           name="day"
@@ -340,7 +333,6 @@ const RegisterPage = () => {
                             </FormItem>
                           )}
                         />
-                        {/* Month */}
                         <FormField
                           control={form.control}
                           name="month"
@@ -366,7 +358,6 @@ const RegisterPage = () => {
                             </FormItem>
                           )}
                         />
-                        {/* Year */}
                         <FormField
                           control={form.control}
                           name="year"
@@ -393,7 +384,6 @@ const RegisterPage = () => {
                           )}
                         />
                       </div>
-                      {/* Hiển thị lỗi chung cho ngày sinh */}
                       {form.formState.errors.day && (
                         <p className="text-[0.8rem] font-medium text-destructive mt-1">
                           {form.formState.errors.day.message}
@@ -401,7 +391,6 @@ const RegisterPage = () => {
                       )}
                     </div>
 
-                    {/* Giới tính (Radio Group) */}
                     <FormField
                       control={form.control}
                       name="gender"
@@ -521,7 +510,6 @@ const RegisterPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Footer */}
       <div className="hidden lg:block w-full bg-white border-t py-4">
         <div className="container mx-auto text-center">
           <p className="text-xs text-gray-400">KTH - KhanhPoPo © 2025</p>

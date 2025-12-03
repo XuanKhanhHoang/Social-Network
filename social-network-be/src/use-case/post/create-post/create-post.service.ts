@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Types } from 'mongoose';
 import { MediaBasicDataWithCaption } from 'src/domains/media-upload/interfaces/type';
 import { MediaUploadService } from 'src/domains/media-upload/media-upload.service';
 import { CreatePostData } from 'src/domains/post/interfaces';
@@ -19,6 +20,7 @@ type CreatePostServiceInput = {
     backgroundValue?: string;
     media?: { mediaId: string; caption?: string; order?: number }[];
     visibility?: UserPrivacy;
+    parentPostId?: string;
   };
 };
 @Injectable()
@@ -84,6 +86,9 @@ export class CreatePostService extends BaseUseCaseService<
       plain_text: getPlainTextFromTiptap(data.content),
       visibility: data.visibility,
       backgroundValue: data.backgroundValue,
+      parentPost: data.parentPostId
+        ? new Types.ObjectId(data.parentPostId)
+        : undefined,
     };
     try {
       const newPost = await this.postRepository.create(newData);
@@ -95,6 +100,8 @@ export class CreatePostService extends BaseUseCaseService<
         newData.media.map((m) => m.mediaId),
         userId,
       );
+      if (data.parentPostId)
+        await this.postRepository.updateShareCount(data.parentPostId, 1);
       return newPost;
     } catch (error) {
       this.logger.error(

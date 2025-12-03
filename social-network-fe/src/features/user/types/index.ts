@@ -6,6 +6,7 @@ import {
   GetUserHeaderResponseDto,
   GetUserProfileResponseDto,
   PhotoDto,
+  UserSummaryDto,
   UserSummaryWithAvatarUrlDto,
 } from '@/lib/dtos';
 import { VietnamProvince } from '@/lib/interfaces/common';
@@ -71,11 +72,19 @@ export type UserSummaryWidthAvatarUrl = Omit<UserSummary, 'avatar'> & {
   avatar?: string;
 };
 export function transformToUserSummaryWidthAvatarUrl(
-  user: UserSummaryWithAvatarUrlDto
+  user: UserSummaryWithAvatarUrlDto | UserSummaryDto
 ): UserSummaryWidthAvatarUrl {
+  let avatar;
+  if (user?.avatar) {
+    if (typeof user.avatar === 'string') {
+      avatar = user.avatar;
+    } else if ('url' in user.avatar) {
+      avatar = user.avatar.url;
+    }
+  }
   return {
     ...transformToUserSummary({ ...user, avatar: undefined }),
-    avatar: user.avatar,
+    avatar: avatar,
   };
 }
 export interface UserSummaryWithEmail extends UserSummary {

@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import { MediaBasicDataWithCaption } from 'src/domains/media-upload/interfaces/type';
 import { SubUserModel } from 'src/domains/user/interfaces';
 import { TiptapDocument } from 'src/share/dto/req/tiptap-content.dto';
@@ -10,4 +11,5 @@ export interface CreatePostData {
   plain_text: string;
   backgroundValue?: string;
   visibility?: UserPrivacy;
+  parentPost?: Types.ObjectId;
 }

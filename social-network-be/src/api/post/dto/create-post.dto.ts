@@ -28,6 +28,10 @@ export class CreatePostDto {
   @IsOptional()
   @IsEnum(UserPrivacy)
   visibility?: UserPrivacy;
+
+  @IsOptional()
+  @IsString()
+  parentPostId?: string;
 }
 export class PostMediaDto {
   @IsString()

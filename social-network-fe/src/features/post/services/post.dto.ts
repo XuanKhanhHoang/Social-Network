@@ -12,6 +12,7 @@ export interface CreatePostRequestDto {
   backgroundValue?: string;
   media?: PostMediaCreateRequestDto[];
   visibility?: VisibilityPrivacy;
+  parentPostId?: string;
 }
 export interface PostMediaCreateRequestDto {
   mediaId: string;
@@ -62,6 +63,7 @@ export interface PostDto {
   hotScore: number;
   createdAt: string;
   updatedAt: string;
+  parentPost?: PostDto;
 }
 
 export interface PostWithMyReactionDto extends PostDto {

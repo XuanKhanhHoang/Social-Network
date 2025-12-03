@@ -35,6 +35,7 @@ export interface Post {
   hotScore: number;
   createdAt: string;
   updatedAt: string;
+  parentPost?: Post;
 }
 
 export interface PostWithMyReaction extends Post {

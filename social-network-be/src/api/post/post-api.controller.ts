@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -67,5 +68,16 @@ export class PostController {
     @GetUserId() userId: string,
   ) {
     return await this.getPostFullService.execute({ postId, userId });
+  }
+
+  @Delete(':id')
+  async deletePost(
+    @Param('id', new ParseMongoIdPipe()) postId: string,
+    @GetUserId() userId: string,
+  ) {
+    // return await this.deletePostService.execute({ postId, userId });
+    return {
+      message: 'Delete post',
+    };
   }
 }

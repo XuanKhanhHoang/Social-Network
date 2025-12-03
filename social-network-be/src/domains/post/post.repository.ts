@@ -66,6 +66,74 @@ export class PostRepository extends ReactableRepository<PostDocument> {
     ];
   }
 
+  private getParentPostStage(): PipelineStage[] {
+    return [
+      {
+        $lookup: {
+          from: 'posts',
+          localField: 'parentPost',
+          foreignField: '_id',
+          as: 'parentPost',
+        },
+      },
+      {
+        $unwind: {
+          path: '$parentPost',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'parentPost.author._id',
+          foreignField: '_id',
+          as: 'parentPostAuthor',
+        },
+      },
+      {
+        $unwind: {
+          path: '$parentPostAuthor',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $addFields: {
+          parentPost: {
+            $cond: {
+              if: { $not: ['$parentPost._id'] },
+              then: '$$REMOVE',
+              else: {
+                $mergeObjects: [
+                  '$parentPost',
+                  {
+                    author: {
+                      $cond: {
+                        if: { $ifNull: ['$parentPostAuthor', false] },
+                        then: {
+                          _id: '$parentPostAuthor._id',
+                          username: '$parentPostAuthor.username',
+                          firstName: '$parentPostAuthor.firstName',
+                          lastName: '$parentPostAuthor.lastName',
+                          avatar: '$parentPostAuthor.avatar.url',
+                        },
+                        else: '$parentPost.author',
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          parentPostAuthor: 0,
+        },
+      },
+    ];
+  }
+
   //* Handlers
   async create(
     data: CreatePostData,
@@ -163,6 +231,7 @@ export class PostRepository extends ReactableRepository<PostDocument> {
 
     pipeline.push({ $limit: limit });
     pipeline.push(...this.getUserReactionStage(requestingUserId));
+    pipeline.push(...this.getParentPostStage());
 
     pipeline.push({
       $project: {
@@ -229,6 +298,7 @@ export class PostRepository extends ReactableRepository<PostDocument> {
     if (requestingUserId) {
       pipeline.push(...this.getUserReactionStage(requestingUserId));
     }
+    pipeline.push(...this.getParentPostStage());
 
     return this.model.aggregate<PostWithMyReactionModel<Types.ObjectId>>(
       pipeline,
@@ -246,6 +316,7 @@ export class PostRepository extends ReactableRepository<PostDocument> {
         },
       },
       ...this.getUserReactionStage(userId),
+      ...this.getParentPostStage(),
     ];
 
     const [post] = await this.model
@@ -402,7 +473,15 @@ export class PostRepository extends ReactableRepository<PostDocument> {
     });
     pipeline.push({ $limit: limit });
     pipeline.push(...this.getUserReactionStage(userId));
+    pipeline.push(...this.getParentPostStage());
 
     return this.model.aggregate<PostWithRankingScore>(pipeline);
+  }
+
+  async updateShareCount(postId: string, delta: number) {
+    return this.model.updateOne(
+      { _id: postId },
+      { $inc: { sharesCount: delta } },
+    );
   }
 }
