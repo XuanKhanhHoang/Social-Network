@@ -7,6 +7,7 @@ export interface CreatePostData {
   author: SubUserModel<string>;
   media: MediaBasicDataWithCaption<string>[];
   content: TiptapDocument;
+  plain_text: string;
   backgroundValue?: string;
   visibility?: UserPrivacy;
 }

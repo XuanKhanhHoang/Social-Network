@@ -60,6 +60,9 @@ export class PostDocument extends Document {
   @Prop({ type: Number, default: 0, index: true })
   hotScore: number;
 
+  @Prop({ type: String, index: true })
+  plain_text: string;
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -71,3 +74,4 @@ PostSchema.index({ parentPost: 1 });
 PostSchema.index({ tags: 1 });
 PostSchema.index({ hashtags: 1 });
 PostSchema.index({ hotScore: -1, _id: -1 });
+PostSchema.index({ plain_text: 'text' });

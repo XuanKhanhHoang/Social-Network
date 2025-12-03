@@ -9,6 +9,7 @@ import { PostDocument } from 'src/schemas';
 import { TiptapDocument } from 'src/share/dto/req/tiptap-content.dto';
 import { MediaType, UserPrivacy } from 'src/share/enums';
 import { PostEvents } from 'src/share/events';
+import { getPlainTextFromTiptap } from 'src/share/utils/tiptap.util';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 
 type CreatePostServiceInput = {
@@ -80,6 +81,7 @@ export class CreatePostService extends BaseUseCaseService<
       },
       media,
       content: data.content,
+      plain_text: getPlainTextFromTiptap(data.content),
       visibility: data.visibility,
       backgroundValue: data.backgroundValue,
     };

@@ -8,14 +8,29 @@ import { CommentModule } from 'src/domains/comment/comment.module';
 import { MediaUploadModule } from 'src/domains/media-upload/media-upload.module';
 import { UserModule } from 'src/domains/user/user.module';
 
+import { SearchPostService } from './search-post/search-post.service';
+import { FriendshipModule } from 'src/domains/friendship/friendship.module';
+
 @Module({
-  imports: [PostModule, CommentModule, MediaUploadModule, UserModule],
+  imports: [
+    PostModule,
+    CommentModule,
+    MediaUploadModule,
+    UserModule,
+    FriendshipModule,
+  ],
   providers: [
     GetPostFullService,
     CreatePostService,
     UpdatePostService,
     ListenersService,
+    SearchPostService,
   ],
-  exports: [GetPostFullService, CreatePostService, UpdatePostService],
+  exports: [
+    GetPostFullService,
+    CreatePostService,
+    UpdatePostService,
+    SearchPostService,
+  ],
 })
 export class PostUseCaseModule {}

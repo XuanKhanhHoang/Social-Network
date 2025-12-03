@@ -1,9 +1,18 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ParseMongoIdPipe } from 'src/share/pipe/parse-mongo-id-pipe';
 import { GetUserId } from 'src/share/decorators/user.decorator';
 import { CreatePostService } from 'src/use-case/post/create-post/create-post.service';
 import { UpdatePostService } from 'src/use-case/post/update-post/update-post.service';
 import { GetPostFullService } from 'src/use-case/post/get-post-full/get-post-full.service';
+import { SearchPostService } from 'src/use-case/post/search-post/search-post.service';
 import { CreatePostDto, UpdatePostDto } from './dto';
 
 @Controller('posts')
@@ -12,7 +21,23 @@ export class PostController {
     private readonly createPostService: CreatePostService,
     private readonly updatePostService: UpdatePostService,
     private readonly getPostFullService: GetPostFullService,
+    private readonly searchPostService: SearchPostService,
   ) {}
+
+  @Get('search')
+  async searchPosts(
+    @GetUserId() userId: string,
+    @Query('q') query: string,
+    @Query('limit') limit: number = 10,
+    @Query('cursor') cursor?: string,
+  ) {
+    return this.searchPostService.execute({
+      userId,
+      query: query || '',
+      limit: Number(limit),
+      cursor,
+    });
+  }
 
   @Post('')
   async createPost(

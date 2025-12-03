@@ -17,6 +17,7 @@ import { PostDocument } from 'src/schemas';
 import { TiptapDocument } from 'src/share/dto/req/tiptap-content.dto';
 import { UserPrivacy } from 'src/share/enums';
 import { PostEvents } from 'src/share/events';
+import { getPlainTextFromTiptap } from 'src/share/utils/tiptap.util';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 
 export interface UpdatePostInput {
@@ -99,6 +100,7 @@ export class UpdatePostService extends BaseUseCaseService<
 
         if (data.content) {
           updateData.$set.content = data.content;
+          updateData.$set.plain_text = getPlainTextFromTiptap(data.content);
         }
         if (data.visibility) {
           updateData.$set.visibility = data.visibility;

@@ -22,4 +22,5 @@ export type PostWithTopCommentAndUserReactionModel<
 
 export type PostWithRankingScore = PostWithMyReactionModel<Types.ObjectId> & {
   rankingScore: number;
+  isFriend?: boolean;
 };

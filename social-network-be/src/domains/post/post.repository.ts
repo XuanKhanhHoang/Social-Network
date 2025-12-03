@@ -18,6 +18,7 @@ import {
   PostPhotoModel,
   PostWithMyReactionModel,
   PostWithRankingScore,
+  SearchPostCursorData,
 } from './interfaces';
 
 @Injectable()
@@ -334,5 +335,74 @@ export class PostRepository extends ReactableRepository<PostDocument> {
       photos,
       nextCursor,
     };
+  }
+  async searchPosts({
+    query,
+    userId,
+    friendIds,
+    limit,
+    cursor,
+  }: {
+    query: string;
+    userId: string;
+    friendIds: string[];
+    limit: number;
+    cursor?: SearchPostCursorData;
+  }): Promise<PostWithRankingScore[]> {
+    const pipeline: PipelineStage[] = [];
+    const userObjId = new Types.ObjectId(userId);
+    const friendObjIds = friendIds.map((id) => new Types.ObjectId(id));
+    pipeline.push({
+      $match: {
+        status: PostStatus.ACTIVE,
+        plain_text: { $regex: query, $options: 'i' },
+      },
+    });
+    pipeline.push({
+      $match: {
+        $or: [
+          { 'author._id': userObjId },
+          {
+            'author._id': { $in: friendObjIds },
+            visibility: { $in: [UserPrivacy.FRIENDS, UserPrivacy.PUBLIC] },
+          },
+          {
+            'author._id': { $nin: [...friendObjIds, userObjId] },
+            visibility: UserPrivacy.PUBLIC,
+          },
+        ],
+      },
+    });
+    pipeline.push({
+      $addFields: {
+        isFriend: { $in: ['$author._id', friendObjIds] },
+      },
+    });
+    if (cursor) {
+      pipeline.push({
+        $match: {
+          $or: [
+            {
+              isFriend: cursor.lastIsFriend,
+              createdAt: { $lt: cursor.lastCreatedAt },
+            },
+            {
+              isFriend: { $lt: cursor.lastIsFriend },
+            },
+          ],
+        },
+      });
+    }
+
+    pipeline.push({
+      $sort: {
+        isFriend: -1,
+        createdAt: -1,
+      },
+    });
+    pipeline.push({ $limit: limit });
+    pipeline.push(...this.getUserReactionStage(userId));
+
+    return this.model.aggregate<PostWithRankingScore>(pipeline);
   }
 }
