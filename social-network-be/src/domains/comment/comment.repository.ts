@@ -426,4 +426,38 @@ export class CommentRepository extends ReactableRepository<CommentDocument> {
       { session },
     );
   }
+
+  async decreaseReplyCount(commentId: string, session?: ClientSession) {
+    const commentIdObj = new Types.ObjectId(commentId);
+    await this.model.updateOne(
+      { _id: commentIdObj },
+      { $inc: { repliesCount: -1 } },
+      { session },
+    );
+  }
+
+  async softDelete(
+    commentId: string,
+    session?: ClientSession,
+  ): Promise<CommentDocument | null> {
+    return this.model.findByIdAndUpdate(
+      commentId,
+      { deletedAt: new Date() },
+      { new: true, session },
+    );
+  }
+
+  async findExpiredDeletedComments(
+    thresholdDate: Date,
+  ): Promise<CommentDocument[]> {
+    return this.model.find({
+      deletedAt: { $ne: null, $lt: thresholdDate },
+    });
+  }
+
+  async hardDeleteComments(commentIds: string[]): Promise<void> {
+    await this.model.deleteMany({
+      _id: { $in: commentIds.map((id) => new Types.ObjectId(id)) },
+    });
+  }
 }

@@ -198,12 +198,76 @@ export function useUpdateComment() {
 export function useDeleteComment() {
   const queryClient = useQueryClient();
   const { decrementComments } = useUpdatePostCache();
-  return useMutation<void, Error, string>({
-    mutationFn: (commentId: string) =>
-      commentService.deleteComment(commentId) as any,
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: commentKeys.lists() });
-      decrementComments(variables);
+  return useMutation<CommentDto, Error, string>({
+    mutationFn: (commentId: string) => commentService.deleteComment(commentId),
+    onSuccess: (deletedComment, variables) => {
+      queryClient.setQueriesData<InfiniteData<GetCommentsResponseDto>>(
+        { queryKey: commentKeys.lists() },
+        (oldData) => {
+          if (!oldData || !oldData.pages) return oldData;
+
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page) => ({
+              ...page,
+              data: page.data.filter((comment) => comment._id !== variables),
+            })),
+          };
+        }
+      );
+
+      queryClient.setQueriesData<InfiniteData<GetPostsFeedResponseDto>>(
+        { queryKey: postKeys.lists() },
+        (oldData) => {
+          if (!oldData || !oldData.pages) return oldData;
+
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page) => ({
+              ...page,
+              data: page.data.map((post) => {
+                if (post._id === deletedComment.postId) {
+                  return {
+                    ...post,
+                    commentsCount: Math.max(0, (post.commentsCount || 0) - 1),
+                  };
+                }
+                return post;
+              }),
+            })),
+          };
+        }
+      );
+
+      if (deletedComment.rootId) {
+        const rootListKey = commentKeys.rootList(deletedComment.postId);
+        queryClient.setQueryData<InfiniteData<GetCommentsResponseDto>>(
+          rootListKey,
+          (oldData) => {
+            if (!oldData) return oldData;
+            return {
+              ...oldData,
+              pages: oldData.pages.map((page) => ({
+                ...page,
+                data: page.data.map((comment) => {
+                  if (comment._id === deletedComment.rootId) {
+                    return {
+                      ...comment,
+                      repliesCount: Math.max(
+                        0,
+                        (comment.repliesCount || 0) - 1
+                      ),
+                    };
+                  }
+                  return comment;
+                }),
+              })),
+            };
+          }
+        );
+      }
+
+      decrementComments(deletedComment.postId);
     },
   });
 }

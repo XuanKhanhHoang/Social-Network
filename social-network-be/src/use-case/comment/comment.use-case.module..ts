@@ -2,12 +2,14 @@ import { Module } from '@nestjs/common';
 import { CommentModule } from 'src/domains/comment/comment.module';
 import { PostModule } from 'src/domains/post/post.module';
 import { CreateCommentService } from './create-comment/create-comment.service';
+import { DeleteCommentService } from './delete-comment/delete-comment.service';
 import { GetPostCommentsService } from './get-post-comments/get-post-comments.service';
 import { GetReplyCommentsService } from './get-reply-comments/get-reply-comments.service';
 import { UpdateCommentService } from './update-comment/update-comment.service';
 import { MediaUploadModule } from 'src/domains/media-upload/media-upload.module';
 import { UserModule } from 'src/domains/user/user.module';
 import { ListenersService } from './listeners/listeners.service';
+import { CleanupDeletedCommentsService } from './schedule/cleanup-deleted-comments.service';
 
 @Module({
   imports: [PostModule, CommentModule, MediaUploadModule, UserModule],
@@ -16,13 +18,16 @@ import { ListenersService } from './listeners/listeners.service';
     GetPostCommentsService,
     GetReplyCommentsService,
     UpdateCommentService,
+    DeleteCommentService,
   ],
   providers: [
     CreateCommentService,
     GetPostCommentsService,
     GetReplyCommentsService,
     UpdateCommentService,
+    DeleteCommentService,
     ListenersService,
+    CleanupDeletedCommentsService,
   ],
 })
 export class CommentUseCaseModule {}

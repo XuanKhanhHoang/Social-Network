@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   DefaultValuePipe,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -16,6 +17,7 @@ import { CreateCommentService } from 'src/use-case/comment/create-comment/create
 import { UpdateCommentService } from 'src/use-case/comment/update-comment/update-comment.service';
 import { GetPostCommentsService } from 'src/use-case/comment/get-post-comments/get-post-comments.service';
 import { GetReplyCommentsService } from 'src/use-case/comment/get-reply-comments/get-reply-comments.service';
+import { DeleteCommentService } from 'src/use-case/comment/delete-comment/delete-comment.service';
 
 @Controller('comments')
 export class CommentController {
@@ -24,6 +26,7 @@ export class CommentController {
     private readonly updateCommentService: UpdateCommentService,
     private readonly getPostCommentsService: GetPostCommentsService,
     private readonly getReplyCommentsService: GetReplyCommentsService,
+    private readonly deleteCommentService: DeleteCommentService,
   ) {}
 
   @Post()
@@ -42,6 +45,17 @@ export class CommentController {
   ) {
     return this.updateCommentService.execute({
       ...data,
+      commentId: id,
+      userId,
+    });
+  }
+
+  @Delete(':id')
+  async deleteComment(
+    @Param('id', ParseMongoIdPipe) id: string,
+    @GetUserId() userId: string,
+  ) {
+    return this.deleteCommentService.execute({
       commentId: id,
       userId,
     });

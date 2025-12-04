@@ -1,4 +1,4 @@
-'use-client';
+'use client';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { timeAgo } from '@/lib/utils/time';
@@ -12,7 +12,12 @@ import {
 } from '@/features/comment/types/comment';
 import { useReplyStore } from '@/features/comment/store/reply-comments/reply.store';
 import { UserAvatar } from '@/components/ui/user-avatar';
-import { useGetCommentReplies } from '@/features/comment/hooks/useComment';
+import { ConfirmDeleteDialog } from '@/components/common/ConfirmDeleteDialog';
+import { toast } from 'sonner';
+import {
+  useGetCommentReplies,
+  useDeleteComment,
+} from '@/features/comment/hooks/useComment';
 import ContainedMedia from '@/features/media/components/common/ContainedMedia';
 import {
   DropdownMenu,
@@ -39,6 +44,7 @@ export default function CommentItem({
 }: CommentItemProps) {
   const [showReplies, setShowReplies] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const setReplyingTo = useReplyStore((state) => state.setReplyingTo);
   const currentUser = useStore((state) => state.user);
 
@@ -46,6 +52,19 @@ export default function CommentItem({
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useGetCommentReplies(comment.id, 5, { enabled: shouldFetchReplies });
+
+  const { mutateAsync: deleteComment, isPending: isDeleting } =
+    useDeleteComment();
+
+  const handleDelete = async () => {
+    try {
+      await deleteComment(comment.id);
+      toast.success('Xóa bình luận thành công');
+      setShowDeleteDialog(false);
+    } catch (error) {
+      toast.error('Xóa bình luận thất bại');
+    }
+  };
 
   const replies =
     data?.pages
@@ -110,7 +129,10 @@ export default function CommentItem({
                         <Edit2 className="mr-2 h-4 w-4" />
                         Chỉnh sửa
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-600 focus:text-red-600">
+                      <DropdownMenuItem
+                        className="text-red-600 focus:text-red-600"
+                        onClick={() => setShowDeleteDialog(true)}
+                      >
                         <Trash2 className="mr-2 h-4 w-4" />
                         Xóa
                       </DropdownMenuItem>
@@ -228,6 +250,15 @@ export default function CommentItem({
             </Button>
           </div>
         )}
+
+        <ConfirmDeleteDialog
+          isOpen={showDeleteDialog}
+          onClose={() => setShowDeleteDialog(false)}
+          onConfirm={handleDelete}
+          title="Xóa bình luận?"
+          description="Bạn có chắc chắn muốn xóa bình luận này không? Hành động này không thể hoàn tác."
+          isPending={isDeleting}
+        />
       </div>
     </div>
   );

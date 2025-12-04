@@ -62,7 +62,7 @@ export const commentService = {
 
     return ApiClient.get(url, options);
   },
-  async deleteComment(commentId: string) {
+  async deleteComment(commentId: string): Promise<CommentDto> {
     return ApiClient.delete(`${COMMENT_PREFIX}/${commentId}`);
   },
 };
