@@ -9,6 +9,7 @@ import { FeedApiModule } from './feed/feed-api.module';
 import { NotificationApiModule } from './notification/notification-api.module';
 import { MediaUploadApiModule } from './media-upload/media-upload-api.module';
 import { ChatApiModule } from './chat/chat-api.module';
+import { ReportApiModule } from './report/report-api.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ChatApiModule } from './chat/chat-api.module';
     NotificationApiModule,
     MediaUploadApiModule,
     ChatApiModule,
+    ReportApiModule,
   ],
 })
 export class ApiModule {}
