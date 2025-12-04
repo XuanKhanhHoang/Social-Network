@@ -6,6 +6,7 @@ import {
   Send,
   Pencil,
   Trash,
+  Flag,
 } from 'lucide-react';
 import { memo, useState } from 'react';
 import { formatDisplayTime } from '@/lib/utils/time';
@@ -37,6 +38,7 @@ import { transformToPostInEditor } from '@/features/post/components/create/text-
 import SharedPostCard from './SharedPostCard';
 import { useDeletePost } from '../../hooks/usePost';
 import { ConfirmDeleteDialog } from '@/components/common/ConfirmDeleteDialog';
+import { ReportDialog } from '@/features/report/components/ReportDialog';
 
 export type PostItemProps = {
   post: PostWithTopComment;
@@ -48,6 +50,7 @@ function PostItem({ post }: PostItemProps) {
   const { openEdit, openShare } = usePostModalContext();
 
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [openReportModal, setOpenReportModal] = useState(false);
   const { mutate: deletePost, isPending: isDeleting } = useDeletePost();
 
   const contentHtml = generateHTML(post.content, [
@@ -64,6 +67,10 @@ function PostItem({ post }: PostItemProps) {
 
   const handleDelete = () => {
     setOpenDeleteModal(true);
+  };
+
+  const handleReport = () => {
+    setOpenReportModal(true);
   };
 
   const onConfirmDelete = () => {
@@ -100,32 +107,45 @@ function PostItem({ post }: PostItemProps) {
           </div>
         </div>
 
-        {isAuthor && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-gray-400 hover:bg-gray-100 h-8 w-8"
-              >
-                <MoreHorizontal className="w-5 h-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleEdit} className="cursor-pointer">
-                <Pencil className="mr-2 h-4 w-4" />
-                <span>Chỉnh sửa bài viết</span>
-              </DropdownMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-gray-400 hover:bg-gray-100 h-8 w-8"
+            >
+              <MoreHorizontal className="w-5 h-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {isAuthor ? (
+              <>
+                <DropdownMenuItem
+                  onClick={handleEdit}
+                  className="cursor-pointer"
+                >
+                  <Pencil className="mr-2 h-4 w-4" />
+                  <span>Chỉnh sửa bài viết</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleDelete}
+                  className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
+                >
+                  <Trash className="mr-2 h-4 w-4" />
+                  <span>Xóa bài viết</span>
+                </DropdownMenuItem>
+              </>
+            ) : (
               <DropdownMenuItem
-                onClick={handleDelete}
+                onClick={handleReport}
                 className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
               >
-                <Trash className="mr-2 h-4 w-4" />
-                <span>Xóa bài viết</span>
+                <Flag className="mr-2 h-4 w-4" />
+                <span>Báo cáo bài viết</span>
               </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <div className="px-3 pb-3">
@@ -180,6 +200,13 @@ function PostItem({ post }: PostItemProps) {
         title="Xóa bài viết?"
         description="Bài viết sẽ được chuyển vào thùng rác và xóa vĩnh viễn sau 30 ngày. Bạn có chắc chắn muốn tiếp tục?"
         isPending={isDeleting}
+      />
+
+      <ReportDialog
+        isOpen={openReportModal}
+        onClose={() => setOpenReportModal(false)}
+        targetType="post"
+        targetId={post.id}
       />
     </div>
   );

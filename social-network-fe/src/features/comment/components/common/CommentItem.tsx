@@ -25,9 +25,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Edit2, MoreHorizontal, Trash2 } from 'lucide-react';
+import { Edit2, Flag, MoreHorizontal, Trash2 } from 'lucide-react';
 import CommentEditor from '@/features/comment/components/editor/CommentEditor';
 import { useStore } from '@/store';
+import { ReportDialog } from '@/features/report/components/ReportDialog';
+import { useImageViewer } from '@/components/provider/ImageViewerProvider';
 
 type CommentItemProps = {
   comment: CommentWithMyReaction;
@@ -45,9 +47,10 @@ export default function CommentItem({
   const [showReplies, setShowReplies] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
   const setReplyingTo = useReplyStore((state) => state.setReplyingTo);
   const currentUser = useStore((state) => state.user);
-
+  const { open: openImage } = useImageViewer();
   const shouldFetchReplies = level === 0 && showReplies;
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
@@ -112,34 +115,44 @@ export default function CommentItem({
                 />
               )}
 
-              {isOwner && (
-                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 p-0 hover:bg-gray-200 rounded-full"
-                      >
-                        <MoreHorizontal size={14} />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setIsEditing(true)}>
-                        <Edit2 className="mr-2 h-4 w-4" />
-                        Chỉnh sửa
-                      </DropdownMenuItem>
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 p-0 hover:bg-gray-200 rounded-full"
+                    >
+                      <MoreHorizontal size={14} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {isOwner ? (
+                      <>
+                        <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                          <Edit2 className="mr-2 h-4 w-4" />
+                          Chỉnh sửa
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-red-600 focus:text-red-600"
+                          onClick={() => setShowDeleteDialog(true)}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Xóa
+                        </DropdownMenuItem>
+                      </>
+                    ) : (
                       <DropdownMenuItem
                         className="text-red-600 focus:text-red-600"
-                        onClick={() => setShowDeleteDialog(true)}
+                        onClick={() => setShowReportDialog(true)}
                       >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Xóa
+                        <Flag className="mr-2 h-4 w-4" />
+                        Báo cáo
                       </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              )}
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
             {comment.media && (
               <ContainedMedia
@@ -147,6 +160,15 @@ export default function CommentItem({
                 mediaType={comment.media.mediaType}
                 url={comment.media.url}
                 width={comment.media.width || 200}
+                onClick={() =>
+                  comment.media &&
+                  openImage({
+                    imgId: comment.media.mediaId,
+                    url: comment.media.url,
+                    height: comment.media.height,
+                    width: comment.media.width,
+                  })
+                }
               />
             )}
             <div className="flex items-center gap-2 text-xs text-gray-500 px-3 py-1">
@@ -258,6 +280,13 @@ export default function CommentItem({
           title="Xóa bình luận?"
           description="Bạn có chắc chắn muốn xóa bình luận này không? Hành động này không thể hoàn tác."
           isPending={isDeleting}
+        />
+
+        <ReportDialog
+          isOpen={showReportDialog}
+          onClose={() => setShowReportDialog(false)}
+          targetType="comment"
+          targetId={comment.id}
         />
       </div>
     </div>

@@ -48,7 +48,7 @@ export class SubmitReportService extends BaseUseCaseService<
       username: user.username,
       firstName: user.firstName,
       lastName: user.lastName,
-      avatar: user.avatar,
+      avatar: user.avatar?.url || null,
     } as any;
 
     const report = await this.reportRepository.create({

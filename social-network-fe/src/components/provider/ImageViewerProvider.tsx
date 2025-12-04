@@ -35,7 +35,6 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
     setIsOpen(true);
   };
 
-  // Logic này của bạn rất chính xác
   const hasDimensions = useMemo(
     () => typeof data?.width === 'number' && typeof data?.height === 'number',
     [data]
@@ -51,7 +50,6 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
     <ImageViewerContext.Provider value={{ open }}>
       {children}
 
-      {/* Nút X của bạn (Hoạt động tốt khi dialog mở) */}
       {isOpen &&
         createPortal(
           <button
