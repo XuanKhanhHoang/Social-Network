@@ -6,13 +6,28 @@ export function middleware(request: NextRequest) {
   const refreshToken = request.cookies.get('refreshToken')?.value;
 
   const authRoutes = ['/login', '/register', '/forgot-password'];
+  const adminAuthRoutes = ['/admin/login'];
+
   const publicPaths = ['/public'];
   const semiPublicPaths = ['/user'];
 
   let isPublic = false;
   let isSemiPublic = false;
+  let isAdminRoute = false;
 
-  const trulyPublicPaths = [...authRoutes, ...publicPaths];
+  const trulyPublicPaths = [...authRoutes, ...publicPaths, ...adminAuthRoutes];
+
+  if (pathname.startsWith('/admin')) {
+    isAdminRoute = true;
+
+    if (
+      adminAuthRoutes.some(
+        (path) => pathname === path || pathname.startsWith(path + '/')
+      )
+    ) {
+      isPublic = true;
+    }
+  }
 
   if (
     trulyPublicPaths.some(
@@ -33,12 +48,22 @@ export function middleware(request: NextRequest) {
   const res = NextResponse.next();
   res.headers.set('x-route-public', isPublic ? 'true' : 'false');
   res.headers.set('x-route-semi-public', isSemiPublic ? 'true' : 'false');
+  res.headers.set('x-route-admin', isAdminRoute ? 'true' : 'false');
   res.headers.set(
     'x-route-url',
     `${pathname}${searchParams ? '?' + searchParams : ''}`
   );
 
-  if (!isPublic && !isSemiPublic && !accessToken && !refreshToken) {
+  if (isAdminRoute && !isPublic && !accessToken && !refreshToken) {
+    return NextResponse.redirect(new URL('/admin/login', request.url));
+  }
+  if (
+    !isPublic &&
+    !isSemiPublic &&
+    !isAdminRoute &&
+    !accessToken &&
+    !refreshToken
+  ) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
