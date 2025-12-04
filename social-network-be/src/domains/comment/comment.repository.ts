@@ -98,6 +98,22 @@ export class CommentRepository extends ReactableRepository<CommentDocument> {
     return this.updateByIdAndGet(id, updateQuery, session);
   }
 
+  async findById<TResult extends Partial<CommentDocument> = CommentDocument>(
+    id: string,
+    options?: any,
+  ): Promise<TResult | null> {
+    const { projection, session, ...restOptions } = options || {};
+    const query = this.model.findOne(
+      { _id: id, deletedAt: null },
+      projection,
+      restOptions,
+    );
+    if (session) {
+      query.session(session);
+    }
+    return query.exec() as Promise<TResult | null>;
+  }
+
   async findByPostIdWithCursor(
     postId: string,
     userId: string,
@@ -113,6 +129,7 @@ export class CommentRepository extends ReactableRepository<CommentDocument> {
       $match: {
         postId: postIdObj,
         parentId: { $exists: false },
+        deletedAt: null,
       },
     });
     pipeline.push({
@@ -196,7 +213,7 @@ export class CommentRepository extends ReactableRepository<CommentDocument> {
     const pipeline: PipelineStage[] = [];
 
     pipeline.push({
-      $match: { rootId: parentIdObj },
+      $match: { rootId: parentIdObj, deletedAt: null },
     });
 
     pipeline.push({
@@ -338,6 +355,7 @@ export class CommentRepository extends ReactableRepository<CommentDocument> {
       $match: {
         postId: { $in: postIds },
         parentId: { $exists: false },
+        deletedAt: null,
       },
     });
 
