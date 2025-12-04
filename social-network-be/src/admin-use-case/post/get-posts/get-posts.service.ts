@@ -1,7 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, FilterQuery, Types } from 'mongoose';
-import { PostDocument } from 'src/schemas/post.schema';
+import { PostRepository } from 'src/domains/post/post.repository';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 import { PaginatedResponse } from 'src/share/dto/pagination.dto';
 
@@ -39,38 +37,19 @@ export class GetPostsService extends BaseUseCaseService<
   GetPostsInput,
   GetPostsOutput
 > {
-  constructor(
-    @InjectModel('Post') private readonly postModel: Model<PostDocument>,
-  ) {
+  constructor(private readonly postRepository: PostRepository) {
     super();
   }
 
   async execute(input: GetPostsInput): Promise<GetPostsOutput> {
     const { page, limit, searchId, includeDeleted } = input;
-    const skip = (page - 1) * limit;
 
-    const filter: FilterQuery<PostDocument> = {};
-
-    if (!includeDeleted) {
-      filter.deletedAt = null;
-    }
-
-    if (searchId) {
-      filter._id = new Types.ObjectId(searchId);
-    }
-
-    const [posts, total] = await Promise.all([
-      this.postModel
-        .find(filter)
-        .select(
-          '_id author content plain_text visibility status reactionsCount commentsCount sharesCount createdAt deletedAt',
-        )
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-      this.postModel.countDocuments(filter),
-    ]);
+    const { data: posts, total } = await this.postRepository.findForAdmin({
+      page,
+      limit,
+      searchId,
+      includeDeleted,
+    });
 
     return {
       data: posts.map((post) => ({

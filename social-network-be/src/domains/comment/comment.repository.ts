@@ -478,4 +478,48 @@ export class CommentRepository extends ReactableRepository<CommentDocument> {
       _id: { $in: commentIds.map((id) => new Types.ObjectId(id)) },
     });
   }
+
+  async findForAdmin({
+    page,
+    limit,
+    searchId,
+    postId,
+    includeDeleted,
+  }: {
+    page: number;
+    limit: number;
+    searchId?: string;
+    postId?: string;
+    includeDeleted?: boolean;
+  }): Promise<{ data: CommentDocument[]; total: number }> {
+    const skip = (page - 1) * limit;
+    const filter: any = {};
+
+    if (!includeDeleted) {
+      filter.deletedAt = null;
+    }
+
+    if (searchId) {
+      filter._id = new Types.ObjectId(searchId);
+    }
+
+    if (postId) {
+      filter.postId = new Types.ObjectId(postId);
+    }
+
+    const [data, total] = await Promise.all([
+      this.model
+        .find(filter)
+        .select(
+          '_id postId author content parentId rootId mentionedUser reactionsCount repliesCount createdAt updatedAt',
+        )
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      this.model.countDocuments(filter),
+    ]);
+
+    return { data, total };
+  }
 }

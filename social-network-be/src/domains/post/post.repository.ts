@@ -518,4 +518,42 @@ export class PostRepository extends ReactableRepository<PostDocument> {
       _id: { $in: postIds.map((id) => new Types.ObjectId(id)) },
     });
   }
+
+  async findForAdmin({
+    page,
+    limit,
+    searchId,
+    includeDeleted,
+  }: {
+    page: number;
+    limit: number;
+    searchId?: string;
+    includeDeleted?: boolean;
+  }): Promise<{ data: PostDocument[]; total: number }> {
+    const skip = (page - 1) * limit;
+    const filter: any = {};
+
+    if (!includeDeleted) {
+      filter.deletedAt = null;
+    }
+
+    if (searchId) {
+      filter._id = new Types.ObjectId(searchId);
+    }
+
+    const [data, total] = await Promise.all([
+      this.model
+        .find(filter)
+        .select(
+          '_id author content plain_text visibility status reactionsCount commentsCount sharesCount createdAt deletedAt',
+        )
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      this.model.countDocuments(filter),
+    ]);
+
+    return { data, total };
+  }
 }

@@ -395,4 +395,96 @@ export class UserRepository extends BaseRepository<UserDocument> {
       { $set: { lastActiveAt } },
     );
   }
+
+  async getRegistrationStats({
+    startDate,
+    endDate,
+    mode,
+  }: {
+    startDate: Date;
+    endDate: Date;
+    mode: string;
+  }): Promise<{ data: { period: string; count: number }[]; total: number }> {
+    let dateFormat: string;
+    switch (mode) {
+      case '1d':
+        dateFormat = '%Y-%m-%d';
+        break;
+      case '1w':
+        dateFormat = '%Y-W%V';
+        break;
+      case '1m':
+        dateFormat = '%Y-%m';
+        break;
+      case '3m':
+      case '6m':
+        dateFormat = '%Y-Q';
+        break;
+      case '1y':
+        dateFormat = '%Y';
+        break;
+      default:
+        dateFormat = '%Y-%m-%d';
+    }
+
+    const pipeline: any[] = [
+      {
+        $match: {
+          createdAt: { $gte: startDate, $lte: endDate },
+          role: { $ne: 'admin' },
+        },
+      },
+    ];
+
+    if (mode === '3m' || mode === '6m') {
+      pipeline.push({
+        $addFields: {
+          quarter: {
+            $ceil: { $divide: [{ $month: '$createdAt' }, 3] },
+          },
+          year: { $year: '$createdAt' },
+        },
+      });
+      pipeline.push({
+        $group: {
+          _id: { year: '$year', quarter: '$quarter' },
+          count: { $sum: 1 },
+        },
+      });
+      pipeline.push({
+        $project: {
+          _id: 0,
+          period: {
+            $concat: [
+              { $toString: '$_id.year' },
+              '-Q',
+              { $toString: '$_id.quarter' },
+            ],
+          },
+          count: 1,
+        },
+      });
+    } else {
+      pipeline.push({
+        $group: {
+          _id: { $dateToString: { format: dateFormat, date: '$createdAt' } },
+          count: { $sum: 1 },
+        },
+      });
+      pipeline.push({
+        $project: {
+          _id: 0,
+          period: '$_id',
+          count: 1,
+        },
+      });
+    }
+
+    pipeline.push({ $sort: { period: 1 } });
+
+    const data = await this.userModel.aggregate(pipeline);
+    const total = data.reduce((sum, item) => sum + item.count, 0);
+
+    return { data, total };
+  }
 }
