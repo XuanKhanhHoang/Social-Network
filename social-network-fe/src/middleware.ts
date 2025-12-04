@@ -5,7 +5,7 @@ export function middleware(request: NextRequest) {
   const accessToken = request.cookies.get('accessToken')?.value;
   const refreshToken = request.cookies.get('refreshToken')?.value;
 
-  const authRoutes = ['/login', '/register'];
+  const authRoutes = ['/login', '/register', '/forgot-password'];
   const publicPaths = ['/public'];
   const semiPublicPaths = ['/user'];
 

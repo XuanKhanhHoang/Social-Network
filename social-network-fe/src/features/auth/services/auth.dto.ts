@@ -61,3 +61,7 @@ export interface RegisterRequestDto {
     ciphertext: string;
   };
 }
+
+export interface ForgotPasswordResponseDto {
+  message: string;
+}

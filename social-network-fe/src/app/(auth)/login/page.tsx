@@ -88,10 +88,6 @@ const LoginForm = () => {
     setIsSubmitting(false);
   };
 
-  const handleForgotPassword = () => {
-    console.log('Forgot password clicked');
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
       <div className="flex min-h-screen lg:flex-row flex-col">
@@ -106,7 +102,6 @@ const LoginForm = () => {
           </div>
         </div>
 
-        {/* Right Side - Login Form */}
         <div className="flex-1 flex items-center justify-center px-8">
           <div className="w-full max-w-md">
             <Card className="shadow-2xl">
@@ -119,7 +114,6 @@ const LoginForm = () => {
 
               <CardContent className="space-y-4">
                 <form ref={formRef} onSubmit={handleSubmit}>
-                  {/* Email Input */}
                   <div className="space-y-2 mb-4">
                     <Input
                       name="email"
@@ -142,7 +136,6 @@ const LoginForm = () => {
                     )}
                   </div>
 
-                  {/* Password Input */}
                   <div className="space-y-2 mb-4">
                     <div className="relative">
                       <Input
@@ -180,7 +173,6 @@ const LoginForm = () => {
                     )}
                   </div>
 
-                  {/* Login Button */}
                   <Button
                     type="submit"
                     disabled={isSubmitting}
@@ -191,22 +183,19 @@ const LoginForm = () => {
                   </Button>
                 </form>
 
-                {/* Forgot Password */}
                 <div className="text-center">
                   <Button
                     type="button"
-                    onClick={handleForgotPassword}
                     variant="link"
                     className="text-blue-600 hover:text-blue-800 text-sm font-medium p-0 h-auto"
+                    asChild
                   >
-                    Quên mật khẩu?
+                    <Link href="/forgot-password">Quên mật khẩu?</Link>
                   </Button>
                 </div>
 
-                {/* Divider */}
                 <Separator className="my-6" />
 
-                {/* Create Account Button */}
                 <div className="text-center">
                   <Button
                     type="button"
@@ -223,7 +212,6 @@ const LoginForm = () => {
         </div>
       </div>
 
-      {/* Footer for Desktop */}
       <div className="hidden lg:block fixed bottom-0 w-full bg-white border-t border-gray-200 py-4">
         <div className="container mx-auto px-8">
           <p className="text-xs text-gray-400 text-center">

@@ -4,6 +4,7 @@ import {
   RegisterRequestDto,
   RegisterResponseDto,
   VerifyEmailResponseDto,
+  ForgotPasswordResponseDto,
 } from './auth.dto';
 import { ApiClient } from '@/services/api';
 import { RequestOptions } from '@/services/type';
@@ -35,5 +36,8 @@ export const authService = {
   },
   async checkSession(options?: RequestOptions): Promise<void> {
     return ApiClient.checkSession(options);
+  },
+  async forgotPassword(email: string): Promise<ForgotPasswordResponseDto> {
+    return ApiClient.post(`${AUTH_PREFIX}/forgot-password`, { email });
   },
 };
