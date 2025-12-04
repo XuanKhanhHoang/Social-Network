@@ -102,7 +102,9 @@ export class GetUserFriendsPreviewService extends BaseUseCaseService<
         const friendMap = new Map(friends.map((f) => [f._id.toString(), f]));
         friendsData = friendIds
           .map((id) => friendMap.get(id))
-          .filter((f) => f) as UserMinimalModel<Types.ObjectId>[];
+          .filter(
+            (f) => f != null && !(f as any).deletedAt,
+          ) as UserMinimalModel<Types.ObjectId>[];
       }
     }
 

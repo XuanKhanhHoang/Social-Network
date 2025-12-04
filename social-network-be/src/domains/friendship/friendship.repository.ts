@@ -118,9 +118,16 @@ export class FriendshipRepository extends BaseRepository<FriendshipDocument> {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate('requester', 'firstName lastName username avatar')
+      .populate({
+        path: 'requester',
+        select: 'firstName lastName username avatar',
+        match: { deletedAt: null },
+      })
       .lean()
-      .exec() as unknown as Promise<
+      .exec()
+      .then((docs) =>
+        docs.filter((d) => d.requester !== null),
+      ) as unknown as Promise<
       FriendshipDocumentModelWithPopulatedUser<Types.ObjectId>[]
     >;
   }
@@ -138,9 +145,16 @@ export class FriendshipRepository extends BaseRepository<FriendshipDocument> {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate('recipient', 'firstName lastName username avatar')
+      .populate({
+        path: 'recipient',
+        select: 'firstName lastName username avatar',
+        match: { deletedAt: null },
+      })
       .lean()
-      .exec() as unknown as Promise<
+      .exec()
+      .then((docs) =>
+        docs.filter((d) => d.recipient !== null),
+      ) as unknown as Promise<
       FriendshipDocumentModelWithPopulatedUser<Types.ObjectId>[]
     >;
   }
@@ -333,24 +347,34 @@ export class FriendshipRepository extends BaseRepository<FriendshipDocument> {
       })
       .sort({ updatedAt: -1 })
       .limit(100)
-      .populate('requester', 'firstName lastName username avatar lastActiveAt')
-      .populate('recipient', 'firstName lastName username avatar lastActiveAt')
+      .populate({
+        path: 'requester',
+        select: 'firstName lastName username avatar lastActiveAt',
+        match: { deletedAt: null },
+      })
+      .populate({
+        path: 'recipient',
+        select: 'firstName lastName username avatar lastActiveAt',
+        match: { deletedAt: null },
+      })
       .lean()
       .exec();
 
-    return docs.map((doc: any) => {
-      const isRequester = doc.requester._id.toString() === userId;
-      const friend = isRequester ? doc.recipient : doc.requester;
+    return docs
+      .filter((doc: any) => doc.requester && doc.recipient)
+      .map((doc: any) => {
+        const isRequester = doc.requester._id.toString() === userId;
+        const friend = isRequester ? doc.recipient : doc.requester;
 
-      return {
-        _id: friend._id,
-        firstName: friend.firstName,
-        lastName: friend.lastName,
-        username: friend.username,
-        avatar: friend.avatar,
-        lastActiveAt: friend.lastActiveAt,
-      };
-    });
+        return {
+          _id: friend._id,
+          firstName: friend.firstName,
+          lastName: friend.lastName,
+          username: friend.username,
+          avatar: friend.avatar,
+          lastActiveAt: friend.lastActiveAt,
+        };
+      });
   }
 
   async searchFriends(
@@ -383,6 +407,7 @@ export class FriendshipRepository extends BaseRepository<FriendshipDocument> {
           localField: 'friendId',
           foreignField: '_id',
           as: 'friendInfo',
+          pipeline: [{ $match: { deletedAt: null } }],
         },
       },
       { $unwind: '$friendInfo' },

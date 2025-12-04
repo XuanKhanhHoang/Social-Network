@@ -1,8 +1,14 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { AuthService } from 'src/domains/auth/services/auth.service';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 import * as bcrypt from 'bcryptjs';
 import { UserRepository } from 'src/domains/user/user.repository';
+import { UserStatus } from 'src/share/enums/user-status.enum';
+
 export type LoginInput = {
   email: string;
   password: string;
@@ -38,8 +44,8 @@ export class LoginService extends BaseUseCaseService<LoginInput, LoginOutput> {
 
     const user = (
       await this.userRepository.findOne(
-        { email, isVerified: true },
-        { projection: '+password +keyVault' },
+        { email, isVerified: true, deletedAt: null },
+        { projection: '+password +keyVault +status' },
       )
     )?.toObject();
     if (!user) {
@@ -49,6 +55,10 @@ export class LoginService extends BaseUseCaseService<LoginInput, LoginOutput> {
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
       throw new UnauthorizedException('Invalid credentials');
+    }
+
+    if (user.status === UserStatus.LOCKED) {
+      throw new ForbiddenException('Account is locked.');
     }
 
     const { accessToken, refreshToken } = this.authService.generateTokens(

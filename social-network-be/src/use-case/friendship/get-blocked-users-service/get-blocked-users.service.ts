@@ -40,9 +40,10 @@ export class GetBlockedUsersService extends BaseUseCaseService<
     let blockedUsers: UserMinimalModel<Types.ObjectId>[] = [];
 
     if (blockedUserIds.length > 0) {
-      blockedUsers = await this.userRepository.findManyByIds(blockedUserIds);
-      // Preserve order if needed, but findManyByIds might not guarantee it.
-      // Mapping back to ensure order if critical, but for blocked list usually not critical.
+      const users = await this.userRepository.findManyByIds(blockedUserIds);
+      blockedUsers = users.filter(
+        (u) => !(u as any).deletedAt,
+      ) as UserMinimalModel<Types.ObjectId>[];
     }
 
     return {

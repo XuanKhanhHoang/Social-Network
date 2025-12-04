@@ -45,7 +45,7 @@ export class AdminLoginService extends BaseUseCaseService<
 
     const user = (
       await this.userRepository.findOne(
-        { email },
+        { email, deletedAt: null },
         { projection: '+password +role +status' },
       )
     )?.toObject();

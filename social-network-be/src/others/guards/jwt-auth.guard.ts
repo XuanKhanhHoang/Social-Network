@@ -54,10 +54,17 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
           projection: {
             _id: 1,
             role: 1,
+            status: 1,
+            deletedAt: 1,
           },
         });
 
-        if (!user) throw new UnauthorizedException('User not found');
+        if (!user || user.deletedAt)
+          throw new UnauthorizedException('User not found');
+
+        if (user.status === 'locked') {
+          throw new UnauthorizedException('Account is locked');
+        }
 
         request['user'] = {
           _id: user._id.toString(),
@@ -72,8 +79,15 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         try {
           const payload = this.jwtService.verify(refreshToken);
 
-          const user = await this.userRepository.findById(payload._id);
-          if (!user) throw new UnauthorizedException('User not found');
+          const user = await this.userRepository.findById(payload._id, {
+            projection: { _id: 1, role: 1, status: 1, deletedAt: 1 },
+          });
+          if (!user || user.deletedAt)
+            throw new UnauthorizedException('User not found');
+
+          if (user.status === 'locked') {
+            throw new UnauthorizedException('Account is locked');
+          }
 
           const newAccessToken = this.jwtService.sign(
             { _id: payload._id },

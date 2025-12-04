@@ -59,7 +59,7 @@ export class GetUserPostsService extends BaseUseCaseService<
       const visibilities: UserPrivacy[] = [UserPrivacy.PUBLIC];
 
       const targetUser = await this.userRepository.findByUsername(username);
-      if (!targetUser) {
+      if (!targetUser || targetUser.deletedAt) {
         throw new NotFoundException('User not found');
       }
 

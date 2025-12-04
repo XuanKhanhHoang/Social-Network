@@ -80,7 +80,11 @@ export class ChatRepository extends BaseRepository<ConversationDocument> {
       .find(query)
       .sort({ createdAt: -1 })
       .limit(limit + 1)
-      .populate('sender', 'firstName lastName username avatar')
+      .populate({
+        path: 'sender',
+        select: 'firstName lastName username avatar',
+        match: { deletedAt: null },
+      })
       .exec();
 
     const hasMore = messages.length > limit;
@@ -117,7 +121,11 @@ export class ChatRepository extends BaseRepository<ConversationDocument> {
       .find(query)
       .sort({ lastInteractiveAt: -1 })
       .limit(limit + 1)
-      .populate('participants', 'firstName lastName username avatar publicKey')
+      .populate({
+        path: 'participants',
+        select: 'firstName lastName username avatar publicKey',
+        match: { deletedAt: null },
+      })
       .populate('lastMessage')
       .exec();
 
@@ -217,6 +225,7 @@ export class ChatRepository extends BaseRepository<ConversationDocument> {
           foreignField: '_id',
           as: 'participants',
           pipeline: [
+            { $match: { deletedAt: null } },
             {
               $project: {
                 firstName: 1,
@@ -280,6 +289,7 @@ export class ChatRepository extends BaseRepository<ConversationDocument> {
             foreignField: '_id',
             as: 'lastMessage.sender',
             pipeline: [
+              { $match: { deletedAt: null } },
               {
                 $project: {
                   firstName: 1,

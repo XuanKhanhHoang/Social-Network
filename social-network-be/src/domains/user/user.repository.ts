@@ -79,7 +79,7 @@ export class UserRepository extends BaseRepository<UserDocument> {
     username: string,
   ): Promise<UserProfileModel<Types.ObjectId> | null> {
     return this.findOneLean(
-      { username },
+      { username, deletedAt: null },
       {
         projection:
           'firstName lastName username avatar coverPhoto ' +
@@ -92,7 +92,7 @@ export class UserRepository extends BaseRepository<UserDocument> {
     username: string,
   ): Promise<UserFriendsContextResult | null> {
     return this.findOneLean<UserFriendsContextResult>(
-      { username },
+      { username, deletedAt: null },
       {
         projection: 'friendCount privacySettings.friendList',
       },
@@ -173,6 +173,7 @@ export class UserRepository extends BaseRepository<UserDocument> {
       $match: {
         _id: { $nin: excludeIds.map((id) => new Types.ObjectId(id)) },
         isVerified: true,
+        deletedAt: null,
       },
     });
 
@@ -261,6 +262,7 @@ export class UserRepository extends BaseRepository<UserDocument> {
     pipeline.push({
       $match: {
         _id: { $nin: excludeIds.map((id) => new Types.ObjectId(id)) },
+        deletedAt: null,
       },
     });
 

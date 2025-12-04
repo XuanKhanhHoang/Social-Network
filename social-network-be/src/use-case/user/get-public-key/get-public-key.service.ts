@@ -22,7 +22,7 @@ export class GetPublicKeyService extends BaseUseCaseService<
 
   async execute(input: GetPublicKeyInput): Promise<GetPublicKeyOutput> {
     const user = await this.userRepository.findOne(
-      { _id: input.userId },
+      { _id: input.userId, deletedAt: null },
       { projection: 'publicKey' },
     );
 

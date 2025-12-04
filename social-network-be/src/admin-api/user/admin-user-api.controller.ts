@@ -4,13 +4,12 @@ import {
   GetUsersOutput,
 } from 'src/admin-use-case/user/get-users/get-users.service';
 import { GetUsersDto } from './dto/get-users.dto';
-import { JwtAuthGuard } from 'src/others/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/others/guards/roles.guard';
 import { Roles } from 'src/share/decorators/roles.decorator';
 import { UserRole } from 'src/share/enums/user-role.enum';
 
 @Controller('admin/users')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 @Roles(UserRole.ADMIN)
 export class AdminUserApiController {
   constructor(private readonly getUsersService: GetUsersService) {}
