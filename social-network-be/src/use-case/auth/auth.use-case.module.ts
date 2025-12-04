@@ -6,6 +6,7 @@ import { UserModule } from 'src/domains/user/user.module';
 import { AuthModule } from 'src/domains/auth/auth.module';
 
 import { ChangePasswordService } from './change-password/change-password.service';
+import { ForgotPasswordService } from './forgot-password/forgot-password.service';
 
 @Module({
   imports: [AuthModule, UserModule],
@@ -14,12 +15,14 @@ import { ChangePasswordService } from './change-password/change-password.service
     RegisterService,
     VerifyEmailService,
     ChangePasswordService,
+    ForgotPasswordService,
   ],
   exports: [
     LoginService,
     RegisterService,
     VerifyEmailService,
     ChangePasswordService,
+    ForgotPasswordService,
   ],
 })
 export class AuthUseCaseModule {}

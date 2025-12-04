@@ -14,9 +14,11 @@ import { LoginService } from '../../use-case/auth/login/login.service';
 import { RegisterService } from '../../use-case/auth/register/register.service';
 import { VerifyEmailService } from '../../use-case/auth/verify-email/verify-email.service';
 import { ChangePasswordService } from '../../use-case/auth/change-password/change-password.service';
+import { ForgotPasswordService } from '../../use-case/auth/forgot-password/forgot-password.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto';
 import { ChangePasswordRequestDto } from './dto/change-password.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { AllowPublic } from 'src/share/decorators/allow-public-req.decorator';
 import { HttpCode, HttpStatus } from '@nestjs/common';
 import { GetUserId } from 'src/share/decorators/user.decorator';
@@ -28,6 +30,7 @@ export class AuthController {
     private loginUserService: LoginService,
     private verifyEmailService: VerifyEmailService,
     private changePasswordService: ChangePasswordService,
+    private forgotPasswordService: ForgotPasswordService,
   ) {}
 
   @Post('register')
@@ -98,6 +101,12 @@ export class AuthController {
   ) {
     await this.changePasswordService.execute(userId, dto);
     return { message: 'Đổi mật khẩu thành công' };
+  }
+
+  @Post('forgot-password')
+  @AllowPublic()
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.forgotPasswordService.execute(dto);
   }
 
   @Post('check')

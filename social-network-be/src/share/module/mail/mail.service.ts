@@ -18,10 +18,30 @@ export class MailService {
     await this.mailerService.sendMail({
       to: user.email,
       subject: 'Chào mừng tới ThreshCity! Vui lòng xác nhận email của bạn',
-      template: './confirmation', // Tên file template
+      template: './confirmation',
       context: {
         name: user.firstName,
         url,
+      },
+    });
+  }
+
+  async sendForgotPasswordEmail(
+    user: {
+      firstName: string;
+      email: string;
+    },
+    newPassword: string,
+  ) {
+    console.log('Sending forgot password email to:', user.email);
+
+    await this.mailerService.sendMail({
+      to: user.email,
+      subject: 'ThreshCity - Mật khẩu mới của bạn',
+      template: './forgot-password',
+      context: {
+        name: user.firstName,
+        newPassword,
       },
     });
   }
