@@ -8,6 +8,7 @@ import { InjectConnection } from '@nestjs/mongoose';
 import { Connection, Types } from 'mongoose';
 import { CommentRepository } from 'src/domains/comment/comment.repository';
 import { CommentModel } from 'src/domains/comment/interfaces';
+import { CommentDocument } from 'src/schemas/comment.schema';
 import { MediaUploadService } from 'src/domains/media-upload/media-upload.service';
 import { PostRepository } from 'src/domains/post/post.repository';
 import { UserRepository } from 'src/domains/user/user.repository';
@@ -59,7 +60,7 @@ export class CreateCommentService extends BaseUseCaseService<
     const session = await this.connection.startSession();
 
     try {
-      let post, parentComment;
+      let post, parentComment: CommentDocument | null;
       const result = await session.withTransaction(async () => {
         //TODO: NEED TO HANDLE Mentioned User
         let author: UserMinimalWithEmailModel<Types.ObjectId>,
@@ -75,7 +76,7 @@ export class CreateCommentService extends BaseUseCaseService<
                 .then((res) => (res?.length > 0 ? res[0] : null))
             : null,
           parentId
-            ? this.commentRepository.checkIdExist(parentId, {
+            ? this.commentRepository.findById(parentId, {
                 session,
               })
             : null,
@@ -92,6 +93,14 @@ export class CreateCommentService extends BaseUseCaseService<
         }
         if (mediaId && mediaItem.mediaType == MediaType.VIDEO)
           throw new BadRequestException('Video are not allowed to comment');
+
+        let rootId: Types.ObjectId | null = null;
+        if (parentId && parentComment) {
+          // If parent is a reply (has rootId), inherit it.
+          // If parent is a root comment (no rootId), use parent's ID.
+          rootId =
+            parentComment.rootId || (parentComment._id as Types.ObjectId);
+        }
 
         let [res] = await Promise.all([
           this.commentRepository.create(
@@ -114,6 +123,7 @@ export class CreateCommentService extends BaseUseCaseService<
                   }
                 : undefined,
               parentId,
+              rootId,
               postId,
             },
             session,
@@ -126,8 +136,11 @@ export class CreateCommentService extends BaseUseCaseService<
           Types.ObjectId,
           Types.ObjectId
         >;
-        if (parentId) {
-          await this.commentRepository.increaseReplyCount(parentId, session);
+        if (rootId) {
+          await this.commentRepository.increaseReplyCount(
+            rootId.toString(),
+            session,
+          );
         }
         await this.postRepository.increaseCommentCount(
           comment.postId.toString(),

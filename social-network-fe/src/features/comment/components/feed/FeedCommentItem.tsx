@@ -47,7 +47,9 @@ export default function FeedCommentItem({ comment }: FeedCommentItemProps) {
             btnClassName="px-2 py-1"
           />
           {(comment.repliesCount ?? 0) > 0 && (
-            <span className="font-semibold hover:underline">5 phản hồi</span>
+            <span className="font-semibold hover:underline">
+              {comment.repliesCount} phản hồi
+            </span>
           )}
         </div>
       </div>

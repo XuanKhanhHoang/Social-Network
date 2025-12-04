@@ -80,7 +80,7 @@ export class UpdateCommentService extends BaseUseCaseService<
               session,
             );
           }
-          const updateData: UpdateQuery<CommentDocument> = {};
+          const updateData: UpdateQuery<CommentDocument> = { $set: {} };
 
           if (content) {
             updateData.$set.content = content;

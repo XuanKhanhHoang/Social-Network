@@ -2,6 +2,7 @@ import {
   CreateCommentRequestDto,
   GetCommentsResponseDto,
   UpdateCommentRequestDto,
+  CommentDto,
 } from './comment.dto';
 import { ApiClient } from '@/services/api';
 import { RequestOptions } from '@/services/type';
@@ -9,20 +10,15 @@ import { RequestOptions } from '@/services/type';
 const COMMENT_PREFIX = '/comments';
 
 export const commentService = {
-  async createComment(
-    data: CreateCommentRequestDto
-  ): Promise<{ _id: string } & unknown> {
-    return ApiClient.post<{ _id: string } & unknown>(COMMENT_PREFIX, data);
+  async createComment(data: CreateCommentRequestDto): Promise<CommentDto> {
+    return ApiClient.post<CommentDto>(COMMENT_PREFIX, data);
   },
 
   async updateComment(
     id: string,
     data: UpdateCommentRequestDto
-  ): Promise<{ _id: string } & unknown> {
-    return ApiClient.patch<{ _id: string } & unknown>(
-      `${COMMENT_PREFIX}/${id}`,
-      data
-    );
+  ): Promise<CommentDto> {
+    return ApiClient.patch<CommentDto>(`${COMMENT_PREFIX}/${id}`, data);
   },
 
   async getPostComments({

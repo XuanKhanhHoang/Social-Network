@@ -28,6 +28,9 @@ export class CommentDocument extends Document {
   @Prop({ type: Types.ObjectId, ref: 'Comment', index: true })
   parentId?: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId, ref: 'Comment', index: true })
+  rootId?: Types.ObjectId;
+
   @Prop({ type: SubUser, ref: 'User' })
   mentionedUser?: SubUser;
 

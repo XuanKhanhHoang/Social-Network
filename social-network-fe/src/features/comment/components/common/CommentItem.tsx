@@ -14,6 +14,15 @@ import { useReplyStore } from '@/features/comment/store/reply-comments/reply.sto
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { useGetCommentReplies } from '@/features/comment/hooks/useComment';
 import ContainedMedia from '@/features/media/components/common/ContainedMedia';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Edit2, MoreHorizontal, Trash2 } from 'lucide-react';
+import CommentEditor from '@/features/comment/components/editor/CommentEditor';
+import { useStore } from '@/store';
 
 type CommentItemProps = {
   comment: CommentWithMyReaction;
@@ -29,10 +38,14 @@ export default function CommentItem({
   rootId,
 }: CommentItemProps) {
   const [showReplies, setShowReplies] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const setReplyingTo = useReplyStore((state) => state.setReplyingTo);
+  const currentUser = useStore((state) => state.user);
+
+  const shouldFetchReplies = level === 0 && showReplies;
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useGetCommentReplies(comment.id, 5, { enabled: showReplies });
+    useGetCommentReplies(comment.id, 5, { enabled: shouldFetchReplies });
 
   const replies =
     data?.pages
@@ -45,8 +58,10 @@ export default function CommentItem({
 
   const indentationStyle = level > 0 ? { paddingLeft: '48px' } : {};
 
+  const isOwner = currentUser?.id === comment.author.id;
+
   return (
-    <div className="flex gap-3 mb-0">
+    <div className="flex gap-3 mb-0 group">
       <div style={indentationStyle}>
         <UserAvatar
           name={comment.author.firstName}
@@ -55,39 +70,114 @@ export default function CommentItem({
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className="bg-gray-100 rounded-lg px-3 py-2 ">
-          <span className="font-semibold text-sm">
-            {comment.author.firstName}
-          </span>
-          {contentHtml && (
-            <div
-              className="text-sm prose"
-              dangerouslySetInnerHTML={{ __html: contentHtml }}
+        {!isEditing ? (
+          <>
+            <div className="bg-gray-100 rounded-lg px-3 py-2 relative">
+              <span className="font-semibold text-sm">
+                {comment.author.firstName}
+              </span>
+              {comment.replyToUser && (
+                <span className="text-sm text-gray-500 ml-1">
+                  Trả lời{' '}
+                  <span className="font-semibold text-gray-700">
+                    {comment.replyToUser.firstName}{' '}
+                    {comment.replyToUser.lastName} @
+                    {comment.replyToUser.username}
+                  </span>
+                </span>
+              )}
+              {contentHtml && (
+                <div
+                  className="text-sm prose"
+                  dangerouslySetInnerHTML={{ __html: contentHtml }}
+                />
+              )}
+
+              {isOwner && (
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 p-0 hover:bg-gray-200 rounded-full"
+                      >
+                        <MoreHorizontal size={14} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                        <Edit2 className="mr-2 h-4 w-4" />
+                        Chỉnh sửa
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-red-600 focus:text-red-600">
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Xóa
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              )}
+            </div>
+            {comment.media && (
+              <ContainedMedia
+                height={comment.media.height || 200}
+                mediaType={comment.media.mediaType}
+                url={comment.media.url}
+                width={comment.media.width || 200}
+              />
+            )}
+            <div className="flex items-center gap-2 text-xs text-gray-500 px-3 py-1">
+              <span>{timeAgo(comment.createdAt)}</span>
+              <CommentReactionButton
+                comment={comment}
+                iconSize={18}
+                btnClassName="px-2 py-1"
+              />
+              <button
+                className="font-semibold hover:underline"
+                onClick={() => {
+                  setReplyingTo({ comment, rootId: comment.id });
+                }}
+              >
+                Trả lời
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="mt-1">
+            <CommentEditor
+              postId={postId}
+              mode="edit"
+              data={{
+                _id: comment.id,
+                content: comment.content,
+                media: comment.media
+                  ? {
+                      id: comment.media.mediaId,
+                      mediaType: comment.media.mediaType,
+                      url: comment.media.url,
+                      width: comment.media.width,
+                      height: comment.media.height,
+                    }
+                  : undefined,
+              }}
+              onSuccess={() => setIsEditing(false)}
+              variant="boxed"
+              autoFocus
             />
-          )}
-        </div>
-        {comment.media && (
-          <ContainedMedia
-            height={comment.media.height || 200}
-            mediaType={comment.media.mediaType}
-            url={comment.media.url}
-            width={comment.media.width || 200}
-          />
+            <div className="flex justify-end mt-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsEditing(false)}
+                className="text-xs h-8"
+              >
+                Hủy
+              </Button>
+            </div>
+          </div>
         )}
-        <div className="flex items-center gap-2 text-xs text-gray-500 px-3 py-1">
-          <span>{timeAgo(comment.createdAt)}</span>
-          <CommentReactionButton
-            comment={comment}
-            iconSize={18}
-            btnClassName="px-2 py-1"
-          />
-          <button
-            className="font-semibold hover:underline"
-            onClick={() => setReplyingTo({ comment, rootId })}
-          >
-            Trả lời
-          </button>
-        </div>
 
         {(comment.repliesCount ?? 0) > 0 && !showReplies && (
           <Button
@@ -111,7 +201,7 @@ export default function CommentItem({
                 comment={reply}
                 postId={postId}
                 level={1}
-                rootId={rootId}
+                rootId={comment.id}
               />
             ))}
 
@@ -131,7 +221,7 @@ export default function CommentItem({
               variant="ghost"
               size="sm"
               onClick={() => setShowReplies(false)}
-              className="!p-0 !h-auto !font-semibold !text-gray-500 !hover:bg-transparent !hover:text-gray-500 flex items-center gap-4" // <-- Đã thêm !
+              className="!p-0 !h-auto !font-semibold !text-gray-500 !hover:bg-transparent !hover:text-gray-500 flex items-center gap-4"
             >
               <span className="block w-6 border-t border-gray-500"></span>
               <span>Ẩn các phản hồi</span>

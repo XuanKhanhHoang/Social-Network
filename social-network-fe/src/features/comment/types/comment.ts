@@ -1,6 +1,8 @@
 import { ReactionsBreakdown } from '@/features/reaction/types/reaction';
 import {
+  transformToUserSummary,
   transformToUserSummaryWidthAvatarUrl,
+  UserSummary,
   UserSummaryWidthAvatarUrl,
 } from '@/features/user/types';
 import { MediaType, ReactionType } from '@/lib/constants/enums';
@@ -22,9 +24,16 @@ export function transformToComment(comment: CommentDto): Comment {
     id: comment._id,
     postId: comment.postId,
     author: transformToUserSummaryWidthAvatarUrl(comment.author),
+    mentionedUser: comment.mentionedUser
+      ? transformToUserSummary(comment.mentionedUser)
+      : undefined,
     content: comment.content,
     media,
     parentId: comment.parentId,
+    rootId: comment.rootId,
+    replyToUser: comment.replyToUser
+      ? transformToUserSummary(comment.replyToUser)
+      : undefined,
     reactionsCount: comment.reactionsCount,
     repliesCount: comment.repliesCount,
     engagementScore: comment.engagementScore,
@@ -45,9 +54,12 @@ export interface Comment {
   id: string;
   postId: string;
   author: UserSummaryWidthAvatarUrl;
+  mentionedUser?: UserSummary;
   content: JSONContent;
   media?: CommentMedia;
   parentId?: string;
+  rootId?: string;
+  replyToUser?: UserSummary;
   reactionsCount: number;
   repliesCount: number;
   engagementScore: number;

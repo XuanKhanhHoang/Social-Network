@@ -76,7 +76,7 @@ export default function PostDetail({
           'w-[100vw] h-[100dvh] max-w-none rounded-none',
           'md:w-[95vw] md:h-[90vh] md:max-w-[1600px] md:rounded-lg',
         ]
-      : 'w-full max-w-2xl h-fit max-h-[90vh] rounded-lg'
+      : 'w-full max-w-2xl h-[90vh] rounded-lg'
   );
 
   const sidebarClasses = cn(

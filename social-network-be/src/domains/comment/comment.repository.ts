@@ -71,6 +71,7 @@ export class CommentRepository extends ReactableRepository<CommentDocument> {
       postId: new Types.ObjectId(data.postId),
       content: data?.content,
       parentId: data.parentId ? new Types.ObjectId(data.parentId) : undefined,
+      rootId: data.rootId,
       media: data?.media,
     };
     const [createdComment] = await this.model.create([modelData], { session });
@@ -195,7 +196,7 @@ export class CommentRepository extends ReactableRepository<CommentDocument> {
     const pipeline: PipelineStage[] = [];
 
     pipeline.push({
-      $match: { parentId: parentIdObj },
+      $match: { rootId: parentIdObj },
     });
 
     pipeline.push({
@@ -239,6 +240,67 @@ export class CommentRepository extends ReactableRepository<CommentDocument> {
     const commonLookupStages: PipelineStage[] = [
       ...this.getUserReactionLookupStage(userIdObj),
       {
+        $addFields: {
+          parentIdObj: {
+            $cond: {
+              if: { $ne: ['$parentId', null] },
+              then: { $toObjectId: '$parentId' },
+              else: null,
+            },
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'comments',
+          localField: 'parentIdObj',
+          foreignField: '_id',
+          as: 'parentComment',
+        },
+      },
+      {
+        $unwind: { path: '$parentComment', preserveNullAndEmptyArrays: true },
+      },
+      {
+        $addFields: {
+          replyToAuthorId: {
+            $cond: {
+              if: { $ifNull: ['$parentComment', false] },
+              then: { $toObjectId: '$parentComment.author._id' },
+              else: null,
+            },
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'replyToAuthorId',
+          foreignField: '_id',
+          as: 'replyToUserRaw',
+        },
+      },
+      {
+        $unwind: { path: '$replyToUserRaw', preserveNullAndEmptyArrays: true },
+      },
+      {
+        $addFields: {
+          replyToUser: {
+            $cond: {
+              if: { $ifNull: ['$replyToUserRaw', false] },
+              then: {
+                _id: '$replyToUserRaw._id',
+                username: '$replyToUserRaw.username',
+                firstName: '$replyToUserRaw.firstName',
+                lastName: '$replyToUserRaw.lastName',
+                avatar: '$replyToUserRaw.avatar',
+              },
+              else: '$$REMOVE',
+            },
+          },
+        },
+      },
+      {
         $project: {
           _id: 1,
           content: 1,
@@ -253,6 +315,7 @@ export class CommentRepository extends ReactableRepository<CommentDocument> {
           myReaction: {
             $ifNull: [{ $first: '$userReaction.reactionType' }, null],
           },
+          replyToUser: 1,
         },
       },
     ];

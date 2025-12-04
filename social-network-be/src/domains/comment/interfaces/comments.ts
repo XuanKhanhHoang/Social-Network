@@ -13,6 +13,13 @@ export type CommentWithMyReactionModel<
   U extends string | Types.ObjectId,
 > = CommentModel<T, U> & {
   myReaction: string | null;
+  replyToUser?: {
+    _id: Types.ObjectId;
+    username: string;
+    firstName: string;
+    lastName: string;
+    avatar: string;
+  };
 };
 
 export type CommentWithMyReactionAndPriorityModel<

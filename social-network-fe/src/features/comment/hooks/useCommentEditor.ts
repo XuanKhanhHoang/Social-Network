@@ -4,13 +4,11 @@ import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Emoji } from '@/lib/editor/emoji-node';
 import { toast } from 'sonner';
-import debounce from 'lodash/debounce';
+import _ from 'lodash';
 import { JSONContent } from '@tiptap/react';
 import { MediaItemWithHandlingStatus } from '@/features/media/components/type';
 import { useMediaUpload } from '@/features/media/hooks/useMediaUpload';
-import { useUpdatePostCache } from '@/features/post/hooks/usePostCache';
-import { commentService } from '@/features/comment/services/comment.service';
-import { useUpdateCommentCache } from '@/features/comment/hooks/useCommentCache';
+import { useCreateComment, useUpdateComment } from './useComment';
 
 export type UseCommentEditorProps = {
   postId: string;
@@ -30,12 +28,19 @@ export const useCommentEditor = ({
   postId,
   parentId,
   data,
-  mode,
+  mode = 'create',
   onSuccess,
   placeholder = 'Thêm bình luận ...',
   autoFocus = false,
 }: UseCommentEditorProps) => {
-  const isUpdate = mode === 'edit';
+  const isEditMode = mode === 'edit';
+
+  const initialData = useRef(data);
+  const isEditorInitialized = useRef(false);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPendingDebounce, setIsPendingDebounce] = useState(false);
+  const [isEditorEmpty, setIsEditorEmpty] = useState(true);
 
   const {
     media,
@@ -49,17 +54,9 @@ export const useCommentEditor = ({
   });
   const singleMediaItem = media[0];
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [editorReady, setEditorReady] = useState(false);
-  const [isPendingDebounce, setIsPendingDebounce] = useState(false);
-  const { incrementComments } = useUpdatePostCache();
-  const { invalidateRootsComments, invalidateReplies } =
-    useUpdateCommentCache();
-  const initialData = useRef(data);
-
   const debouncedUpdate = useMemo(
     () =>
-      debounce(() => {
+      _.debounce(() => {
         setIsPendingDebounce(false);
       }, 300),
     []
@@ -71,52 +68,111 @@ export const useCommentEditor = ({
     };
   }, [debouncedUpdate]);
 
+  const initialContent = useMemo(() => {
+    if (!data?.content) return '';
+    if (typeof data.content === 'string') {
+      try {
+        return JSON.parse(data.content);
+      } catch {
+        return data.content;
+      }
+    }
+    return data.content;
+  }, [data?.content]);
   const editor = useEditor({
     extensions: [StarterKit, Placeholder.configure({ placeholder }), Emoji],
-    content: data?.content,
+    content: initialContent,
     autofocus: autoFocus,
     immediatelyRender: false,
     onCreate: () => {
-      setTimeout(() => setEditorReady(true), 100);
+      isEditorInitialized.current = true;
     },
-    onUpdate: () => {
-      if (editorReady) {
+    onUpdate: ({ editor }) => {
+      if (isEditorInitialized.current) {
         setIsPendingDebounce(true);
         debouncedUpdate();
+        setIsEditorEmpty(editor.isEmpty);
       }
     },
   });
+
+  const hasChanges = useMemo(() => {
+    if (
+      !isEditMode ||
+      !initialData.current ||
+      !editor ||
+      !isEditorInitialized.current
+    ) {
+      return false;
+    }
+
+    const original = initialData.current;
+
+    let originalContent;
+    try {
+      originalContent =
+        typeof original.content === 'string'
+          ? JSON.parse(original.content)
+          : original.content;
+    } catch {
+      originalContent = { type: 'doc', content: [] };
+    }
+
+    const currentContent = editor.getJSON();
+    const contentChanged = !_.isEqual(currentContent, originalContent);
+
+    const originalMediaId = original.media?.id;
+    const currentMediaId = singleMediaItem?.id;
+
+    const hasUploadingOrNewFile =
+      singleMediaItem?.isUploading || (singleMediaItem && !singleMediaItem.id);
+
+    const mediaChanged =
+      hasUploadingOrNewFile || originalMediaId !== currentMediaId;
+
+    return contentChanged || mediaChanged;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditMode, singleMediaItem, editor?.state.doc]);
+
+  const { mutateAsync: createComment } = useCreateComment();
+  const { mutateAsync: updateComment } = useUpdateComment();
 
   const handleRemoveMedia = useCallback(() => {
     handleMediaChange([], {});
   }, [handleMediaChange]);
 
-  const hasChanges = useMemo(() => {
-    if (!isUpdate || !initialData.current || !editorReady || !editor)
-      return false;
-
-    const originalData = initialData.current;
-    const contentChanged =
-      JSON.stringify(editor.getJSON()) !==
-      JSON.stringify(originalData.content || '');
-    const mediaChanged = singleMediaItem?.id !== originalData.media?.id;
-    return contentChanged || mediaChanged;
-  }, [isUpdate, singleMediaItem, editorReady, editor]);
-
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (!editor || isSubmitting) return;
 
-    const content = editor.isEmpty ? undefined : editor.getJSON();
-    if (!singleMediaItem && editor.isEmpty) return;
+    if (isEditorEmpty && !singleMediaItem) return;
+
+    if (isEditMode && !hasChanges) return;
+
+    if (isEditMode && !data?._id) {
+      toast.error('Lỗi dữ liệu bình luận');
+      return;
+    }
 
     setIsSubmitting(true);
+
     try {
+      if (hasUploadingFiles) {
+        toast.error('Có file đang upload. Vui lòng đợi hoàn tất.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      const content = isEditorEmpty ? undefined : editor.getJSON();
       const mediaId: string | undefined = singleMediaItem?.id;
-      if (isUpdate && data?._id) {
-        await commentService.updateComment(data._id, { content, mediaId });
+
+      if (isEditMode) {
+        await updateComment({
+          commentId: data!._id,
+          data: { content, mediaId },
+        });
         toast.success('Chỉnh sửa bình luận thành công');
       } else {
-        await commentService.createComment({
+        await createComment({
           postId,
           content,
           mediaId,
@@ -124,9 +180,6 @@ export const useCommentEditor = ({
         });
         if (!parentId) toast.success('Đăng bình luận thành công');
       }
-      if (!parentId) invalidateRootsComments(postId);
-      else invalidateReplies(parentId);
-      incrementComments(postId);
 
       editor.commands.clearContent();
       handleMediaChange([], {});
@@ -141,17 +194,32 @@ export const useCommentEditor = ({
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [
+    editor,
+    isEditorEmpty,
+    singleMediaItem,
+    isEditMode,
+    hasChanges,
+    data,
+    hasUploadingFiles,
+    updateComment,
+    createComment,
+    postId,
+    parentId,
+    handleMediaChange,
+    onSuccess,
+    isSubmitting,
+  ]);
 
-  const canSubmit = !!editor && (!editor.isEmpty || !!singleMediaItem);
+  const canSubmit = !isEditorEmpty || !!singleMediaItem;
 
   const isDisabled =
+    hasUploadingFiles ||
     !canSubmit ||
     isSubmitting ||
+    hasUploadErrors ||
     isPendingDebounce ||
-    (isUpdate && !hasChanges) ||
-    hasUploadingFiles ||
-    hasUploadErrors;
+    (isEditMode && !hasChanges);
 
   return {
     editor,
@@ -163,5 +231,8 @@ export const useCommentEditor = ({
     onHookMediaUpload,
     handleRemoveMedia,
     handleSubmit,
+    isEditorEmpty,
+    hasChanges,
+    isEditMode,
   };
 };
