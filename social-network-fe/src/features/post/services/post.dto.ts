@@ -64,6 +64,7 @@ export interface PostDto {
   createdAt: string;
   updatedAt: string;
   parentPost?: PostDto;
+  isDeleted?: boolean;
 }
 
 export interface PostWithMyReactionDto extends PostDto {

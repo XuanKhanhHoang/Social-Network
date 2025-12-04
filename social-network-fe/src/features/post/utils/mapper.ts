@@ -49,7 +49,12 @@ export function transformToPost(post: PostDto): Post {
     visibility: post.visibility,
     reactionsCount: post.reactionsCount ?? 0,
     commentsCount: post.commentsCount ?? 0,
-    parentPost: post.parentPost ? transformToPost(post.parentPost) : undefined,
+    parentPost: post.parentPost
+      ? post.parentPost.isDeleted
+        ? ({ id: post.parentPost._id, isDeleted: true } as Post)
+        : transformToPost(post.parentPost)
+      : undefined,
+    isDeleted: post.isDeleted,
   };
 }
 

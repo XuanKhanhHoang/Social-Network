@@ -396,4 +396,27 @@ export class MediaUploadService {
     if (mimetype.startsWith('video/')) return 'video';
     throw new BadRequestException('Unsupported media type');
   }
+
+  async forceDeleteMediaList(mediaIds: string[]): Promise<void> {
+    if (mediaIds.length === 0) return;
+
+    const objectIds = mediaIds.map((id) => new Types.ObjectId(id));
+    const medias = await this.mediaModel.find({ _id: { $in: objectIds } });
+
+    this.logger.log(`Force deleting ${medias.length} media files...`);
+
+    await Promise.allSettled(
+      medias.map((media) =>
+        this.deleteFromCloud(
+          media.cloudinaryPublicId,
+          media.mediaType as MediaType,
+        ),
+      ),
+    );
+
+    await this.mediaModel.deleteMany({ _id: { $in: objectIds } });
+    this.logger.log(
+      `Successfully deleted ${medias.length} media files from DB`,
+    );
+  }
 }

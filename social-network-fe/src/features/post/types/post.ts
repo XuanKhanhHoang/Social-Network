@@ -36,6 +36,7 @@ export interface Post {
   createdAt: string;
   updatedAt: string;
   parentPost?: Post;
+  isDeleted?: boolean;
 }
 
 export interface PostWithMyReaction extends Post {

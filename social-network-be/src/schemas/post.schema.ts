@@ -63,6 +63,9 @@ export class PostDocument extends Document {
   @Prop({ type: String, index: true })
   plain_text: string;
 
+  @Prop({ type: Date, default: null })
+  deletedAt: Date;
+
   createdAt: Date;
   updatedAt: Date;
 }

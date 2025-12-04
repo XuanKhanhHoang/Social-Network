@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -14,6 +16,7 @@ import { CreatePostService } from 'src/use-case/post/create-post/create-post.ser
 import { UpdatePostService } from 'src/use-case/post/update-post/update-post.service';
 import { GetPostFullService } from 'src/use-case/post/get-post-full/get-post-full.service';
 import { SearchPostService } from 'src/use-case/post/search-post/search-post.service';
+import { DeletePostService } from 'src/use-case/post/delete-post/delete-post.service';
 import { CreatePostDto, UpdatePostDto } from './dto';
 import { CursorPaginationWithSearchQueryDto } from 'src/share/dto/req/cursor-pagination-with-search-query.dto';
 
@@ -24,6 +27,7 @@ export class PostController {
     private readonly updatePostService: UpdatePostService,
     private readonly getPostFullService: GetPostFullService,
     private readonly searchPostService: SearchPostService,
+    private readonly deletePostService: DeletePostService,
   ) {}
 
   @Get('search')
@@ -71,13 +75,11 @@ export class PostController {
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async deletePost(
     @Param('id', new ParseMongoIdPipe()) postId: string,
     @GetUserId() userId: string,
   ) {
-    // return await this.deletePostService.execute({ postId, userId });
-    return {
-      message: 'Delete post',
-    };
+    return await this.deletePostService.execute({ postId, userId });
   }
 }

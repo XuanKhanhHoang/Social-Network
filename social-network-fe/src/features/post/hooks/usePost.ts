@@ -126,3 +126,14 @@ export function useCreatePost() {
     },
   });
 }
+
+export function useDeletePost() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (postId: string) => postService.deletePost(postId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: postKeys.lists() });
+    },
+  });
+}

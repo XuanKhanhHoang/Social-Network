@@ -7,7 +7,7 @@ import {
   Pencil,
   Trash,
 } from 'lucide-react';
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { formatDisplayTime } from '@/lib/utils/time';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -35,6 +35,8 @@ import { toast } from 'sonner';
 
 import { transformToPostInEditor } from '@/features/post/components/create/text-editor/type';
 import SharedPostCard from './SharedPostCard';
+import { useDeletePost } from '../../hooks/usePost';
+import { ConfirmDeleteDialog } from '@/components/common/ConfirmDeleteDialog';
 
 export type PostItemProps = {
   post: PostWithTopComment;
@@ -44,6 +46,9 @@ function PostItem({ post }: PostItemProps) {
   const user = useStore((state) => state.user);
   const isAuthor = user?.id === post.author.id;
   const { openEdit, openShare } = usePostModalContext();
+
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const { mutate: deletePost, isPending: isDeleting } = useDeletePost();
 
   const contentHtml = generateHTML(post.content, [
     StarterKit,
@@ -58,10 +63,19 @@ function PostItem({ post }: PostItemProps) {
   };
 
   const handleDelete = () => {
-    if (confirm('Bạn có chắc chắn muốn xóa bài viết này không?')) {
-      console.log('Delete post:', post.id);
-      toast.info('Tính năng xóa đang phát triển');
-    }
+    setOpenDeleteModal(true);
+  };
+
+  const onConfirmDelete = () => {
+    deletePost(post.id, {
+      onSuccess: () => {
+        toast.success('Đã xóa bài viết thành công');
+        setOpenDeleteModal(false);
+      },
+      onError: () => {
+        toast.error('Có lỗi xảy ra khi xóa bài viết');
+      },
+    });
   };
 
   return (
@@ -158,6 +172,15 @@ function PostItem({ post }: PostItemProps) {
       )}
 
       <CommentEditor postId={post.id} className="py-1 px-3" />
+
+      <ConfirmDeleteDialog
+        isOpen={openDeleteModal}
+        onClose={() => setOpenDeleteModal(false)}
+        onConfirm={onConfirmDelete}
+        title="Xóa bài viết?"
+        description="Bài viết sẽ được chuyển vào thùng rác và xóa vĩnh viễn sau 30 ngày. Bạn có chắc chắn muốn tiếp tục?"
+        isPending={isDeleting}
+      />
     </div>
   );
 }

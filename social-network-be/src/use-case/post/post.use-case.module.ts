@@ -10,6 +10,8 @@ import { UserModule } from 'src/domains/user/user.module';
 
 import { SearchPostService } from './search-post/search-post.service';
 import { FriendshipModule } from 'src/domains/friendship/friendship.module';
+import { DeletePostService } from './delete-post/delete-post.service';
+import { CleanupDeletedPostsService } from './schedule/cleanup-deleted-posts.service';
 
 @Module({
   imports: [
@@ -25,12 +27,16 @@ import { FriendshipModule } from 'src/domains/friendship/friendship.module';
     UpdatePostService,
     ListenersService,
     SearchPostService,
+    DeletePostService,
+    CleanupDeletedPostsService,
   ],
   exports: [
     GetPostFullService,
     CreatePostService,
     UpdatePostService,
+    UpdatePostService,
     SearchPostService,
+    DeletePostService,
   ],
 })
 export class PostUseCaseModule {}

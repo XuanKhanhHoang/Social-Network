@@ -103,24 +103,33 @@ export class PostRepository extends ReactableRepository<PostDocument> {
               if: { $not: ['$parentPost._id'] },
               then: '$$REMOVE',
               else: {
-                $mergeObjects: [
-                  '$parentPost',
-                  {
-                    author: {
-                      $cond: {
-                        if: { $ifNull: ['$parentPostAuthor', false] },
-                        then: {
-                          _id: '$parentPostAuthor._id',
-                          username: '$parentPostAuthor.username',
-                          firstName: '$parentPostAuthor.firstName',
-                          lastName: '$parentPostAuthor.lastName',
-                          avatar: '$parentPostAuthor.avatar.url',
-                        },
-                        else: '$parentPost.author',
-                      },
-                    },
+                $cond: {
+                  if: { $ne: ['$parentPost.status', PostStatus.ACTIVE] },
+                  then: {
+                    _id: '$parentPost._id',
+                    isDeleted: true,
                   },
-                ],
+                  else: {
+                    $mergeObjects: [
+                      '$parentPost',
+                      {
+                        author: {
+                          $cond: {
+                            if: { $ifNull: ['$parentPostAuthor', false] },
+                            then: {
+                              _id: '$parentPostAuthor._id',
+                              username: '$parentPostAuthor.username',
+                              firstName: '$parentPostAuthor.firstName',
+                              lastName: '$parentPostAuthor.lastName',
+                              avatar: '$parentPostAuthor.avatar.url',
+                            },
+                            else: '$parentPost.author',
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
               },
             },
           },
@@ -483,5 +492,30 @@ export class PostRepository extends ReactableRepository<PostDocument> {
       { _id: postId },
       { $inc: { sharesCount: delta } },
     );
+  }
+
+  async softDelete(postId: string): Promise<void> {
+    await this.model.updateOne(
+      { _id: new Types.ObjectId(postId) },
+      {
+        $set: {
+          status: PostStatus.DELETED,
+          deletedAt: new Date(),
+        },
+      },
+    );
+  }
+
+  async findExpiredDeletedPosts(thresholdDate: Date): Promise<PostDocument[]> {
+    return this.model.find({
+      status: PostStatus.DELETED,
+      deletedAt: { $lt: thresholdDate },
+    });
+  }
+
+  async hardDeletePosts(postIds: string[]): Promise<void> {
+    await this.model.deleteMany({
+      _id: { $in: postIds.map((id) => new Types.ObjectId(id)) },
+    });
   }
 }

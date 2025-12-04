@@ -27,4 +27,8 @@ export const postService = {
   ): Promise<PostWithMyReactionDto> {
     return ApiClient.get(`${POST_PREFIX}/${postId}`, options);
   },
+
+  async deletePost(postId: string): Promise<void> {
+    return ApiClient.delete(`${POST_PREFIX}/${postId}`);
+  },
 };
