@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { UserRepository } from 'src/domains/user/user.repository';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 
@@ -43,7 +43,9 @@ export class GetRegistrationStatsService extends BaseUseCaseService<
     input: GetRegistrationStatsInput,
   ): Promise<GetRegistrationStatsOutput> {
     const { startDate, endDate, mode } = input;
-
+    if (startDate > endDate) {
+      throw new BadRequestException('startDate must be less than endDate');
+    }
     const { data, total } = await this.userRepository.getRegistrationStats({
       startDate,
       endDate,
