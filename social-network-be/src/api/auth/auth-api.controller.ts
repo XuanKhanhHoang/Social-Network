@@ -7,15 +7,19 @@ import {
   Param,
   Req,
   UnauthorizedException,
+  Patch,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { LoginService } from '../../use-case/auth/login/login.service';
 import { RegisterService } from '../../use-case/auth/register/register.service';
 import { VerifyEmailService } from '../../use-case/auth/verify-email/verify-email.service';
+import { ChangePasswordService } from '../../use-case/auth/change-password/change-password.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto';
+import { ChangePasswordRequestDto } from './dto/change-password.dto';
 import { AllowPublic } from 'src/share/decorators/allow-public-req.decorator';
 import { HttpCode, HttpStatus } from '@nestjs/common';
+import { GetUserId } from 'src/share/decorators/user.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -23,6 +27,7 @@ export class AuthController {
     private registerUserService: RegisterService,
     private loginUserService: LoginService,
     private verifyEmailService: VerifyEmailService,
+    private changePasswordService: ChangePasswordService,
   ) {}
 
   @Post('register')
@@ -84,6 +89,15 @@ export class AuthController {
     res.clearCookie('accessToken');
     res.clearCookie('refreshToken');
     return { message: 'Logout successful' };
+  }
+
+  @Patch('change-password')
+  async changePassword(
+    @GetUserId() userId: string,
+    @Body() dto: ChangePasswordRequestDto,
+  ) {
+    await this.changePasswordService.execute(userId, dto);
+    return { message: 'Đổi mật khẩu thành công' };
   }
 
   @Post('check')

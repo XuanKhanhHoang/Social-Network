@@ -50,7 +50,6 @@ import {
   InputOTPSlot,
 } from '@/components/ui/input-otp';
 
-// --- LOGIC IMPORTS ---
 import { authService } from '@/features/auth/services/auth.service';
 import { RegisterRequestDto } from '@/lib/dtos';
 import { Gender } from '@/lib/constants/enums';
@@ -60,7 +59,6 @@ import {
 } from '@/features/crypto/utils/cryptions';
 import { keyStorage } from '@/features/crypto/services/key-storage.service';
 
-// --- 1. ZOD SCHEMA CONFIG ---
 const registerSchema = z
   .object({
     firstName: z.string().min(2, 'Họ phải có ít nhất 2 ký tự'),
@@ -68,10 +66,9 @@ const registerSchema = z
     email: z.string().email('Email không hợp lệ'),
     password: z
       .string()
-      .min(8, 'Mật khẩu tối thiểu 8 ký tự')
+      .min(6, 'Mật khẩu tối thiểu 6 ký tự')
       .regex(/[A-Z]/, 'Cần ít nhất 1 chữ hoa')
-      .regex(/[0-9]/, 'Cần ít nhất 1 số')
-      .regex(/[^A-Za-z0-9]/, 'Cần ít nhất 1 ký tự đặc biệt'),
+      .regex(/[0-9]/, 'Cần ít nhất 1 số'),
     gender: z.enum(Gender),
     day: z.string().min(1, 'Chọn ngày'),
     month: z.string().min(1, 'Chọn tháng'),

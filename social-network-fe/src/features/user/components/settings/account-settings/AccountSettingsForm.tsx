@@ -53,6 +53,7 @@ import { Gender, VisibilityPrivacy } from '@/lib/constants/enums';
 import { useStore } from '@/store';
 import { StoreUser } from '@/features/auth/store/authSlice';
 import { UserAccount } from '@/features/user/types';
+import ChangePasswordForm from './ChangePasswordForm';
 
 const accountFormSchema = z.object({
   firstName: z.string().min(1, 'Họ không được để trống'),
@@ -179,246 +180,254 @@ export default function AccountSettingsForm({
   ];
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="w-5 h-5 text-blue-500" /> Thông tin cơ bản
-            </CardTitle>
-            <CardDescription>
-              Thông tin định danh của bạn trên hệ thống.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-muted/50 rounded-lg">
-              <div className="space-y-2">
-                <span className="text-sm font-medium flex items-center gap-2">
-                  <AtSign className="w-4 h-4 text-muted-foreground" /> Username
-                </span>
-                <div className="text-sm text-muted-foreground font-mono">
-                  @{initialData.username}
+    <div className="space-y-8">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="w-5 h-5 text-blue-500" /> Thông tin cơ bản
+              </CardTitle>
+              <CardDescription>
+                Thông tin định danh của bạn trên hệ thống.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-muted/50 rounded-lg">
+                <div className="space-y-2">
+                  <span className="text-sm font-medium flex items-center gap-2">
+                    <AtSign className="w-4 h-4 text-muted-foreground" />{' '}
+                    Username
+                  </span>
+                  <div className="text-sm text-muted-foreground font-mono">
+                    @{initialData.username}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <span className="text-sm font-medium flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-muted-foreground" /> Email
+                  </span>
+                  <div className="text-sm text-muted-foreground">
+                    {initialData.email}
+                  </div>
                 </div>
               </div>
-              <div className="space-y-2">
-                <span className="text-sm font-medium flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-muted-foreground" /> Email
-                </span>
-                <div className="text-sm text-muted-foreground">
-                  {initialData.email}
-                </div>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Họ</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Nguyễn" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tên</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Văn A" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="birthDate"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Ngày sinh</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={'outline'}
-                            className={cn(
-                              'w-full pl-3 text-left font-normal',
-                              !field.value && 'text-muted-foreground'
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, 'dd/MM/yyyy', { locale: vi })
-                            ) : (
-                              <span>Chọn ngày sinh</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) =>
-                            date > new Date() || date < new Date('1900-01-01')
-                          }
-                          fromYear={1950}
-                          toYear={new Date().getFullYear()}
-                          locale={vi}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="gender"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Giới tính</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="firstName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Họ</FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Chọn giới tính" />
-                        </SelectTrigger>
+                        <Input placeholder="Nguyễn" {...field} />
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value={Gender.Male}>Nam</SelectItem>
-                        <SelectItem value={Gender.Female}>Nữ</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </CardContent>
-        </Card>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="lastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tên</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Văn A" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Smartphone className="w-5 h-5 text-green-500" /> Thông tin liên
-              hệ
-            </CardTitle>
-            <CardDescription>
-              Số điện thoại giúp tăng cường bảo mật cho tài khoản.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <FormField
-              control={form.control}
-              name="phoneNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Số điện thoại</FormLabel>
-                  <FormControl>
-                    <Input placeholder="+84..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="birthDate"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Ngày sinh</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={'outline'}
+                              className={cn(
+                                'w-full pl-3 text-left font-normal',
+                                !field.value && 'text-muted-foreground'
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, 'dd/MM/yyyy', {
+                                  locale: vi,
+                                })
+                              ) : (
+                                <span>Chọn ngày sinh</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date) =>
+                              date > new Date() || date < new Date('1900-01-01')
+                            }
+                            fromYear={1950}
+                            toYear={new Date().getFullYear()}
+                            locale={vi}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-purple-500" /> Quyền riêng tư
-            </CardTitle>
-            <CardDescription>
-              Kiểm soát ai có thể nhìn thấy các thông tin bổ sung của bạn.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {privacyFields.map((item) => (
-              <FormField
-                key={item.name}
-                control={form.control}
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                name={item.name as any}
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">{item.label}</FormLabel>
-                      <FormDescription>{item.desc}</FormDescription>
-                    </div>
-                    <FormControl>
+                <FormField
+                  control={form.control}
+                  name="gender"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Giới tính</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger className="w-[160px]">
-                            <SelectValue />
+                          <SelectTrigger>
+                            <SelectValue placeholder="Chọn giới tính" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {item.name !== 'privacy.friendList' && (
-                            <SelectItem value={VisibilityPrivacy.PUBLIC}>
-                              Công khai
-                            </SelectItem>
-                          )}
-                          <SelectItem value={VisibilityPrivacy.FRIENDS}>
-                            Bạn bè
-                          </SelectItem>
-                          <SelectItem value={VisibilityPrivacy.PRIVATE}>
-                            Chỉ mình tôi
-                          </SelectItem>
+                          <SelectItem value={Gender.Male}>Nam</SelectItem>
+                          <SelectItem value={Gender.Female}>Nữ</SelectItem>
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Smartphone className="w-5 h-5 text-green-500" /> Thông tin liên
+                hệ
+              </CardTitle>
+              <CardDescription>
+                Số điện thoại giúp tăng cường bảo mật cho tài khoản.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <FormField
+                control={form.control}
+                name="phoneNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Số điện thoại</FormLabel>
+                    <FormControl>
+                      <Input placeholder="+84..." {...field} />
                     </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
-            ))}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <div className="flex justify-end gap-4 pt-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => form.reset()}
-            disabled={updateAccount.isPending}
-          >
-            Khôi phục
-          </Button>
-          <Button
-            type="submit"
-            className="min-w-[140px]"
-            disabled={updateAccount.isPending}
-          >
-            {updateAccount.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Đang lưu...
-              </>
-            ) : (
-              <>
-                <Save className="mr-2 h-4 w-4" /> Lưu thay đổi
-              </>
-            )}
-          </Button>
-        </div>
-      </form>
-    </Form>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="w-5 h-5 text-purple-500" /> Quyền riêng tư
+              </CardTitle>
+              <CardDescription>
+                Kiểm soát ai có thể nhìn thấy các thông tin bổ sung của bạn.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {privacyFields.map((item) => (
+                <FormField
+                  key={item.name}
+                  control={form.control}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  name={item.name as any}
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">
+                          {item.label}
+                        </FormLabel>
+                        <FormDescription>{item.desc}</FormDescription>
+                      </div>
+                      <FormControl>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-[160px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {item.name !== 'privacy.friendList' && (
+                              <SelectItem value={VisibilityPrivacy.PUBLIC}>
+                                Công khai
+                              </SelectItem>
+                            )}
+                            <SelectItem value={VisibilityPrivacy.FRIENDS}>
+                              Bạn bè
+                            </SelectItem>
+                            <SelectItem value={VisibilityPrivacy.PRIVATE}>
+                              Chỉ mình tôi
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              ))}
+            </CardContent>
+          </Card>
+
+          <div className="flex justify-end gap-4 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => form.reset()}
+              disabled={updateAccount.isPending}
+            >
+              Khôi phục
+            </Button>
+            <Button
+              type="submit"
+              className="min-w-[140px]"
+              disabled={updateAccount.isPending}
+            >
+              {updateAccount.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Đang lưu...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" /> Lưu thay đổi
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
+      </Form>
+      <ChangePasswordForm />
+    </div>
   );
 }

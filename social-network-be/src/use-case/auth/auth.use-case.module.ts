@@ -5,9 +5,21 @@ import { VerifyEmailService } from './verify-email/verify-email.service';
 import { UserModule } from 'src/domains/user/user.module';
 import { AuthModule } from 'src/domains/auth/auth.module';
 
+import { ChangePasswordService } from './change-password/change-password.service';
+
 @Module({
   imports: [AuthModule, UserModule],
-  providers: [LoginService, RegisterService, VerifyEmailService],
-  exports: [LoginService, RegisterService, VerifyEmailService],
+  providers: [
+    LoginService,
+    RegisterService,
+    VerifyEmailService,
+    ChangePasswordService,
+  ],
+  exports: [
+    LoginService,
+    RegisterService,
+    VerifyEmailService,
+    ChangePasswordService,
+  ],
 })
 export class AuthUseCaseModule {}
