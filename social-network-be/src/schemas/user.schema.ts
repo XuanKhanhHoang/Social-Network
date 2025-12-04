@@ -1,6 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
 import { Gender, UserPrivacy } from 'src/share/enums';
+import { UserRole } from 'src/share/enums/user-role.enum';
+import { UserStatus } from 'src/share/enums/user-status.enum';
 import { SubMedia } from './sub-comment-media.schema';
 
 @Schema({ _id: false })
@@ -116,6 +118,12 @@ export class UserDocument extends Document {
   })
   privacySettings: PrivacySettings;
 
+  @Prop({ type: String, enum: UserRole, default: UserRole.USER })
+  role: UserRole;
+
+  @Prop({ type: String, enum: UserStatus, default: UserStatus.ACTIVE })
+  status: UserStatus;
+
   @Prop({ required: true })
   publicKey: string;
 
@@ -125,6 +133,9 @@ export class UserDocument extends Document {
     iv: string;
     ciphertext: string;
   };
+  @Prop({ type: Date, default: null })
+  deletedAt: Date;
+
   createdAt: Date;
   updatedAt: Date;
 }

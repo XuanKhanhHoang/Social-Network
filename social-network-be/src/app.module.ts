@@ -8,6 +8,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { GlobalUseCaseModule } from './use-case/global-use-case/global-use-case';
 import { ApiModule } from './api/api.module';
 import { MailModule } from './share/module/mail/mail.module';
+import { AdminApiModule } from './admin-api/admin-api.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { MailModule } from './share/module/mail/mail.module';
     GlobalUseCaseModule,
     ApiModule,
     MailModule,
+    AdminApiModule,
   ],
 })
 export class AppModule {}

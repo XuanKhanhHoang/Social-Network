@@ -53,6 +53,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         const user = await this.userRepository.findById(payload._id, {
           projection: {
             _id: 1,
+            role: 1,
           },
         });
 
@@ -60,6 +61,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
         request['user'] = {
           _id: user._id.toString(),
+          role: user.role,
         };
         return true;
       }
