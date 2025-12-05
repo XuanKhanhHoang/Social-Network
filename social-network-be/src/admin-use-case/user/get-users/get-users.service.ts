@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, FilterQuery } from 'mongoose';
+import { FilterQuery, Types } from 'mongoose';
 import { UserDocument } from 'src/schemas/user.schema';
+import { UserRepository } from 'src/domains/user/user.repository';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 import { PaginatedResponse } from 'src/share/dto/pagination.dto';
 import { UserRole } from 'src/share/enums/user-role.enum';
@@ -12,7 +12,8 @@ export type GetUsersInput = {
   search?: string;
   role?: string;
   status?: string;
-  includeDeleted?: boolean;
+  isVerified?: boolean;
+  isDeleted?: boolean;
 };
 
 export type UserListItem = {
@@ -36,48 +37,53 @@ export class GetUsersService extends BaseUseCaseService<
   GetUsersInput,
   GetUsersOutput
 > {
-  constructor(
-    @InjectModel('User') private readonly userModel: Model<UserDocument>,
-  ) {
+  constructor(private readonly userRepository: UserRepository) {
     super();
   }
 
   async execute(input: GetUsersInput): Promise<GetUsersOutput> {
-    const { page, limit, search, role, status, includeDeleted } = input;
+    const { page, limit, search, role, status, isVerified, isDeleted } = input;
     const skip = (page - 1) * limit;
 
     const filter: FilterQuery<UserDocument> = {};
 
     filter.role = { $ne: UserRole.ADMIN };
 
-    if (!includeDeleted) {
-      filter.deletedAt = null;
+    if (isDeleted) {
+      filter.deletedAt = { $ne: null };
     }
-
     if (status) {
       filter.status = status;
     }
 
+    if (isVerified !== undefined) {
+      filter.isVerified = isVerified;
+    }
+
     if (search) {
-      filter.$or = [
+      const searchConditions: any[] = [
         { username: { $regex: search, $options: 'i' } },
         { email: { $regex: search, $options: 'i' } },
         { firstName: { $regex: search, $options: 'i' } },
         { lastName: { $regex: search, $options: 'i' } },
       ];
+
+      if (Types.ObjectId.isValid(search)) {
+        searchConditions.push({ _id: new Types.ObjectId(search) });
+      }
+
+      filter.$or = searchConditions;
     }
 
     const [users, total] = await Promise.all([
-      this.userModel
-        .find(filter)
-        .select(
+      this.userRepository.findLeaned<UserDocument>(filter, {
+        projection:
           '_id username email firstName lastName avatar role status isVerified createdAt deletedAt',
-        )
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-      this.userModel.countDocuments(filter),
+        sort: { createdAt: -1 },
+        skip,
+        limit,
+      }),
+      this.userRepository.count(filter),
     ]);
 
     return {

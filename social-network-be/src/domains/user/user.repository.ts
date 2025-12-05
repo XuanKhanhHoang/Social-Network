@@ -506,4 +506,40 @@ export class UserRepository extends BaseRepository<UserDocument> {
     }
     return this.userModel.countDocuments(filter);
   }
+
+  async count(filter: FilterQuery<UserDocument>): Promise<number> {
+    return this.userModel.countDocuments(filter);
+  }
+
+  async softDelete(id: string): Promise<UserDocument | null> {
+    return this.userModel.findByIdAndUpdate(
+      id,
+      { deletedAt: new Date() },
+      { new: true },
+    );
+  }
+
+  async restore(id: string): Promise<UserDocument | null> {
+    return this.userModel.findByIdAndUpdate(
+      id,
+      { deletedAt: null },
+      { new: true },
+    );
+  }
+
+  async lock(id: string): Promise<UserDocument | null> {
+    return this.userModel.findByIdAndUpdate(
+      id,
+      { status: 'locked' },
+      { new: true },
+    );
+  }
+
+  async unlock(id: string): Promise<UserDocument | null> {
+    return this.userModel.findByIdAndUpdate(
+      id,
+      { status: 'active' },
+      { new: true },
+    );
+  }
 }

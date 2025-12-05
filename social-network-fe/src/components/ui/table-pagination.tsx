@@ -15,7 +15,8 @@ interface TablePaginationProps {
   totalPages: number;
   total?: number;
   label?: string;
-  onPageChange: (page: number) => void;
+  onPageChange?: (page: number) => void;
+  createPageUrl?: (page: number) => string;
   showInfo?: boolean;
 }
 
@@ -25,6 +26,7 @@ export function TablePagination({
   total,
   label = 'mục',
   onPageChange,
+  createPageUrl,
   showInfo = true,
 }: TablePaginationProps) {
   if (totalPages <= 1) return null;
@@ -42,17 +44,29 @@ export function TablePagination({
         <PaginationContent>
           <PaginationItem>
             <PaginationPrevious
-              onClick={() => page > 1 && onPageChange(page - 1)}
+              href={
+                createPageUrl ? createPageUrl(Math.max(1, page - 1)) : undefined
+              }
+              onClick={
+                !createPageUrl && onPageChange
+                  ? () => page > 1 && onPageChange(page - 1)
+                  : undefined
+              }
               className={
                 page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'
               }
             />
           </PaginationItem>
 
-          {page > 2 && (
+          {page > 2 && totalPages > 3 && (
             <PaginationItem>
               <PaginationLink
-                onClick={() => onPageChange(1)}
+                href={createPageUrl ? createPageUrl(1) : undefined}
+                onClick={
+                  !createPageUrl && onPageChange
+                    ? () => onPageChange(1)
+                    : undefined
+                }
                 className="cursor-pointer"
               >
                 1
@@ -81,7 +95,12 @@ export function TablePagination({
             return (
               <PaginationItem key={pageNum}>
                 <PaginationLink
-                  onClick={() => onPageChange(pageNum)}
+                  href={createPageUrl ? createPageUrl(pageNum) : undefined}
+                  onClick={
+                    !createPageUrl && onPageChange
+                      ? () => onPageChange(pageNum)
+                      : undefined
+                  }
                   isActive={page === pageNum}
                   className="cursor-pointer"
                 >
@@ -97,10 +116,15 @@ export function TablePagination({
             </PaginationItem>
           )}
 
-          {page < totalPages - 1 && (
+          {page < totalPages - 1 && totalPages > 3 && (
             <PaginationItem>
               <PaginationLink
-                onClick={() => onPageChange(totalPages)}
+                href={createPageUrl ? createPageUrl(totalPages) : undefined}
+                onClick={
+                  !createPageUrl && onPageChange
+                    ? () => onPageChange(totalPages)
+                    : undefined
+                }
                 className="cursor-pointer"
               >
                 {totalPages}
@@ -110,7 +134,16 @@ export function TablePagination({
 
           <PaginationItem>
             <PaginationNext
-              onClick={() => page < totalPages && onPageChange(page + 1)}
+              href={
+                createPageUrl
+                  ? createPageUrl(Math.min(totalPages, page + 1))
+                  : undefined
+              }
+              onClick={
+                !createPageUrl && onPageChange
+                  ? () => page < totalPages && onPageChange(page + 1)
+                  : undefined
+              }
               className={
                 page === totalPages
                   ? 'pointer-events-none opacity-50'

@@ -11,7 +11,7 @@ import { UserStatus } from 'src/share/enums/user-status.enum';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 
 export type AdminLoginInput = {
-  email: string;
+  username: string;
   password: string;
 };
 
@@ -41,11 +41,11 @@ export class AdminLoginService extends BaseUseCaseService<
   }
 
   async execute(input: AdminLoginInput): Promise<AdminLoginOutput> {
-    const { email, password } = input;
-
+    const { username, password } = input;
+    console.log(username, password);
     const user = (
       await this.userRepository.findOne(
-        { email, deletedAt: null },
+        { username, deletedAt: null },
         { projection: '+password +role +status' },
       )
     )?.toObject();
