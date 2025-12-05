@@ -31,14 +31,14 @@ export class PostDocument extends Document {
   @Prop({ type: Number, default: 0 })
   sharesCount: number;
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }] })
-  tags: Types.ObjectId[];
+  // @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }] })
+  // tags: Types.ObjectId[];
 
-  @Prop({ type: [String] })
-  hashtags: string[];
+  // @Prop({ type: [String] })
+  // hashtags: string[];
 
-  @Prop({ type: String })
-  location: string;
+  // @Prop({ type: String })
+  // location: string;
 
   @Prop({ type: Types.ObjectId, ref: 'Post' })
   parentPost?: Types.ObjectId;

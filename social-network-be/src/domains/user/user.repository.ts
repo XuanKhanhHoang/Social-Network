@@ -487,4 +487,23 @@ export class UserRepository extends BaseRepository<UserDocument> {
 
     return { data, total };
   }
+
+  async countActiveUsers(): Promise<number> {
+    return this.userModel.countDocuments({
+      role: { $ne: 'admin' },
+      deletedAt: null,
+    });
+  }
+
+  async countUsersInPeriod(startDate: Date, endDate?: Date): Promise<number> {
+    const filter: any = {
+      role: { $ne: 'admin' },
+      deletedAt: null,
+      createdAt: { $gte: startDate },
+    };
+    if (endDate) {
+      filter.createdAt.$lt = endDate;
+    }
+    return this.userModel.countDocuments(filter);
+  }
 }

@@ -52,7 +52,7 @@ export class AuthController {
       req.cookies?.['auth-token'];
 
     if (existingToken) {
-      return new UnauthorizedException('User already logged in');
+      throw new UnauthorizedException('User already logged in');
     }
     const data = await this.loginUserService.execute(loginDto);
 

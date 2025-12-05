@@ -199,7 +199,7 @@ const LeftSidebar = () => {
         </div>
       </div>
 
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 scrollbar-hide flex flex-col items-center gap-1">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 scrollbar-hide flex flex-col gap-1">
         <TooltipProvider delayDuration={0}>
           {NAV_ITEMS.map((item) => {
             const targetHref =
@@ -224,11 +224,8 @@ const LeftSidebar = () => {
                 href={targetHref}
                 onClick={() => handleNavigation(targetHref)}
                 className={cn(
-                  'flex items-center transition-all duration-200 relative group flex-shrink-0',
-                  'h-11',
-                  isExpanded
-                    ? 'w-[calc(100%-16px)] pl-4 text-sm font-medium rounded-md mx-2'
-                    : 'w-11 rounded-md pl-2.5',
+                  'flex items-center transition-all duration-300 ease-in-out relative group flex-shrink-0',
+                  'h-11 pl-[18px] text-sm font-medium rounded-md mx-2',
                   isActive
                     ? 'bg-blue-50 text-gray-900'
                     : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
@@ -278,11 +275,8 @@ const LeftSidebar = () => {
                 >
                   <div
                     className={cn(
-                      'flex items-center transition-all duration-200 relative group flex-shrink-0 cursor-pointer',
-                      'h-11',
-                      isExpanded
-                        ? 'w-[calc(100%-16px)] pl-4 text-sm font-medium rounded-md mx-2'
-                        : 'w-11 rounded-md pl-2.5',
+                      'flex items-center transition-all duration-300 ease-in-out relative group flex-shrink-0 cursor-pointer',
+                      'h-11 pl-[18px] text-sm font-medium rounded-md mx-2',
                       isActive
                         ? 'bg-blue-50 text-gray-900'
                         : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
@@ -334,11 +328,8 @@ const LeftSidebar = () => {
                 >
                   <div
                     className={cn(
-                      'flex items-center transition-all duration-200 relative group flex-shrink-0 cursor-pointer',
-                      'h-11',
-                      isExpanded
-                        ? 'w-[calc(100%-16px)] pl-4 text-sm font-medium rounded-md mx-2'
-                        : 'w-11 rounded-md pl-2.5',
+                      'flex items-center transition-all duration-300 ease-in-out relative group flex-shrink-0 cursor-pointer',
+                      'h-11 pl-[18px] text-sm font-medium rounded-md mx-2',
                       isActive
                         ? 'bg-blue-50 text-gray-900'
                         : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'

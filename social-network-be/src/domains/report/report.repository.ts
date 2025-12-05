@@ -125,4 +125,8 @@ export class ReportRepository {
     );
     return result.modifiedCount;
   }
+
+  async countPendingReports(): Promise<number> {
+    return this.reportModel.countDocuments({ status: ReportStatus.PENDING });
+  }
 }

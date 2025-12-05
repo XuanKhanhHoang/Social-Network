@@ -6,13 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { validateEmail, validatePassword } from '@/lib/utils/validation';
-import { adminAuthService } from '@/features/admin/services/admin-auth.service';
+import { validatePassword } from '@/lib/utils/validation';
+import { adminAuthService } from '@/features/admin/auth/services/auth.service';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
 interface FormErrors {
-  email?: string;
+  username?: string;
   password?: string;
 }
 
@@ -31,10 +31,12 @@ const AdminLoginPage = () => {
 
   const validateForm = (data: Record<string, string>): FormErrors => {
     const newErrors: FormErrors = {};
-    const emailValidation = validateEmail(data.email || '');
-    const passwordValidation = validatePassword(data.password || '');
 
-    if (!emailValidation.isValid) newErrors.email = emailValidation.error;
+    if (!data.username || data.username.trim().length < 3) {
+      newErrors.username = 'Tên đăng nhập phải có ít nhất 3 ký tự';
+    }
+
+    const passwordValidation = validatePassword(data.password || '');
     if (!passwordValidation.isValid)
       newErrors.password = passwordValidation.errors[0];
 
@@ -61,7 +63,7 @@ const AdminLoginPage = () => {
     if (Object.keys(newErrors).length === 0) {
       try {
         await adminAuthService.login({
-          email: data.email,
+          username: data.username,
           password: data.password,
         });
         toast.success('Đăng nhập thành công!');
@@ -84,7 +86,7 @@ const AdminLoginPage = () => {
         <Card className="border-gray-200 shadow-sm">
           <CardHeader className="text-center pb-4">
             <div className="flex justify-center mb-3">
-              <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-gray-900 rounded-full flex items-center justify-center">
                 <Shield className="h-6 w-6 text-white" />
               </div>
             </div>
@@ -96,17 +98,17 @@ const AdminLoginPage = () => {
             <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Input
-                  name="email"
-                  type="email"
-                  placeholder="Email"
-                  onBlur={() => handleFieldBlur('email')}
-                  className={`h-10 ${errors.email ? 'border-red-500' : ''}`}
+                  name="username"
+                  type="text"
+                  placeholder="Tên đăng nhập"
+                  onBlur={() => handleFieldBlur('username')}
+                  className={`h-10 ${errors.username ? 'border-red-500' : ''}`}
                 />
-                {errors.email && (
+                {errors.username && (
                   <Alert variant="destructive" className="py-1 border-none">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription className="text-sm">
-                      {errors.email}
+                      {errors.username}
                     </AlertDescription>
                   </Alert>
                 )}
@@ -132,7 +134,7 @@ const AdminLoginPage = () => {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full h-10 bg-black hover:bg-gray-800"
+                className="w-full h-10"
               >
                 {isSubmitting ? 'Đang đăng nhập...' : 'Đăng nhập'}
               </Button>

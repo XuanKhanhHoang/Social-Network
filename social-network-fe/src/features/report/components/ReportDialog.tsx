@@ -15,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
-import { reportService } from '../services/report.service';
+import { useSubmitReport } from '../hooks/useReport';
 import { ReportTargetType } from '../types/report.dto';
 
 interface ReportDialogProps {
@@ -43,7 +43,8 @@ export function ReportDialog({
 }: ReportDialogProps) {
   const [selectedReason, setSelectedReason] = useState<string>('');
   const [customReason, setCustomReason] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const submitReport = useSubmitReport();
 
   const handleSubmit = async () => {
     if (!selectedReason) {
@@ -61,25 +62,14 @@ export function ReportDialog({
       return;
     }
 
-    setIsSubmitting(true);
-
-    try {
-      await reportService.submitReport({
-        targetType,
-        targetId,
-        reason,
-      });
-
-      toast.success('Báo cáo đã được gửi thành công');
-      handleClose();
-    } catch (error: unknown) {
-      const errorMessage =
-        (error as { message?: string })?.message ||
-        'Có lỗi xảy ra khi gửi báo cáo';
-      toast.error(errorMessage);
-    } finally {
-      setIsSubmitting(false);
-    }
+    submitReport.mutate(
+      { targetType, targetId, reason },
+      {
+        onSuccess: () => {
+          handleClose();
+        },
+      }
+    );
   };
 
   const handleClose = () => {
@@ -149,16 +139,16 @@ export function ReportDialog({
           <Button
             variant="outline"
             onClick={handleClose}
-            disabled={isSubmitting}
+            disabled={submitReport.isPending}
           >
             Hủy
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={isSubmitting || !selectedReason}
+            disabled={submitReport.isPending || !selectedReason}
             className="bg-red-500 hover:bg-red-600"
           >
-            {isSubmitting ? 'Đang gửi...' : 'Gửi báo cáo'}
+            {submitReport.isPending ? 'Đang gửi...' : 'Gửi báo cáo'}
           </Button>
         </DialogFooter>
       </DialogContent>

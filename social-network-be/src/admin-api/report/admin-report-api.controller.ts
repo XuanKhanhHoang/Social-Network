@@ -16,15 +16,14 @@ import {
   UpdateReportStatusOutput,
 } from 'src/admin-use-case/report/update-report-status/update-report-status.service';
 import {
-  GetRegistrationStatsService,
-  GetRegistrationStatsOutput,
-} from 'src/admin-use-case/report/get-registration-stats/get-registration-stats.service';
+  GetReportTargetService,
+  ReportTargetOutput,
+} from 'src/admin-use-case/report/get-report-target/get-report-target.service';
 import { GetReportsDto } from './dto/get-reports.dto';
 import {
   UpdateReportStatusDto,
   UpdateReportStatusParams,
 } from './dto/update-report-status.dto';
-import { GetRegistrationStatsDto } from './dto/get-registration-stats.dto';
 import { RolesGuard } from 'src/others/guards/roles.guard';
 import { Roles } from 'src/share/decorators/roles.decorator';
 import { UserRole } from 'src/share/enums/user-role.enum';
@@ -35,21 +34,21 @@ import { GetUserId } from 'src/share/decorators/user.decorator';
 @Roles(UserRole.ADMIN)
 export class AdminReportApiController {
   constructor(
-    private readonly getRegistrationStatsService: GetRegistrationStatsService,
     private readonly getReportsService: GetReportsService,
     private readonly updateReportStatusService: UpdateReportStatusService,
+    private readonly getReportTargetService: GetReportTargetService,
   ) {}
-
-  @Get('registrations')
-  async getRegistrationStats(
-    @Query() query: GetRegistrationStatsDto,
-  ): Promise<GetRegistrationStatsOutput> {
-    return this.getRegistrationStatsService.execute(query);
-  }
 
   @Get('violations')
   async getReports(@Query() query: GetReportsDto): Promise<GetReportsOutput> {
     return this.getReportsService.execute(query);
+  }
+
+  @Get('violations/:reportId/target')
+  async getReportTarget(
+    @Param('reportId') reportId: string,
+  ): Promise<ReportTargetOutput> {
+    return this.getReportTargetService.execute({ reportId });
   }
 
   @Patch('violations/:reportId')

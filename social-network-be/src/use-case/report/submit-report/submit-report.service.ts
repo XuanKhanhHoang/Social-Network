@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { ReportRepository } from 'src/domains/report/report.repository';
 import { UserRepository } from 'src/domains/user/user.repository';
 import { UserDocument } from 'src/schemas';
@@ -39,7 +39,7 @@ export class SubmitReportService extends BaseUseCaseService<
     );
 
     if (isDuplicate) {
-      throw new BadRequestException('Report already exists');
+      throw new ConflictException('Report already exists');
     }
     const user = await this.userRepository.findLeanedById<UserDocument>(userId);
 

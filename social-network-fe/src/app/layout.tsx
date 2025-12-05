@@ -27,8 +27,25 @@ export default async function RootLayout({
   children: React.ReactNode;
   modal: React.ReactNode;
 }>) {
-  let isAuthenticated = false;
   const headersList = await headers();
+  const isAdminRoute = headersList.get('x-route-admin') === 'true';
+
+  if (isAdminRoute) {
+    return (
+      <html lang="en">
+        <body suppressHydrationWarning>
+          <QueryProvider>
+            <ImageViewerProvider>
+              {children}
+              <Toaster position="top-right" expand />
+            </ImageViewerProvider>
+          </QueryProvider>
+        </body>
+      </html>
+    );
+  }
+
+  let isAuthenticated = false;
   const isPublic = headersList.get('x-route-public') === 'true';
   const isSemiPublic = headersList.get('x-route-semi-public') === 'true';
 

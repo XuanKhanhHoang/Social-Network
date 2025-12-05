@@ -556,4 +556,19 @@ export class PostRepository extends ReactableRepository<PostDocument> {
 
     return { data, total };
   }
+
+  async countActivePostsInPeriod(
+    startDate: Date,
+    endDate?: Date,
+  ): Promise<number> {
+    const filter: any = {
+      status: PostStatus.ACTIVE,
+      deletedAt: null,
+      createdAt: { $gte: startDate },
+    };
+    if (endDate) {
+      filter.createdAt.$lt = endDate;
+    }
+    return this.model.countDocuments(filter);
+  }
 }
