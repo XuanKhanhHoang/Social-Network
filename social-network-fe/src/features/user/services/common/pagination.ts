@@ -1,5 +1,7 @@
 export interface CursorPaginationResponse<T> {
   data: T[];
-  cursor?: string;
-  hasNextPage: boolean;
+  pagination: {
+    nextCursor: string | null;
+    hasMore: boolean;
+  };
 }

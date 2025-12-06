@@ -57,7 +57,9 @@ export const useUserPhotosPreview = (username: string) => {
     queryFn: ({ pageParam }: { pageParam?: string }) =>
       userService.getPhotosPreview(username, pageParam as string | undefined),
     getNextPageParam: (lastPage) => {
-      return lastPage.hasNextPage ? lastPage.cursor : undefined;
+      return lastPage.pagination?.hasMore
+        ? lastPage.pagination.nextCursor
+        : undefined;
     },
     initialPageParam: undefined,
     enabled: !!username,
@@ -69,7 +71,9 @@ export const useUserFriendsPreview = (username: string) => {
     queryFn: ({ pageParam }: { pageParam?: string }) =>
       userService.getFriendsPreview(username, pageParam as string | undefined),
     getNextPageParam: (lastPage) => {
-      return lastPage.hasNextPage ? lastPage.cursor : undefined;
+      return lastPage.pagination?.hasMore
+        ? lastPage.pagination.nextCursor
+        : undefined;
     },
     initialPageParam: undefined,
     enabled: !!username,

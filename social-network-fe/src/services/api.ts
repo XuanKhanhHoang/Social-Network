@@ -38,8 +38,8 @@ export class ApiClient {
 
     if (response.status === 401) {
       try {
-        const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
-          method: 'POST',
+        const refreshResponse = await fetch(`${API_BASE_URL}/users/me`, {
+          method: 'GET',
           credentials: 'include',
         });
 

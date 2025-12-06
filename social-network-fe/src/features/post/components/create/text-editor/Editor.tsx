@@ -5,9 +5,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import Color from '@tiptap/extension-color';
 import {
-  Smile,
   ImageIcon,
-  MoreHorizontal,
   X,
   Globe,
   Users,
@@ -530,14 +528,14 @@ export default function PostEditor(props: PostEditorProps) {
                     />
                   </label>
 
-                  <button className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                  {/* <button className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                     <Smile className="w-5 h-5 text-yellow-500" />
                     <span className="text-sm font-medium">Cảm xúc</span>
                   </button>
 
                   <button className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                     <MoreHorizontal className="w-5 h-5 text-gray-400" />
-                  </button>
+                  </button> */}
                 </>
               )}
             </div>

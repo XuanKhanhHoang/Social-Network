@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Feed Score Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        min-height: 100vh;
+        padding: 20px;
+        color: #fff;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 2rem;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .formula-box {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 30px;
+        backdrop-filter: blur(10px);
+      }
+      .formula-box h3 {
+        color: #667eea;
+        margin-bottom: 10px;
+      }
+      .formula {
+        font-family: 'Courier New', monospace;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 15px;
+        border-radius: 8px;
+        margin: 10px 0;
+      }
+      .charts-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+      .chart-container {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 20px;
+        backdrop-filter: blur(10px);
+      }
+      .chart-container h3 {
+        margin-bottom: 15px;
+        color: #a5b4fc;
+      }
+      .controls {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 30px;
+      }
+      .controls h3 {
+        margin-bottom: 15px;
+        color: #667eea;
+      }
+      .control-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-bottom: 15px;
+      }
+      .control-item {
+        flex: 1;
+        min-width: 200px;
+      }
+      .control-item label {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 0.9rem;
+        color: #a5b4fc;
+      }
+      .control-item input {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.3);
+        color: #fff;
+        font-size: 1rem;
+      }
+      .comparison-table {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 20px;
+        overflow-x: auto;
+      }
+      .comparison-table h3 {
+        margin-bottom: 15px;
+        color: #667eea;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      th {
+        background: rgba(102, 126, 234, 0.3);
+        color: #fff;
+      }
+      tr:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+      .highlight {
+        color: #4ade80;
+        font-weight: bold;
+      }
+      .warning {
+        color: #fbbf24;
+      }
+      @media (max-width: 768px) {
+        .charts-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>📊 Feed Score Analysis</h1>
+
+      <div class="formula-box">
+        <h3>Công thức hiện tại</h3>
+        <div class="formula">
+          interactionScore = reactions × <span id="rw">1</span> + comments ×
+          <span id="cw">3</span> + shares × <span id="sw">5</span><br />
+          hotScore = interactionScore / (hoursAge + 2)^<span id="gv">1.8</span
+          ><br />
+          <strong
+            >rankingScore = hotScore + (isFriend ? <span id="fb">2</span> :
+            0)</strong
+          >
+        </div>
+      </div>
+
+      <div class="controls">
+        <h3>⚙️ Điều chỉnh tham số</h3>
+        <div class="control-group">
+          <div class="control-item">
+            <label>Reaction Weight</label>
+            <input
+              type="number"
+              id="reactionWeight"
+              value="1"
+              step="0.5"
+              min="0"
+            />
+          </div>
+          <div class="control-item">
+            <label>Comment Weight</label>
+            <input
+              type="number"
+              id="commentWeight"
+              value="3"
+              step="0.5"
+              min="0"
+            />
+          </div>
+          <div class="control-item">
+            <label>Share Weight</label>
+            <input
+              type="number"
+              id="shareWeight"
+              value="5"
+              step="0.5"
+              min="0"
+            />
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="control-item">
+            <label>Gravity (decay factor)</label>
+            <input
+              type="number"
+              id="gravity"
+              value="1.8"
+              step="0.1"
+              min="0.1"
+              max="3"
+            />
+          </div>
+          <div class="control-item">
+            <label>Friend Bonus</label>
+            <input
+              type="number"
+              id="friendBonus"
+              value="2"
+              step="0.1"
+              min="0"
+            />
+          </div>
+          <div class="control-item">
+            <label>Hot Score Multiplier</label>
+            <input
+              type="number"
+              id="hotScoreMultiplier"
+              value="1"
+              step="1"
+              min="1"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-container">
+          <h3>📈 Hot Score theo thời gian (với các mức tương tác khác nhau)</h3>
+          <canvas id="timeChart"></canvas>
+        </div>
+        <div class="chart-container">
+          <h3>📊 So sánh Ranking Score: Friend vs Non-Friend</h3>
+          <canvas id="comparisonChart"></canvas>
+        </div>
+      </div>
+
+      <div class="comparison-table">
+        <h3>📋 Bảng so sánh chi tiết</h3>
+        <table id="dataTable">
+          <thead>
+            <tr>
+              <th>Scenario</th>
+              <th>Reactions</th>
+              <th>Comments</th>
+              <th>Shares</th>
+              <th>Hours Age</th>
+              <th>Hot Score</th>
+              <th>Friend Bonus</th>
+              <th>Ranking Score</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      // Chart instances
+      let timeChart, comparisonChart;
+
+      // Get config values
+      function getConfig() {
+        return {
+          reactionWeight: parseFloat(
+            document.getElementById('reactionWeight').value
+          ),
+          commentWeight: parseFloat(
+            document.getElementById('commentWeight').value
+          ),
+          shareWeight: parseFloat(document.getElementById('shareWeight').value),
+          gravity: parseFloat(document.getElementById('gravity').value),
+          friendBonus: parseFloat(document.getElementById('friendBonus').value),
+          hotScoreMultiplier: parseFloat(
+            document.getElementById('hotScoreMultiplier').value
+          ),
+        };
+      }
+
+      // Calculate hot score
+      function calcHotScore(reactions, comments, shares, hoursAge, config) {
+        const interactionScore =
+          reactions * config.reactionWeight +
+          comments * config.commentWeight +
+          shares * config.shareWeight;
+        return (
+          (interactionScore / Math.pow(hoursAge + 2, config.gravity)) *
+          config.hotScoreMultiplier
+        );
+      }
+
+      // Calculate ranking score
+      function calcRankingScore(hotScore, isFriend, config) {
+        return hotScore + (isFriend ? config.friendBonus : 0);
+      }
+
+      // Update formula display
+      function updateFormulaDisplay(config) {
+        document.getElementById('rw').textContent = config.reactionWeight;
+        document.getElementById('cw').textContent = config.commentWeight;
+        document.getElementById('sw').textContent = config.shareWeight;
+        document.getElementById('gv').textContent = config.gravity;
+        document.getElementById('fb').textContent = config.friendBonus;
+      }
+
+      // Generate time chart data
+      function generateTimeChartData(config) {
+        const hours = Array.from({ length: 73 }, (_, i) => i); // 0 to 72 hours
+        const scenarios = [
+          {
+            name: 'Viral (100r, 50c, 20s)',
+            r: 100,
+            c: 50,
+            s: 20,
+            color: '#4ade80',
+          },
+          { name: 'Hot (50r, 20c, 5s)', r: 50, c: 20, s: 5, color: '#fbbf24' },
+          {
+            name: 'Moderate (20r, 5c, 1s)',
+            r: 20,
+            c: 5,
+            s: 1,
+            color: '#60a5fa',
+          },
+          { name: 'Low (5r, 1c, 0s)', r: 5, c: 1, s: 0, color: '#f87171' },
+          {
+            name: 'Friend Bonus Line',
+            r: 0,
+            c: 0,
+            s: 0,
+            color: '#a855f7',
+            isFriendLine: true,
+          },
+        ];
+
+        return {
+          labels: hours,
+          datasets: scenarios.map((s) => ({
+            label: s.name,
+            data: hours.map((h) =>
+              s.isFriendLine
+                ? config.friendBonus
+                : calcHotScore(s.r, s.c, s.s, h, config)
+            ),
+            borderColor: s.color,
+            backgroundColor: s.color + '20',
+            fill: false,
+            tension: 0.3,
+            borderDash: s.isFriendLine ? [5, 5] : [],
+          })),
+        };
+      }
+
+      // Generate comparison chart data
+      function generateComparisonChartData(config) {
+        const scenarios = [
+          { name: 'New Viral\n(0h)', r: 100, c: 50, s: 20, h: 0 },
+          { name: 'Hot Post\n(1h)', r: 50, c: 20, s: 5, h: 1 },
+          { name: 'Moderate\n(6h)', r: 20, c: 5, s: 1, h: 6 },
+          { name: 'Old Viral\n(24h)', r: 100, c: 50, s: 20, h: 24 },
+          { name: 'Low\n(1h)', r: 5, c: 1, s: 0, h: 1 },
+        ];
+
+        const labels = scenarios.map((s) => s.name);
+        const nonFriendScores = scenarios.map((s) => {
+          const hot = calcHotScore(s.r, s.c, s.s, s.h, config);
+          return calcRankingScore(hot, false, config);
+        });
+        const friendScores = scenarios.map((s) => {
+          const hot = calcHotScore(s.r, s.c, s.s, s.h, config);
+          return calcRankingScore(hot, true, config);
+        });
+
+        return {
+          labels,
+          datasets: [
+            {
+              label: 'Non-Friend',
+              data: nonFriendScores,
+              backgroundColor: '#60a5fa',
+            },
+            {
+              label: 'Friend',
+              data: friendScores,
+              backgroundColor: '#4ade80',
+            },
+          ],
+        };
+      }
+
+      // Generate table data
+      function generateTableData(config) {
+        const scenarios = [
+          { name: 'New Viral Post', r: 100, c: 50, s: 20, h: 0, friend: false },
+          {
+            name: 'New Viral Post (Friend)',
+            r: 100,
+            c: 50,
+            s: 20,
+            h: 0,
+            friend: true,
+          },
+          { name: 'Hot Post (1h)', r: 50, c: 20, s: 5, h: 1, friend: false },
+          {
+            name: 'Hot Post (1h, Friend)',
+            r: 50,
+            c: 20,
+            s: 5,
+            h: 1,
+            friend: true,
+          },
+          {
+            name: 'Moderate Post (6h)',
+            r: 20,
+            c: 5,
+            s: 1,
+            h: 6,
+            friend: false,
+          },
+          {
+            name: 'Moderate Post (6h, Friend)',
+            r: 20,
+            c: 5,
+            s: 1,
+            h: 6,
+            friend: true,
+          },
+          {
+            name: 'Old Viral (24h)',
+            r: 100,
+            c: 50,
+            s: 20,
+            h: 24,
+            friend: false,
+          },
+          {
+            name: 'Old Viral (24h, Friend)',
+            r: 100,
+            c: 50,
+            s: 20,
+            h: 24,
+            friend: true,
+          },
+          {
+            name: 'Low Engagement (1h)',
+            r: 5,
+            c: 1,
+            s: 0,
+            h: 1,
+            friend: false,
+          },
+          {
+            name: 'Low Engagement (1h, Friend)',
+            r: 5,
+            c: 1,
+            s: 0,
+            h: 1,
+            friend: true,
+          },
+        ];
+
+        return scenarios.map((s) => {
+          const hotScore = calcHotScore(s.r, s.c, s.s, s.h, config);
+          const friendBonusVal = s.friend ? config.friendBonus : 0;
+          const rankingScore = hotScore + friendBonusVal;
+          return {
+            ...s,
+            hotScore,
+            friendBonusVal,
+            rankingScore,
+          };
+        });
+      }
+
+      // Render table
+      function renderTable(data) {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = data
+          .map(
+            (row) => `
+                <tr>
+                    <td>${row.friend ? '👥 ' : ''}${row.name}</td>
+                    <td>${row.r}</td>
+                    <td>${row.c}</td>
+                    <td>${row.s}</td>
+                    <td>${row.h}h</td>
+                    <td>${row.hotScore.toFixed(4)}</td>
+                    <td class="${
+                      row.friend ? 'highlight' : ''
+                    }">${row.friendBonusVal.toFixed(1)}</td>
+                    <td class="highlight">${row.rankingScore.toFixed(4)}</td>
+                </tr>
+            `
+          )
+          .join('');
+      }
+
+      // Initialize/Update charts
+      function updateCharts() {
+        const config = getConfig();
+        updateFormulaDisplay(config);
+
+        // Time Chart
+        const timeData = generateTimeChartData(config);
+        if (timeChart) {
+          timeChart.data = timeData;
+          timeChart.update();
+        } else {
+          timeChart = new Chart(document.getElementById('timeChart'), {
+            type: 'line',
+            data: timeData,
+            options: {
+              responsive: true,
+              scales: {
+                x: {
+                  title: {
+                    display: true,
+                    text: 'Hours since creation',
+                    color: '#fff',
+                  },
+                  ticks: { color: '#aaa' },
+                  grid: { color: 'rgba(255,255,255,0.1)' },
+                },
+                y: {
+                  title: { display: true, text: 'Hot Score', color: '#fff' },
+                  ticks: { color: '#aaa' },
+                  grid: { color: 'rgba(255,255,255,0.1)' },
+                },
+              },
+              plugins: {
+                legend: { labels: { color: '#fff' } },
+              },
+            },
+          });
+        }
+
+        // Comparison Chart
+        const compData = generateComparisonChartData(config);
+        if (comparisonChart) {
+          comparisonChart.data = compData;
+          comparisonChart.update();
+        } else {
+          comparisonChart = new Chart(
+            document.getElementById('comparisonChart'),
+            {
+              type: 'bar',
+              data: compData,
+              options: {
+                responsive: true,
+                scales: {
+                  x: {
+                    ticks: { color: '#aaa' },
+                    grid: { color: 'rgba(255,255,255,0.1)' },
+                  },
+                  y: {
+                    title: {
+                      display: true,
+                      text: 'Ranking Score',
+                      color: '#fff',
+                    },
+                    ticks: { color: '#aaa' },
+                    grid: { color: 'rgba(255,255,255,0.1)' },
+                  },
+                },
+                plugins: {
+                  legend: { labels: { color: '#fff' } },
+                },
+              },
+            }
+          );
+        }
+
+        // Table
+        const tableData = generateTableData(config);
+        renderTable(tableData);
+      }
+
+      // Add event listeners
+      document.querySelectorAll('input').forEach((input) => {
+        input.addEventListener('input', updateCharts);
+      });
+
+      // Initial render
+      updateCharts();
+    </script>
+  </body>
+</html>

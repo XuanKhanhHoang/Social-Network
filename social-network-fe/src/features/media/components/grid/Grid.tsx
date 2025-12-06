@@ -44,8 +44,8 @@ export function MediaGrid<T>({ media, renderItem }: MediaGridProps<T>) {
 
     case 3:
       return (
-        <div className="grid grid-cols-5 gap-0.5 rounded-xs aspect-[4/3]">
-          <div className="col-span-3">
+        <div className="grid grid-cols-5 grid-rows-2 gap-0.5 rounded-xs aspect-[4/3]">
+          <div className="col-span-3 row-span-2">
             {renderItem(
               displayMedia[0],
               0,
@@ -53,13 +53,15 @@ export function MediaGrid<T>({ media, renderItem }: MediaGridProps<T>) {
               '(max-width: 768px) 100vw, 40vw'
             )}
           </div>
-          <div className="col-span-2 grid grid-rows-2 gap-0.5">
+          <div className="col-span-2 row-span-1">
             {renderItem(
               displayMedia[1],
               1,
               'w-full h-full',
               '(max-width: 768px) 50vw, 20vw'
             )}
+          </div>
+          <div className="col-span-2 row-span-1">
             {renderItem(
               displayMedia[2],
               2,
@@ -89,8 +91,8 @@ export function MediaGrid<T>({ media, renderItem }: MediaGridProps<T>) {
     case 5:
       return (
         <div className="rounded-xs aspect-[3/2]">
-          <div className="grid grid-cols-8 gap-0.5 h-full">
-            <div className="col-span-3">
+          <div className="grid grid-cols-8 grid-rows-3 gap-0.5 h-full">
+            <div className="col-span-3 row-span-3">
               {renderItem(
                 displayMedia[0],
                 0,
@@ -98,7 +100,7 @@ export function MediaGrid<T>({ media, renderItem }: MediaGridProps<T>) {
                 '(max-width: 768px) 50vw, 25vw'
               )}
             </div>
-            <div className="col-span-3">
+            <div className="col-span-3 row-span-3">
               {renderItem(
                 displayMedia[1],
                 1,
@@ -106,19 +108,23 @@ export function MediaGrid<T>({ media, renderItem }: MediaGridProps<T>) {
                 '(max-width: 768px) 50vw, 25vw'
               )}
             </div>
-            <div className="col-span-2 grid grid-rows-3 gap-0.5">
+            <div className="col-span-2 row-span-1">
               {renderItem(
                 displayMedia[2],
                 2,
                 'w-full h-full',
                 '(max-width: 768px) 33vw, 15vw'
               )}
+            </div>
+            <div className="col-span-2 row-span-1">
               {renderItem(
                 displayMedia[3],
                 3,
                 'w-full h-full',
                 '(max-width: 768px) 33vw, 15vw'
               )}
+            </div>
+            <div className="col-span-2 row-span-1">
               {renderItem(
                 displayMedia[4],
                 4,

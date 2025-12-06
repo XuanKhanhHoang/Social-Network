@@ -8,7 +8,7 @@ import {
   UpdateResult,
 } from 'mongoose';
 import { ReactableRepository } from 'src/share/base-class/reactable-repository.service';
-import { PostStatus, UserPrivacy } from 'src/share/enums';
+import { MediaType, PostStatus, UserPrivacy } from 'src/share/enums';
 import { PostDocument } from 'src/schemas';
 import {
   CreatePostData,
@@ -210,7 +210,10 @@ export class PostRepository extends ReactableRepository<PostDocument> {
     pipeline.push({
       $addFields: {
         rankingScore: {
-          $add: [{ $ifNull: ['$hotScore', 0] }, { $cond: ['$isFriend', 2, 0] }],
+          $add: [
+            { $ifNull: ['$hotScore', 0] },
+            { $cond: ['$isFriend', 0.2, 0] },
+          ],
         },
       },
     });
@@ -379,6 +382,12 @@ export class PostRepository extends ReactableRepository<PostDocument> {
 
     pipeline.push({
       $unwind: '$media',
+    });
+
+    pipeline.push({
+      $match: {
+        'media.mediaType': MediaType.IMAGE,
+      },
     });
 
     if (skipAmount > 0) {

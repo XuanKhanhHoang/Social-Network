@@ -73,7 +73,6 @@ export default function PostEditorMedia({
 
   if (media.length === 0) return null;
 
-  const remainingCount = Math.max(0, media.length - 5);
   const hasAnyUploading = media.some((item) => item.isUploading);
   const hasAnyUploadError = media.some((item) => item.uploadError);
 

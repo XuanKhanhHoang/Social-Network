@@ -66,7 +66,22 @@ export function middleware(request: NextRequest) {
   ) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
-
+  if (
+    adminAuthRoutes.some(
+      (path) => pathname === path || pathname.startsWith(path + '/')
+    ) &&
+    (accessToken || refreshToken)
+  ) {
+    return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+  }
+  if (
+    authRoutes.some(
+      (path) => pathname === path || pathname.startsWith(path + '/')
+    ) &&
+    (accessToken || refreshToken)
+  ) {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
   return res;
 }
 

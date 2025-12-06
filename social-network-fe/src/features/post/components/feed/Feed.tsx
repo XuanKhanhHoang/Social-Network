@@ -1,11 +1,10 @@
 import PostCreator from '@/features/post/components/create/PostCreator';
-import StoriesContainer from '@/features/story/components/StoryFeed';
 import HomeFeed from './HomeFeed';
 
 function Feed() {
   return (
-    <div className="bg-white w-[720px] mx-auto">
-      <StoriesContainer />
+    <div className="bg-white w-[720px] mx-auto pt-2">
+      {/* <StoriesContainer /> */}
       <PostCreator />
       <HomeFeed />
     </div>

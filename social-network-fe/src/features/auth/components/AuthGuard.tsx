@@ -31,7 +31,6 @@ export function AuthGuard({
   const [isLoading, setIsLoading] = useState(shouldFetchUser);
 
   useEffect(() => {
-    console.log(!user, hasToken, isPrivate);
     if (!shouldFetchUser) return;
 
     setIsLoading(true);

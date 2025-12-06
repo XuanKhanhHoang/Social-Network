@@ -58,6 +58,7 @@ import {
   createKeyVault,
 } from '@/features/crypto/utils/cryptions';
 import { keyStorage } from '@/features/crypto/services/key-storage.service';
+import Image from 'next/image';
 
 const registerSchema = z
   .object({
@@ -69,7 +70,7 @@ const registerSchema = z
       .min(6, 'Mật khẩu tối thiểu 6 ký tự')
       .regex(/[A-Z]/, 'Cần ít nhất 1 chữ hoa')
       .regex(/[0-9]/, 'Cần ít nhất 1 số'),
-    gender: z.enum(Gender),
+    gender: z.enum(Gender, 'Vui lòng chọn giới tính'),
     day: z.string().min(1, 'Chọn ngày'),
     month: z.string().min(1, 'Chọn tháng'),
     year: z.string().min(1, 'Chọn năm'),
@@ -188,7 +189,13 @@ const RegisterPage = () => {
         <div className="flex-1 flex items-center justify-center px-8 py-10">
           <div className="max-w-lg">
             <div className="mb-6">
-              <img src="logo.png" alt="Vibe Logo" className="h-28 lg:h-36" />
+              <Image
+                src="/logo.png"
+                alt="Vibe Logo"
+                className="h-28 lg:h-36"
+                width={144}
+                height={144}
+              />
             </div>
             <p className="text-gray-700 text-lg font-semibold lg:font-normal lg:text-2xl leading-relaxed">
               Vibe - Make your vibe.
@@ -217,7 +224,7 @@ const RegisterPage = () => {
                     <div className="grid grid-cols-2 gap-3">
                       <FormField
                         control={form.control}
-                        name="firstName"
+                        name="lastName"
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
@@ -233,7 +240,7 @@ const RegisterPage = () => {
                       />
                       <FormField
                         control={form.control}
-                        name="lastName"
+                        name="firstName"
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
@@ -257,7 +264,7 @@ const RegisterPage = () => {
                           <FormControl>
                             <Input
                               type="email"
-                              placeholder="Email hoặc số điện thoại"
+                              placeholder="Email"
                               className="h-11"
                               {...field}
                             />
@@ -456,11 +463,11 @@ const RegisterPage = () => {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-center text-xl">
-              Thiết lập mã PIN bảo mật
+              Thiết lập mã bảo mật
             </DialogTitle>
             <DialogDescription className="text-center text-red-500 font-medium bg-red-50 p-2 rounded-md mt-2">
-              Quan trọng: Mã PIN này dùng để khôi phục tin nhắn khi bạn đổi
-              thiết bị. Nếu quên, bạn sẽ mất toàn bộ tin nhắn.
+              Quan trọng: Mã này dùng để khôi phục tin nhắn khi bạn đổi thiết
+              bị. Nếu quên, bạn sẽ mất toàn bộ tin nhắn.
             </DialogDescription>
           </DialogHeader>
 

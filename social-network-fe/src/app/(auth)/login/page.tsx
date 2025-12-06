@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { useStore } from '@/store';
 import { transformToStoreUser } from '@/features/auth/store/authSlice';
+import Image from 'next/image';
 
 interface FormErrors {
   email?: string;
@@ -94,7 +95,12 @@ const LoginForm = () => {
         <div className="flex-1 flex items-center justify-center px-8">
           <div className="max-w-lg">
             <div className="mb-6">
-              <img src="logo.png" alt="ThreshCity Logo" className="h-36" />
+              <Image
+                src="/logo.png"
+                alt="ThreshCity Logo"
+                width={144}
+                height={144}
+              />
             </div>
             <p className="text-gray-700 text-lg font-semibold lg:font-normal lg:text-2xl leading-relaxed">
               Vibe giúp bạn kết nối và chia sẻ với mọi người trong cuộc sống.
@@ -107,8 +113,7 @@ const LoginForm = () => {
             <Card className="shadow-2xl">
               <CardHeader className="space-y-1 pb-4">
                 <CardTitle className="text-xl font-semibold text-gray-800 text-center">
-                  Đăng nhập vào{' '}
-                  <span className="text-blue-900">ThreshCity</span>
+                  Đăng nhập vào <span className="text-blue-900">Vibe</span>
                 </CardTitle>
               </CardHeader>
 

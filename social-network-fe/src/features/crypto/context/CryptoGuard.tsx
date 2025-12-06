@@ -20,9 +20,11 @@ import {
   InputOTPSlot,
   InputOTPSeparator,
 } from '@/components/ui/input-otp';
+import { useLogout } from '@/features/auth/hooks/useAuth';
 
 export const CryptoGuard = ({ children }: { children: React.ReactNode }) => {
   const user = useStore((s) => s.user);
+  const { mutate: logout, isPending: isLoggingOut } = useLogout();
   const keyVault = useStore((s) => s.keyVault);
   const mySecretKey = useStore((s) => s.mySecretKey);
   const setSecretKey = useStore((s) => s.setSecretKey);
@@ -116,7 +118,8 @@ export const CryptoGuard = ({ children }: { children: React.ReactNode }) => {
             </div>
             <CardTitle className="text-xl">Yêu cầu bảo mật</CardTitle>
             <CardDescription>
-              Vui lòng nhập mã PIN (6 số) để giải mã tin nhắn trên thiết bị này.
+              Vui lòng nhập mã bảo mật (6 số) để giải mã tin nhắn trên thiết bị
+              này.
             </CardDescription>
           </CardHeader>
 
@@ -156,6 +159,13 @@ export const CryptoGuard = ({ children }: { children: React.ReactNode }) => {
                 disabled={isUnlocking || pin.length < 6}
               >
                 {isUnlocking ? 'Đang giải mã...' : 'Mở khóa'}
+              </Button>
+
+              <Button
+                onClick={() => logout()}
+                disabled={isUnlocking || isLoggingOut}
+              >
+                {isLoggingOut ? 'Đang đăng xuất...' : 'Đăng xuất'}
               </Button>
             </div>
           </CardContent>

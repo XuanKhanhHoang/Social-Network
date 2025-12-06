@@ -4,6 +4,7 @@ import { PostMedia as PostMediaInterface } from '@/features/post/types/post';
 import { useRouter } from 'next/navigation';
 import MediaThumbnail from '../thumbnail/Thumbnail';
 import { MediaGrid } from '../grid/Grid';
+import { cn } from '@/lib/utils';
 
 type PostFeedMediaProps = {
   postId: string;
@@ -38,20 +39,22 @@ function PostFeedMedia({ postId, media }: PostFeedMediaProps) {
   }
 
   return (
-    <MediaGrid
-      media={media}
-      renderItem={(item, index, className) => (
-        <MediaThumbnail
-          key={item.mediaId || index}
-          url={item.url}
-          mediaType={item.mediaType}
-          width={item.width}
-          height={item.height}
-          className={className}
-          onClick={() => onMediaClick(postId, index)}
-        />
-      )}
-    />
+    <div className="rounded-xs">
+      <MediaGrid
+        media={media}
+        renderItem={(item, index, className) => (
+          <MediaThumbnail
+            key={item.mediaId || index}
+            url={item.url}
+            mediaType={item.mediaType}
+            width={item.width}
+            height={item.height}
+            className={cn(className)}
+            onClick={() => onMediaClick(postId, index)}
+          />
+        )}
+      />
+    </div>
   );
 }
 

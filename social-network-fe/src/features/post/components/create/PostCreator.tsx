@@ -45,6 +45,7 @@ export default function PostCreator() {
             className="flex items-center space-x-2 text-gray-600 hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors flex-1 justify-center"
             onClick={() => console.log('Photo/Video Clicked')}
           >
+            {/* eslint-disable-next-line jsx-a11y/alt-text */}
             <Image className="w-5 h-5 text-green-500" />
             <span className="font-medium text-sm hidden sm:inline">
               Ảnh/video

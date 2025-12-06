@@ -14,9 +14,9 @@ import { PostRepository } from 'src/domains/post/post.repository';
 import { PostDocument } from 'src/schemas';
 import { CommentRepository } from 'src/domains/comment/comment.repository';
 const POST_RANKING_CONFIG = {
-  REACTION_WEIGHT: 1,
-  COMMENT_WEIGHT: 3,
-  SHARE_WEIGHT: 5,
+  REACTION_WEIGHT: 3,
+  COMMENT_WEIGHT: 5,
+  SHARE_WEIGHT: 7,
   GRAVITY: 1.8,
   TIME_WINDOW_DAYS: 3,
   MILLISECONDS_IN_HOUR: 3600000,
@@ -77,16 +77,16 @@ export class RankingService {
     const bulkOps: AnyBulkWriteOperation<PostDocument>[] = postsToUpdate.map(
       (post) => {
         const interactionScore =
-          (post.reactionsCount || 0) * 1 +
-          (post.commentsCount || 0) * 3 +
-          (post.sharesCount || 0) * 5;
+          (post.reactionsCount || 0) * POST_RANKING_CONFIG.REACTION_WEIGHT +
+          (post.commentsCount || 0) * POST_RANKING_CONFIG.COMMENT_WEIGHT +
+          (post.sharesCount || 0) * POST_RANKING_CONFIG.SHARE_WEIGHT;
 
         const hoursSinceCreation =
           (Date.now() - new Date(post.createdAt).getTime()) / (1000 * 60 * 60);
-        const gravity = 1.8;
 
         const hotScore =
-          interactionScore / Math.pow(hoursSinceCreation + 2, gravity);
+          interactionScore /
+          Math.pow(hoursSinceCreation + 2, POST_RANKING_CONFIG.GRAVITY);
 
         return {
           updateOne: {
@@ -207,19 +207,20 @@ export class RankingService {
         reactionsCount: 1,
         commentsCount: 1,
         sharesCount: 1,
+        createdAt: 1,
       },
     });
     const interactionScore =
-      (post.reactionsCount || 0) * 1 +
-      (post.commentsCount || 0) * 3 +
-      (post.sharesCount || 0) * 5;
+      (post.reactionsCount || 0) * POST_RANKING_CONFIG.REACTION_WEIGHT +
+      (post.commentsCount || 0) * POST_RANKING_CONFIG.COMMENT_WEIGHT +
+      (post.sharesCount || 0) * POST_RANKING_CONFIG.SHARE_WEIGHT;
 
     const hoursSinceCreation =
       (Date.now() - new Date(post.createdAt).getTime()) / (1000 * 60 * 60);
-    const gravity = 1.8;
 
     const hotScore =
-      interactionScore / Math.pow(hoursSinceCreation + 2, gravity);
+      interactionScore /
+      Math.pow(hoursSinceCreation + 2, POST_RANKING_CONFIG.GRAVITY);
 
     await this.postRepository.updateById(targetId, {
       hotScore: hotScore,

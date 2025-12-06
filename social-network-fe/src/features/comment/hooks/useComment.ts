@@ -38,7 +38,7 @@ export function useGetRootComments(postId: string, limit: number = 10) {
         limit,
       }),
     getNextPageParam: (lastPage: GetCommentsResponseDto) =>
-      lastPage.hasNextPage ? lastPage.cursor : undefined,
+      lastPage.pagination?.hasMore ? lastPage.pagination.nextCursor : undefined,
     initialPageParam: undefined as string | undefined,
     enabled: !!postId,
   });
@@ -62,7 +62,7 @@ export function useGetCommentReplies(
         limit,
       }),
     getNextPageParam: (lastPage: GetCommentsResponseDto) =>
-      lastPage.hasNextPage ? lastPage.cursor : undefined,
+      lastPage.pagination?.hasMore ? lastPage.pagination.nextCursor : undefined,
     initialPageParam: undefined as string | undefined,
     enabled: !!parentId && (options?.enabled ?? true),
   });

@@ -40,7 +40,7 @@ export function useSuggestedFriends(limit?: number) {
       }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage && lastPage.cursor ? lastPage.cursor : undefined,
+      lastPage.pagination?.hasMore ? lastPage.pagination.nextCursor : undefined,
     placeholderData: (previousData) => previousData,
   });
 }
@@ -57,7 +57,7 @@ export function useFriends(username?: string, search?: string) {
       }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage && lastPage.cursor ? lastPage.cursor : undefined,
+      lastPage.pagination?.hasMore ? lastPage.pagination.nextCursor : undefined,
     enabled: !!username,
     placeholderData: (previousData) => previousData,
     gcTime: search ? 0 : 5 * 60 * 1000,
@@ -74,6 +74,6 @@ export function useBlockedUsers() {
       }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage && lastPage.cursor ? lastPage.cursor : undefined,
+      lastPage.pagination?.hasMore ? lastPage.pagination.nextCursor : undefined,
   });
 }
