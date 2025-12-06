@@ -82,7 +82,7 @@ export function UserSearchCard({ user }: UserSearchCardProps) {
             href={`/user/${user.username}`}
             className="font-semibold text-gray-900 hover:underline"
           >
-            {user.firstName} {user.lastName}
+            {user.lastName} {user.firstName}
           </Link>
           <span className="text-sm text-gray-500">@{user.username}</span>
         </div>

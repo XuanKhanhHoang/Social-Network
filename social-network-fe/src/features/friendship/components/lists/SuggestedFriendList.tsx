@@ -69,7 +69,7 @@ export default function SuggestedFriendList({
                 const user = {
                   ...userDto,
                   id: userDto._id,
-                  fullName: `${userDto.firstName} ${userDto.lastName}`,
+                  fullName: `${userDto.lastName} ${userDto.firstName}`,
                 };
                 return (
                   <FriendCard

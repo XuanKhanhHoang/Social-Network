@@ -23,7 +23,7 @@ export default function FriendCard({ user, actions }: FriendCardProps) {
           </Link>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-base truncate">
-              {user?.firstName} {user?.lastName}
+              {user?.lastName} {user?.firstName}
             </h3>
             <p className="text-sm text-muted-foreground truncate">
               @{user?.username}

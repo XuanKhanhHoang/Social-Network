@@ -219,7 +219,7 @@ export const MessageWindow = ({
             size={32}
           />
           <span className="font-semibold text-sm truncate max-w-[150px]">
-            {user.firstName} {user.lastName}
+            {user.lastName} {user.firstName}
           </span>
         </div>
         <div className="flex items-center">
@@ -254,7 +254,7 @@ export const MessageWindow = ({
           </div>
           <div className="flex flex-col">
             <span className="font-semibold text-[15px] leading-4">
-              {user.firstName} {user.lastName}
+              {user.lastName} {user.firstName}
             </span>
             <span className="text-[11px] text-gray-500">
               {isResolvingId

@@ -83,7 +83,7 @@ export default function UserLayout({
     );
   }
 
-  const fullName = `${header.firstName} ${header.lastName}`;
+  const fullName = `${header.lastName} ${header.firstName}`;
 
   return (
     <div className="bg-background text-foreground min-h-screen mx-auto w-full max-w-6xl">

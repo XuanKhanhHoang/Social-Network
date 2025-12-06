@@ -21,7 +21,7 @@ export default function FeedCommentItem({ comment }: FeedCommentItemProps) {
       <div className="flex-1">
         <div className="bg-gray-100 rounded-lg px-3 py-2">
           <span className="font-semibold text-sm">
-            {comment.author.firstName}
+            {comment.author.lastName} {comment.author.firstName}
           </span>
           {contentHtml && (
             <div

@@ -102,7 +102,7 @@ export function ReportsTable({
                   </div>
                   <div>
                     <p className="text-sm font-medium">
-                      {report.reporter.firstName} {report.reporter.lastName}
+                      {report.reporter.lastName} {report.reporter.firstName}
                     </p>
                     <p className="text-xs text-gray-500">
                       @{report.reporter.username}

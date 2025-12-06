@@ -25,7 +25,7 @@ const SOCKET_URL =
   process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:3000';
 
 const getNotificationMessage = (notification: Notification): string => {
-  const name = `${notification.sender.firstName} ${notification.sender.lastName}`;
+  const name = `${notification.sender.lastName} ${notification.sender.firstName}`;
   switch (notification.type) {
     case NotificationType.FRIEND_REQUEST_SENT:
       return `${name} đã gửi lời mời kết bạn.`;

@@ -135,7 +135,9 @@ export default function PostDetail({
                 <ScrollArea className="flex-1 min-h-0">
                   <div className="p-4 flex-shrink-0">
                     {contentHtml && (
-                      <ExpandableContent html={contentHtml} maxHeight={320} />
+                      <div className={post.backgroundValue || ''}>
+                        <ExpandableContent html={contentHtml} maxHeight={320} />
+                      </div>
                     )}
                   </div>
 

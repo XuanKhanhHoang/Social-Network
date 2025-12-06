@@ -96,14 +96,14 @@ export default function CommentItem({
           <>
             <div className="bg-gray-100 rounded-lg px-3 py-2 relative">
               <span className="font-semibold text-sm">
-                {comment.author.firstName}
+                {comment.author.lastName} {comment.author.firstName}
               </span>
               {comment.replyToUser && (
                 <span className="text-sm text-gray-500 ml-1">
                   Trả lời{' '}
                   <span className="font-semibold text-gray-700">
-                    {comment.replyToUser.firstName}{' '}
-                    {comment.replyToUser.lastName} @
+                    {comment.replyToUser.lastName}{' '}
+                    {comment.replyToUser.firstName} @
                     {comment.replyToUser.username}
                   </span>
                 </span>

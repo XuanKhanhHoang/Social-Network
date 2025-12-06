@@ -97,7 +97,7 @@ export const NotificationItem = ({
       <div className="flex-1 space-y-1">
         <p className="text-sm leading-snug">
           <span className="font-semibold text-foreground mr-1">
-            {notification.sender.firstName} {notification.sender.lastName}
+            {notification.sender.lastName} {notification.sender.firstName}
           </span>
           <span className="text-muted-foreground">
             {getNotificationText(notification.type)}

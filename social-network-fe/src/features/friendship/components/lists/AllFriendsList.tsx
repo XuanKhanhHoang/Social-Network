@@ -98,7 +98,7 @@ export default function AllFriendsList() {
                 const friend = {
                   ...friendDto,
                   id: friendDto._id,
-                  fullName: `${friendDto.firstName} ${friendDto.lastName}`,
+                  fullName: `${friendDto.lastName} ${friendDto.firstName}`,
                 };
                 return (
                   <FriendCard

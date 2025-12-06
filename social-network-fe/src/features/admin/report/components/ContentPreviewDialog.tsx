@@ -137,7 +137,7 @@ export function ContentPreviewDialog({
                   </div>
                   <div className="flex-1">
                     <p className="font-medium">
-                      {data.author.firstName} {data.author.lastName}
+                      {data.author.lastName} {data.author.firstName}
                     </p>
                     <p className="text-xs text-gray-500">
                       @{data.author.username} •{' '}

@@ -64,7 +64,7 @@ export const SuggestedFriendSidebar = () => {
               />
               <div className="flex flex-col overflow-hidden">
                 <div className="text-sm font-medium text-gray-800 truncate group-hover:text-blue-600 transition-colors">
-                  {user.firstName} {user.lastName}
+                  {user.lastName} {user.firstName}
                 </div>
                 <div className="text-xs text-gray-500 truncate">
                   @{user.username}

@@ -99,7 +99,7 @@ function PostItem({ post }: PostItemProps) {
 
           <div>
             <h3 className="font-semibold text-gray-900 text-sm">
-              {post.author.firstName}
+              {post.author.lastName} {post.author.firstName}
             </h3>
             <span className="text-gray-500 text-xs">
               {formatDisplayTime(post.createdAt)}
@@ -149,6 +149,7 @@ function PostItem({ post }: PostItemProps) {
       </div>
 
       <div className="px-3 pb-3">
+        <div className={post.backgroundValue || ''}></div>
         <ExpandableContent html={contentHtml} maxLines={6} />
       </div>
 

@@ -52,7 +52,7 @@ function SharedPostCard({ post }: SharedPostCardProps) {
             href={`/user/${post.author.username}`}
             className="font-semibold text-gray-900 text-sm hover:underline"
           >
-            {post.author.firstName} {post.author.lastName}
+            {post.author.lastName} {post.author.firstName}
           </Link>
           <div className="text-xs text-gray-500">
             {formatDisplayTime(post.createdAt)}
