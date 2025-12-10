@@ -457,4 +457,31 @@ export class FriendshipRepository extends BaseRepository<FriendshipDocument> {
 
     return blockedFriendships.map((f) => f.requester.toString());
   }
+
+  async blockUser(
+    blockerId: string,
+    targetUserId: string,
+  ): Promise<FriendshipDocument> {
+    const newBlockedRelationship = new this.friendshipModel({
+      requester: new Types.ObjectId(blockerId),
+      recipient: new Types.ObjectId(targetUserId),
+      status: FriendshipStatus.BLOCKED,
+      blockedBy: new Types.ObjectId(blockerId),
+    });
+    return newBlockedRelationship.save();
+  }
+
+  async unblockUser(
+    blockerId: string,
+    targetUserId: string,
+  ): Promise<FriendshipDocument | null> {
+    return this.friendshipModel
+      .findOneAndDelete({
+        requester: new Types.ObjectId(blockerId),
+        recipient: new Types.ObjectId(targetUserId),
+        status: FriendshipStatus.BLOCKED,
+        blockedBy: new Types.ObjectId(blockerId),
+      })
+      .exec();
+  }
 }

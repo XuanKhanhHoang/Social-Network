@@ -3,6 +3,7 @@ import { adminReportService } from '../services/report.service';
 import {
   GetReportsParams,
   UpdateReportStatusDto,
+  ReverseReportDto,
 } from '../services/report.dto';
 
 export const useAdminReports = (params?: GetReportsParams) => {
@@ -34,5 +35,22 @@ export const useReportTarget = (reportId: string | null) => {
     queryKey: ['admin-report-target', reportId],
     queryFn: () => adminReportService.getReportTarget(reportId!),
     enabled: !!reportId,
+  });
+};
+
+export const useReverseReport = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      reportId,
+      data,
+    }: {
+      reportId: string;
+      data: ReverseReportDto;
+    }) => adminReportService.reverseReport(reportId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-reports'] });
+    },
   });
 };

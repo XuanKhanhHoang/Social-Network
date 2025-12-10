@@ -13,7 +13,10 @@ import {
   useDenyFriendRequest,
   useSendFriendRequest,
   useUnfriend,
+  useBlockUser,
+  useUnblockUser,
 } from '@/features/friendship/hooks/useFriendship';
+import { useChatContext } from '@/features/chat/context/ChatContext';
 import {
   Edit3,
   Plus,
@@ -22,6 +25,7 @@ import {
   UserCheck,
   UserX,
   ChevronDown,
+  Ban,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -31,14 +35,57 @@ export type ViewAsTypeFriendshipStatus =
   | 'PUBLIC_LOGGED_IN'
   | 'PUBLIC_LOGGED_OUT'
   | 'FRIEND_REQUEST_SENT'
-  | 'FRIEND_REQUEST_RECEIVED';
+  | 'FRIEND_REQUEST_RECEIVED'
+  | 'BLOCKED';
+
+export interface ProfileUserInfo {
+  id: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  avatar?: string;
+}
 
 interface ProfileActionsProps {
   viewAsType: ViewAsTypeFriendshipStatus;
   userId: string;
+  userInfo?: ProfileUserInfo;
 }
 
-export function ProfileActions({ viewAsType, userId }: ProfileActionsProps) {
+export function ProfileActions({
+  viewAsType,
+  userId,
+  userInfo,
+}: ProfileActionsProps) {
+  const { openSession } = useChatContext();
+
+  const handleOpenChat = () => {
+    if (!userInfo) return;
+    openSession({
+      type: 'private',
+      data: {
+        _id: userInfo.id,
+        username: userInfo.username,
+        firstName: userInfo.firstName,
+        lastName: userInfo.lastName,
+        avatar: userInfo.avatar ? { url: userInfo.avatar } : undefined,
+      },
+    });
+  };
+
+  const blockUser = useBlockUser();
+  const unblockUser = useUnblockUser();
+
+  const handleBlock = () => {
+    if (!userInfo) return;
+    blockUser.mutate({ targetUserId: userId, username: userInfo.username });
+  };
+
+  const handleUnblock = () => {
+    if (!userInfo) return;
+    unblockUser.mutate({ targetUserId: userId, username: userInfo.username });
+  };
+
   const sendFriendRequest = useSendFriendRequest();
   const acceptFriendRequest = useAcceptFriendRequest();
   const denyFriendRequest = useDenyFriendRequest();
@@ -57,6 +104,19 @@ export function ProfileActions({ viewAsType, userId }: ProfileActionsProps) {
           </Link>
         </Button>
       </>
+    );
+  }
+
+  if (viewAsType === 'BLOCKED') {
+    return (
+      <Button
+        variant="outline"
+        onClick={handleUnblock}
+        disabled={unblockUser.isPending}
+      >
+        <Ban className="mr-2 h-4 w-4" />
+        {unblockUser.isPending ? 'Đang xử lý...' : 'Hủy chặn'}
+      </Button>
     );
   }
 
@@ -82,7 +142,7 @@ export function ProfileActions({ viewAsType, userId }: ProfileActionsProps) {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button>
+        <Button onClick={handleOpenChat}>
           <MessageCircle className="mr-2 h-4 w-4" /> Nhắn tin
         </Button>
       </>
@@ -158,8 +218,13 @@ export function ProfileActions({ viewAsType, userId }: ProfileActionsProps) {
         >
           <UserPlus className="mr-2 h-4 w-4" /> Thêm bạn bè
         </Button>
-        <Button variant="outline">
-          <MessageCircle className="mr-2 h-4 w-4" /> Nhắn tin
+        <Button
+          variant="outline"
+          onClick={handleBlock}
+          disabled={blockUser.isPending}
+        >
+          <Ban className="mr-2 h-4 w-4" />
+          {blockUser.isPending ? 'Đang xử lý...' : 'Chặn'}
         </Button>
       </>
     );

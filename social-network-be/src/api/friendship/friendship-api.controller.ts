@@ -17,6 +17,8 @@ import {
   GetReceiveFriendRequestsService,
   GetSentFriendRequestsService,
   CancelFriendRequestService,
+  BlockUserService,
+  UnblockUserService,
 } from 'src/use-case/friendship';
 import { AcceptFriendRequestDto, SendFriendRequestDto } from './dto';
 import { GetSuggestFriendsService } from 'src/use-case/user';
@@ -32,6 +34,8 @@ export class FriendshipApiController {
     private readonly getSentFriendRequestsService: GetSentFriendRequestsService,
     private readonly getBlockedUsersService: GetBlockedUsersService,
     private readonly cancelFriendRequestService: CancelFriendRequestService,
+    private readonly blockUserService: BlockUserService,
+    private readonly unblockUserService: UnblockUserService,
   ) {}
 
   @Post('request')
@@ -147,6 +151,28 @@ export class FriendshipApiController {
       userId,
       limit,
       cursor,
+    });
+  }
+
+  @Post('block/:targetUserId')
+  async blockUser(
+    @GetUserId() userId: string,
+    @Param('targetUserId') targetUserId: string,
+  ) {
+    return this.blockUserService.execute({
+      blockerId: userId,
+      targetUserId,
+    });
+  }
+
+  @Delete('unblock/:targetUserId')
+  async unblockUser(
+    @GetUserId() userId: string,
+    @Param('targetUserId') targetUserId: string,
+  ) {
+    return this.unblockUserService.execute({
+      unblockerId: userId,
+      targetUserId,
     });
   }
 }

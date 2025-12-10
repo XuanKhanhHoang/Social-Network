@@ -7,9 +7,9 @@ import { PostRepository } from 'src/domains/post/post.repository';
 import { CommentRepository } from 'src/domains/comment/comment.repository';
 import {
   CommentEvents,
-  CommentLikedEventPayload,
+  CommentReactedEventPayload,
   PostEvents,
-  PostLikedEventPayload,
+  PostReactedEventPayload,
 } from 'src/share/events';
 
 export interface ToggleReactionServiceInput {
@@ -56,25 +56,26 @@ export class ToggleReactionService extends BaseUseCaseService<
         const post = await this.postRepository.findById(targetId);
         if (post) {
           if (post.author._id.toString() !== userId) {
-            const payload = {
+            const payload: PostReactedEventPayload = {
               postId: targetId,
               userId,
               ownerId: post.author._id.toString(),
-              type: reactionType,
-            } as PostLikedEventPayload;
+              reactionType,
+            };
 
-            this.eventEmitter.emit(PostEvents.liked, payload);
+            this.eventEmitter.emit(PostEvents.reacted, payload);
           }
         }
       } else if (targetType === ReactionTargetType.COMMENT) {
         const comment = await this.commentRepository.findById(targetId);
         if (comment && comment.author._id.toString() !== userId) {
-          this.eventEmitter.emit(CommentEvents.liked, {
+          this.eventEmitter.emit(CommentEvents.reacted, {
             commentId: targetId,
             postId: comment.postId.toString(),
             userId,
             ownerId: comment.author._id.toString(),
-          } as CommentLikedEventPayload);
+            reactionType,
+          } as CommentReactedEventPayload);
         }
       }
     }

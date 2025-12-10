@@ -104,7 +104,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
               1000,
           });
 
-          request['user'] = user;
+          request['user'] = {
+            _id: user._id.toString(),
+            role: user.role,
+          };
           return true;
         } catch (refreshError) {
           response.clearCookie('accessToken');

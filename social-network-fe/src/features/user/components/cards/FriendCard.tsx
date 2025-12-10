@@ -34,7 +34,7 @@ export function FriendsCard({
           {friends.length > 0 &&
             friends.map((friend) => (
               <Link
-                href={`/username/${friend.username}`}
+                href={`/user/${friend.username}`}
                 key={friend.id}
                 className="flex flex-col items-center group"
               >

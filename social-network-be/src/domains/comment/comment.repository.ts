@@ -465,6 +465,14 @@ export class CommentRepository extends ReactableRepository<CommentDocument> {
     );
   }
 
+  async restore(commentId: string): Promise<boolean> {
+    const result = await this.model.updateOne(
+      { _id: new Types.ObjectId(commentId), deletedAt: { $ne: null } },
+      { $set: { deletedAt: null } },
+    );
+    return result.modifiedCount > 0;
+  }
+
   async findExpiredDeletedComments(
     thresholdDate: Date,
   ): Promise<CommentDocument[]> {

@@ -154,6 +154,7 @@ export class ChatRepository extends BaseRepository<ConversationDocument> {
       .populate({
         path: 'participants',
         select: 'firstName lastName username avatar lastActiveAt',
+        match: { deletedAt: null },
       })
       .exec();
   }

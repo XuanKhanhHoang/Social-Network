@@ -28,9 +28,6 @@ export function UserSearchCard({ user }: UserSearchCardProps) {
 
   const handleAction = () => {
     if (friendshipStatus === FriendshipStatus.ACCEPTED) {
-      if (confirm('Bạn có chắc chắn muốn hủy kết bạn?')) {
-        unfriend(user._id);
-      }
     } else if (friendshipStatus === FriendshipStatus.PENDING) {
       if (isRequester) {
         cancelRequest(user._id);

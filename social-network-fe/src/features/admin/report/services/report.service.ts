@@ -5,6 +5,8 @@ import {
   UpdateReportStatusDto,
   UpdateReportStatusResponse,
   ReportTargetDto,
+  ReverseReportDto,
+  ReverseReportResponse,
 } from './report.dto';
 
 const ADMIN_REPORTS_PREFIX = '/admin/reports';
@@ -36,6 +38,16 @@ export const adminReportService = {
   async getReportTarget(reportId: string): Promise<ReportTargetDto> {
     return ApiClient.get(
       `${ADMIN_REPORTS_PREFIX}/violations/${reportId}/target`
+    );
+  },
+
+  async reverseReport(
+    reportId: string,
+    data: ReverseReportDto
+  ): Promise<ReverseReportResponse> {
+    return ApiClient.post(
+      `${ADMIN_REPORTS_PREFIX}/violations/${reportId}/reverse`,
+      data
     );
   },
 };

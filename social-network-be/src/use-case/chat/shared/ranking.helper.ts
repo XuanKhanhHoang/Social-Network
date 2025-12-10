@@ -77,6 +77,9 @@ export class RankingHelper {
     const usersMap = new Map<string, RankableUser>();
 
     friends.forEach((friend) => {
+      if (friend._id.toString() === currentUserId) {
+        return;
+      }
       usersMap.set(friend._id.toString(), {
         _id: friend._id,
         firstName: friend.firstName,
@@ -89,15 +92,15 @@ export class RankingHelper {
 
     conversations.forEach((conversation) => {
       const friend = conversation.participants.find(
-        (p: any) => p._id && p._id.toString() !== currentUserId,
-      ) as any;
+        (p) => p._id && p._id.toString() !== currentUserId && p.firstName,
+      );
 
       if (friend) {
         const id = friend._id.toString();
         const existing = usersMap.get(id);
 
         usersMap.set(id, {
-          _id: friend._id,
+          _id: friend._id as Types.ObjectId,
           firstName: friend.firstName,
           lastName: friend.lastName,
           username: friend.username,

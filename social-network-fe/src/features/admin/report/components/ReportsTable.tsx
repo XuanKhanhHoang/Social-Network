@@ -18,6 +18,7 @@ import {
   MessageSquare,
   Eye,
   Info,
+  Undo2,
 } from 'lucide-react';
 import { ReportDto, ReportStatus } from '../services/report.dto';
 
@@ -51,6 +52,7 @@ interface ReportsTableProps {
   onResolve: (report: ReportDto) => void;
   onReject: (report: ReportDto) => void;
   onViewDetail: (report: ReportDto) => void;
+  onReverse?: (report: ReportDto) => void;
 }
 
 export function ReportsTable({
@@ -61,6 +63,7 @@ export function ReportsTable({
   onResolve,
   onReject,
   onViewDetail,
+  onReverse,
 }: ReportsTableProps) {
   return (
     <Table>
@@ -187,6 +190,27 @@ export function ReportsTable({
                       </Button>
                     </>
                   )}
+                  {report.status === 'resolved' &&
+                    onReverse &&
+                    report.reviewedAt &&
+                    (() => {
+                      const reviewedDate = new Date(report.reviewedAt);
+                      const daysSinceReview = Math.floor(
+                        (Date.now() - reviewedDate.getTime()) /
+                          (1000 * 60 * 60 * 24)
+                      );
+                      return daysSinceReview <= 30;
+                    })() && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-amber-600 border-amber-600 hover:bg-amber-50"
+                        onClick={() => onReverse(report)}
+                      >
+                        <Undo2 className="h-4 w-4 mr-1" />
+                        Khôi phục
+                      </Button>
+                    )}
                   {report.status !== 'pending' && (
                     <Button
                       size="sm"

@@ -8,7 +8,7 @@ import { Types } from 'mongoose';
 import { CommentRepository } from 'src/domains/comment/comment.repository';
 import { FriendshipRepository } from 'src/domains/friendship/friendship.repository';
 import {
-  PostCursorData,
+  UserProfilePostCursorData,
   PostWithMyReactionModel,
   PostWithTopCommentAndUserReactionModel,
 } from 'src/domains/post/interfaces';
@@ -53,7 +53,7 @@ export class GetUserPostsService extends BaseUseCaseService<
     const { userId, cursor, limit = 10, username } = input;
     try {
       const decodedCursor = cursor
-        ? decodeCursor<PostCursorData>(cursor)
+        ? decodeCursor<UserProfilePostCursorData>(cursor)
         : undefined;
 
       const visibilities: UserPrivacy[] = [UserPrivacy.PUBLIC];
@@ -89,7 +89,7 @@ export class GetUserPostsService extends BaseUseCaseService<
       if (hasMore) {
         const lastPost = posts[limit - 1];
         nextCursor = encodeCursor({
-          lastHotScore: lastPost.hotScore,
+          lastCreatedAt: lastPost.createdAt.toISOString(),
           lastId: lastPost._id.toString(),
         });
       }

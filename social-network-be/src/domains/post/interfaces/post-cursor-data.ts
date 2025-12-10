@@ -3,6 +3,11 @@ export interface PostCursorData {
   lastId: string;
 }
 
+export interface UserProfilePostCursorData {
+  lastCreatedAt: string;
+  lastId: string;
+}
+
 export interface SearchPostCursorData {
   lastCreatedAt: Date;
   lastIsFriend: boolean;

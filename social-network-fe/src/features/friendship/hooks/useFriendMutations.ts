@@ -275,3 +275,69 @@ export function useSendFriendRequest() {
     },
   });
 }
+
+export function useBlockUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      targetUserId,
+      username,
+    }: {
+      targetUserId: string;
+      username: string;
+    }) => {
+      return FriendshipService.blockUser(targetUserId).then((res) => ({
+        ...res,
+        username,
+      }));
+    },
+    onSuccess: (data) => {
+      toast.success('Đã chặn người dùng');
+      queryClient.invalidateQueries({ queryKey: ['search', 'users'] });
+      queryClient.invalidateQueries({ queryKey: friendshipKeys.blocked() });
+      queryClient.invalidateQueries({
+        queryKey: userKeys.header(data.username),
+      });
+      queryClient.invalidateQueries({
+        queryKey: userKeys.profile(data.username),
+      });
+    },
+    onError: (error: { message?: string }) => {
+      toast.error(error.message || 'Có lỗi xảy ra khi chặn người dùng');
+    },
+  });
+}
+
+export function useUnblockUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      targetUserId,
+      username,
+    }: {
+      targetUserId: string;
+      username: string;
+    }) => {
+      return FriendshipService.unblockUser(targetUserId).then((res) => ({
+        ...res,
+        username,
+      }));
+    },
+    onSuccess: (data) => {
+      toast.success('Đã hủy chặn người dùng');
+      queryClient.invalidateQueries({ queryKey: ['search', 'users'] });
+      queryClient.invalidateQueries({ queryKey: friendshipKeys.blocked() });
+      queryClient.invalidateQueries({
+        queryKey: userKeys.header(data.username),
+      });
+      queryClient.invalidateQueries({
+        queryKey: userKeys.profile(data.username),
+      });
+    },
+    onError: (error: { message?: string }) => {
+      toast.error(error.message || 'Có lỗi xảy ra khi hủy chặn người dùng');
+    },
+  });
+}

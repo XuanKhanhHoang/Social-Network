@@ -144,4 +144,16 @@ export const FriendshipService = {
       pagination: { hasMore: boolean; nextCursor: string | null };
     }>(`/users/search?${params.toString()}`);
   },
+
+  blockUser: async (targetUserId: string) => {
+    return ApiClient.post<{ success: boolean; message: string }>(
+      `/friendships/block/${targetUserId}`
+    );
+  },
+
+  unblockUser: async (targetUserId: string) => {
+    return ApiClient.delete<{ success: boolean; message: string }>(
+      `/friendships/unblock/${targetUserId}`
+    );
+  },
 };

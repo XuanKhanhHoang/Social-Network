@@ -30,7 +30,7 @@ export const useNotificationNavigation = () => {
           }
           break;
 
-        case NotificationType.POST_LIKED:
+        case NotificationType.POST_REACTED:
         case NotificationType.POST_COMMENTED:
           if (notification.relatedId) {
             router.push(`/post/${notification.relatedId}`);
@@ -42,7 +42,7 @@ export const useNotificationNavigation = () => {
           }
           break;
 
-        case NotificationType.COMMENT_LIKED:
+        case NotificationType.COMMENT_REACTED:
         case NotificationType.COMMENT_REPLY_CREATED:
           const postId = notification.metadata?.postId;
 

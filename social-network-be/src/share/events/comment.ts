@@ -1,20 +1,22 @@
 import { makeEventTree } from '../utils/makeEventTree';
+import { ReactionType } from '../enums';
 
 const Comment = makeEventTree('comment', {
   created: 'created',
   removed: 'removed',
   updated: 'updated',
   replyCreated: 'replyCreated',
-  liked: 'liked',
+  reacted: 'reacted',
 } as const);
 export const CommentEvents = Comment.events;
 export const CommentEvent = Comment.key;
 
-export type CommentLikedEventPayload = {
+export type CommentReactedEventPayload = {
   commentId: string;
   postId: string;
   userId: string;
   ownerId: string;
+  reactionType: ReactionType;
 };
 
 export type CommentReplyCreatedEventPayload = {

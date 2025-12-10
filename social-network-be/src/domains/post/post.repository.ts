@@ -14,11 +14,11 @@ import {
   CreatePostData,
   FindPhotosForUserResults,
   FindPostForHomeFeedData,
-  PostCursorData,
   PostPhotoModel,
   PostWithMyReactionModel,
   PostWithRankingScore,
   SearchPostCursorData,
+  UserProfilePostCursorData,
 } from './interfaces';
 
 @Injectable()
@@ -263,7 +263,7 @@ export class PostRepository extends ReactableRepository<PostDocument> {
   }: {
     limit: number;
     requestingUserId?: string;
-    cursor?: PostCursorData;
+    cursor?: UserProfilePostCursorData;
     authorId: string;
     visibilities: UserPrivacy[];
   }): Promise<PostWithMyReactionModel<Types.ObjectId>[]> {
@@ -286,10 +286,10 @@ export class PostRepository extends ReactableRepository<PostDocument> {
       pipeline.push({
         $match: {
           $or: [
-            { hotScore: { $lt: cursor.lastHotScore } },
+            { createdAt: { $lt: new Date(cursor.lastCreatedAt) } },
             {
               $and: [
-                { hotScore: { $eq: cursor.lastHotScore } },
+                { createdAt: { $eq: new Date(cursor.lastCreatedAt) } },
                 { _id: { $lt: new Types.ObjectId(cursor.lastId) } },
               ],
             },
@@ -300,7 +300,7 @@ export class PostRepository extends ReactableRepository<PostDocument> {
 
     pipeline.push({
       $sort: {
-        hotScore: -1,
+        createdAt: -1,
         _id: -1,
       },
     });
@@ -513,6 +513,19 @@ export class PostRepository extends ReactableRepository<PostDocument> {
         },
       },
     );
+  }
+
+  async restore(postId: string): Promise<boolean> {
+    const result = await this.model.updateOne(
+      { _id: new Types.ObjectId(postId), status: PostStatus.DELETED },
+      {
+        $set: {
+          status: PostStatus.ACTIVE,
+          deletedAt: null,
+        },
+      },
+    );
+    return result.modifiedCount > 0;
   }
 
   async findExpiredDeletedPosts(thresholdDate: Date): Promise<PostDocument[]> {

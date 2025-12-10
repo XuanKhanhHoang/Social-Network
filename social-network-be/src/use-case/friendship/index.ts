@@ -5,3 +5,5 @@ export * from './remove-friend-service/remove-friend-service.service';
 export * from './send-friend-request-service/send-friend-request-service.service';
 export * from './get-blocked-users-service/get-blocked-users.service';
 export * from './cancel-friend-request-service/cancel-friend-request-service.service';
+export * from './block-user-service/block-user-service.service';
+export * from './unblock-user-service/unblock-user-service.service';

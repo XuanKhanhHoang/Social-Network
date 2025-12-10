@@ -15,7 +15,7 @@ export function useSocketCacheUpdater() {
   const handleSocketNotification = useCallback(
     (notification: Notification, currentUsername?: string) => {
       switch (notification.type) {
-        case NotificationType.POST_LIKED:
+        case NotificationType.POST_REACTED:
           if (notification.relatedId) {
             postCache.updateReactionFromSocket(
               notification.relatedId,
@@ -61,9 +61,8 @@ export function useSocketCacheUpdater() {
           });
           break;
 
-        case NotificationType.COMMENT_LIKED:
+        case NotificationType.COMMENT_REACTED:
         case NotificationType.COMMENT_REPLY_CREATED:
-          // Optional: Handle comment updates
           break;
       }
     },

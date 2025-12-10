@@ -1,7 +1,6 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useParams } from 'next/navigation';
 import { useUserFriendsPreview } from '@/features/user/hooks/useUser';
@@ -9,6 +8,7 @@ import { transformToUserSummary } from '@/features/user/types';
 import { AlertCircle, UserX } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
+import FriendCard from '@/features/friendship/components/cards/FriendCard';
 
 export default function FriendsPage() {
   const params = useParams();
@@ -62,25 +62,17 @@ export default function FriendsPage() {
         <CardTitle>Tất cả bạn bè ({total})</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {friends.map((friend) => (
-            <Card key={friend.id} className="flex items-center p-4 gap-4">
-              <Avatar className="w-16 h-16 border">
-                <AvatarImage src={friend.avatar?.url} alt={friend.fullName} />
-                <AvatarFallback>
-                  {friend.firstName?.charAt(0) ?? '?'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-grow overflow-hidden">
-                <span className="font-semibold text-lg block truncate">
-                  {friend.fullName}
-                </span>
-                <p className="text-sm text-muted-foreground">0 bạn chung</p>
-              </div>
-              <Button variant="secondary" size="sm" className="shrink-0">
-                Hủy bạn
-              </Button>
-            </Card>
+            <FriendCard
+              key={friend.id}
+              user={friend}
+              actions={
+                <Button variant="outline" size="sm" className="w-full">
+                  Hủy bạn
+                </Button>
+              }
+            />
           ))}
         </div>
       </CardContent>

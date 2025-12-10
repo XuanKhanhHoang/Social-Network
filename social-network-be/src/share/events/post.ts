@@ -1,10 +1,11 @@
 import { makeEventTree } from '../utils/makeEventTree';
+import { ReactionType } from '../enums';
 
 const Post = makeEventTree('post', {
   created: 'created',
   removed: 'removed',
   updated: 'updated',
-  liked: 'liked',
+  reacted: 'reacted',
   commented: 'commented',
 } as const);
 export const PostEvents = Post.events;
@@ -15,11 +16,11 @@ export type PostCreatedEventPayload = {
   authorId: string;
 };
 
-export type PostLikedEventPayload = {
+export type PostReactedEventPayload = {
   postId: string;
   userId: string;
   ownerId: string;
-  type: string;
+  reactionType: ReactionType;
 };
 
 export type PostCommentedEventPayload = {

@@ -31,12 +31,12 @@ const getNotificationMessage = (notification: Notification): string => {
       return `${name} đã gửi lời mời kết bạn.`;
     case NotificationType.FRIEND_REQUEST_ACCEPTED:
       return `${name} đã chấp nhận lời mời kết bạn.`;
-    case NotificationType.POST_LIKED:
-      return `${name} đã thích bài viết của bạn.`;
+    case NotificationType.POST_REACTED:
+      return `${name} đã bày tỏ cảm xúc với bài viết của bạn.`;
     case NotificationType.POST_COMMENTED:
       return `${name} đã bình luận về bài viết của bạn.`;
-    case NotificationType.COMMENT_LIKED:
-      return `${name} đã thích bình luận của bạn.`;
+    case NotificationType.COMMENT_REACTED:
+      return `${name} đã bày tỏ cảm xúc với bình luận của bạn.`;
     case NotificationType.COMMENT_REPLY_CREATED:
       return `${name} đã trả lời bình luận của bạn.`;
     default:

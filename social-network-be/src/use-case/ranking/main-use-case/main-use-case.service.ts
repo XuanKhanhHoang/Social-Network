@@ -44,7 +44,7 @@ export class RankingService {
     const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
 
     const filter: FilterQuery<PostDocument> = {
-      createdAt: { $gte: threeDaysAgo },
+      updatedAt: { $gte: threeDaysAgo },
       status: PostStatus.ACTIVE,
     };
 
@@ -117,7 +117,7 @@ export class RankingService {
         repliesCount: number;
         _id: string;
       }>(
-        { createdAt: { $gte: sinceDate } },
+        { updatedAt: { $gte: sinceDate } },
         {
           projection: {
             reactionsCount: 1,

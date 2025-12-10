@@ -129,4 +129,53 @@ export class ReportRepository {
   async countPendingReports(): Promise<number> {
     return this.reportModel.countDocuments({ status: ReportStatus.PENDING });
   }
+
+  async findResolvedForTarget(
+    targetType: ReportTargetType,
+    targetId: string,
+  ): Promise<ReportDocument[]> {
+    return this.reportModel
+      .find({
+        targetType,
+        targetId: new Types.ObjectId(targetId),
+        status: ReportStatus.RESOLVED,
+      })
+      .lean();
+  }
+
+  async rejectResolvedForTarget(
+    targetType: ReportTargetType,
+    targetId: string,
+    reviewedBy: string,
+    reversalNote: string,
+  ): Promise<number> {
+    const resolvedReports = await this.findResolvedForTarget(
+      targetType,
+      targetId,
+    );
+
+    if (resolvedReports.length === 0) {
+      return 0;
+    }
+
+    const updatePromises = resolvedReports.map((report) => {
+      const existingNote = report.adminNote || '';
+      const appendedNote = existingNote
+        ? `${existingNote}\n----------------\n${reversalNote}`
+        : reversalNote;
+
+      return this.reportModel.updateOne(
+        { _id: report._id },
+        {
+          status: ReportStatus.REJECTED,
+          reviewedBy: new Types.ObjectId(reviewedBy),
+          reviewedAt: new Date(),
+          adminNote: appendedNote,
+        },
+      );
+    });
+
+    await Promise.all(updatePromises);
+    return resolvedReports.length;
+  }
 }

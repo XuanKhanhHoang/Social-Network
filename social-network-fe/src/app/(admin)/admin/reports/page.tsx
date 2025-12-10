@@ -10,6 +10,7 @@ import {
   useAdminReports,
   useUpdateReportStatus,
   useReportTarget,
+  useReverseReport,
 } from '@/features/admin/report/hooks/useReport';
 import {
   ReportDto,
@@ -22,24 +23,22 @@ import { ReportsPagination } from '@/features/admin/report/components/ReportsPag
 import { ContentPreviewDialog } from '@/features/admin/report/components/ContentPreviewDialog';
 import { ReportActionDialog } from '@/features/admin/report/components/ReportActionDialog';
 import { ReviewDetailDialog } from '@/features/admin/report/components/ReviewDetailDialog';
+import { ReverseReportDialog } from '@/features/admin/report/components/ReverseReportDialog';
 
 const AdminReportsPage = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
 
-  // Read from URL params
   const statusFilter =
     (searchParams.get('status') as ReportStatus | 'all') || 'pending';
   const typeFilter =
     (searchParams.get('type') as ReportTargetType | 'all') || 'all';
   const page = Number(searchParams.get('page')) || 1;
 
-  // Update URL params
   const updateParams = (updates: Record<string, string | number | null>) => {
     const params = new URLSearchParams(searchParams.toString());
     Object.entries(updates).forEach(([key, value]) => {
-      // Only remove if it's the default value
       const shouldRemove =
         value === null ||
         (key === 'status' && value === 'pending') ||
@@ -75,6 +74,7 @@ const AdminReportsPage = () => {
   const [previewReportId, setPreviewReportId] = useState<string | null>(null);
   const [reviewDetailReport, setReviewDetailReport] =
     useState<ReportDto | null>(null);
+  const [reverseReport, setReverseReport] = useState<ReportDto | null>(null);
 
   const { data, isLoading } = useAdminReports({
     page,
@@ -84,6 +84,7 @@ const AdminReportsPage = () => {
   });
 
   const updateMutation = useUpdateReportStatus();
+  const reverseMutation = useReverseReport();
   const { data: targetData, isLoading: isLoadingTarget } =
     useReportTarget(previewReportId);
 
@@ -124,6 +125,31 @@ const AdminReportsPage = () => {
     );
   };
 
+  const handleReverse = (reason: string) => {
+    if (!reverseReport) return;
+    reverseMutation.mutate(
+      {
+        reportId: reverseReport._id,
+        data: { reason },
+      },
+      {
+        onSuccess: (result) => {
+          toast.success('Đã khôi phục bài viết thành công');
+          setReverseReport(null);
+        },
+        onError: (error: Error & { response?: { status?: number } }) => {
+          if (error?.response?.status === 404) {
+            toast.error(
+              'Không thể khôi phục bài viết này. Bài viết có thể đã bị xóa vĩnh viễn.'
+            );
+          } else {
+            toast.error('Có lỗi xảy ra khi khôi phục');
+          }
+        },
+      }
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b px-6 py-4">
@@ -154,6 +180,7 @@ const AdminReportsPage = () => {
             onResolve={(report) => openActionDialog(report, 'resolve')}
             onReject={(report) => openActionDialog(report, 'reject')}
             onViewDetail={setReviewDetailReport}
+            onReverse={setReverseReport}
           />
 
           {data && (
@@ -189,6 +216,14 @@ const AdminReportsPage = () => {
         open={!!reviewDetailReport}
         onClose={() => setReviewDetailReport(null)}
         report={reviewDetailReport}
+      />
+
+      <ReverseReportDialog
+        open={!!reverseReport}
+        onClose={() => setReverseReport(null)}
+        report={reverseReport}
+        onConfirm={handleReverse}
+        isPending={reverseMutation.isPending}
       />
     </div>
   );

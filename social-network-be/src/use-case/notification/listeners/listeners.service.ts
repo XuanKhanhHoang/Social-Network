@@ -6,9 +6,9 @@ import {
   FriendRequestSentEventPayload,
   PostCommentedEventPayload,
   PostEvents,
-  PostLikedEventPayload,
+  PostReactedEventPayload,
   CommentEvents,
-  CommentLikedEventPayload,
+  CommentReactedEventPayload,
   CommentReplyCreatedEventPayload,
 } from 'src/share/events';
 import { CreateNotificationService } from '../create-notification/create-notification.service';
@@ -46,15 +46,16 @@ export class NotificationEventListener {
     });
   }
 
-  @OnEvent(PostEvents.liked)
-  async handlePostLiked(payload: PostLikedEventPayload) {
+  @OnEvent(PostEvents.reacted)
+  async handlePostReacted(payload: PostReactedEventPayload) {
     if (payload.userId === payload.ownerId) return;
     await this.createNotificationService.execute({
       sender: { _id: payload.userId },
       receiver: payload.ownerId,
-      type: NotificationType.POST_LIKED,
+      type: NotificationType.POST_REACTED,
       relatedId: payload.postId,
       relatedModel: 'Post',
+      metadata: { reactionType: payload.reactionType },
     });
   }
 
@@ -70,16 +71,16 @@ export class NotificationEventListener {
     });
   }
 
-  @OnEvent(CommentEvents.liked)
-  async handleCommentLiked(payload: CommentLikedEventPayload) {
+  @OnEvent(CommentEvents.reacted)
+  async handleCommentReacted(payload: CommentReactedEventPayload) {
     if (payload.userId === payload.ownerId) return;
     await this.createNotificationService.execute({
       sender: { _id: payload.userId },
       receiver: payload.ownerId,
-      type: NotificationType.COMMENT_LIKED,
+      type: NotificationType.COMMENT_REACTED,
       relatedId: payload.commentId,
       relatedModel: 'Comment',
-      metadata: { postId: payload.postId },
+      metadata: { postId: payload.postId, reactionType: payload.reactionType },
     });
   }
 

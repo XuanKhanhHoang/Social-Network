@@ -40,13 +40,19 @@ export class UserDomainsService {
   }
 
   canView(
-    fieldPrivacy: UserPrivacy,
+    fieldPrivacy: UserPrivacy | string,
     isOwner: boolean,
     isFriend: boolean,
   ): boolean {
     if (isOwner) return true;
 
-    switch (fieldPrivacy) {
+    const normalizedPrivacy = (
+      typeof fieldPrivacy === 'string'
+        ? fieldPrivacy.toLowerCase()
+        : fieldPrivacy
+    ) as UserPrivacy;
+
+    switch (normalizedPrivacy) {
       case UserPrivacy.PUBLIC:
         return true;
       case UserPrivacy.FRIENDS:

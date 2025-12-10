@@ -87,7 +87,6 @@ export class GetUserFriendsPreviewService extends BaseUseCaseService<
           ? searchResult[searchResult.length - 1]._id.toString()
           : null;
     } else {
-      // Normal pagination
       const result = await this.friendshipRepository.findFriendIdsList({
         userId: profileUserIdStr,
         limit,

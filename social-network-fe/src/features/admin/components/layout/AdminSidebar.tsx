@@ -11,7 +11,6 @@ import {
   MessageSquare,
   Settings,
   LogOut,
-  BarChart3,
   PanelLeft,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -31,12 +30,6 @@ const NAV_ITEMS = [
     label: 'Dashboard',
     icon: LayoutDashboard,
     href: '/admin/dashboard',
-  },
-  {
-    id: 'statistics',
-    label: 'Thống kê',
-    icon: BarChart3,
-    href: '/admin/statistics',
   },
   {
     id: 'reports',

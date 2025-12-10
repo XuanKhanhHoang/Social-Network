@@ -12,6 +12,10 @@ import { GetBlockedUsersService } from './get-blocked-users-service/get-blocked-
 
 import { CancelFriendRequestService } from './cancel-friend-request-service/cancel-friend-request-service.service';
 
+import { BlockUserService } from './block-user-service/block-user-service.service';
+
+import { UnblockUserService } from './unblock-user-service/unblock-user-service.service';
+
 @Module({
   imports: [FriendshipModule, UserModule],
   providers: [
@@ -23,6 +27,8 @@ import { CancelFriendRequestService } from './cancel-friend-request-service/canc
     GetSentFriendRequestsService,
     GetBlockedUsersService,
     CancelFriendRequestService,
+    BlockUserService,
+    UnblockUserService,
   ],
   exports: [
     SendFriendRequestService,
@@ -33,6 +39,8 @@ import { CancelFriendRequestService } from './cancel-friend-request-service/canc
     GetSentFriendRequestsService,
     GetBlockedUsersService,
     CancelFriendRequestService,
+    BlockUserService,
+    UnblockUserService,
   ],
 })
 export class FriendshipUseCaseModule {}

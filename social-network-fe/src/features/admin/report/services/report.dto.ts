@@ -78,3 +78,14 @@ export interface ReportTargetDto {
   media?: ReportTargetMedia[];
   isDeleted: boolean;
 }
+
+export interface ReverseReportDto {
+  reason: string;
+}
+
+export interface ReverseReportResponse {
+  success: boolean;
+  message: string;
+  targetRestored: boolean;
+  totalReportsReversed: number;
+}

@@ -18,7 +18,7 @@ export function PhotosCard({ photos, username }: PhotosCardProps) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg font-semibold">Ảnh</CardTitle>
-        <Link href={`/username/${username}/photos`} passHref>
+        <Link href={`/user/${username}/photos`} passHref>
           <Button variant="link" className="p-0 h-auto text-blue-500">
             Xem tất cả
           </Button>

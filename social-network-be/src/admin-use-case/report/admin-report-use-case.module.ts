@@ -6,6 +6,7 @@ import { ReportModule } from 'src/domains/report/report.module';
 import { GetReportsService } from './get-reports/get-reports.service';
 import { UpdateReportStatusService } from './update-report-status/update-report-status.service';
 import { GetReportTargetService } from './get-report-target/get-report-target.service';
+import { ReverseReportDecisionService } from './reverse-report-decision/reverse-report-decision.service';
 
 @Module({
   imports: [UserModule, PostModule, CommentModule, ReportModule],
@@ -13,12 +14,14 @@ import { GetReportTargetService } from './get-report-target/get-report-target.se
     GetReportsService,
     UpdateReportStatusService,
     GetReportTargetService,
+    ReverseReportDecisionService,
   ],
   exports: [
     GetReportsService,
     GetReportsService,
     UpdateReportStatusService,
     GetReportTargetService,
+    ReverseReportDecisionService,
   ],
 })
 export class AdminReportUseCaseModule {}

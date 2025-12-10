@@ -39,6 +39,8 @@ export default function UserLayout({
     const isLoggedIn = !!userAuth;
     const isOwner = userAuth?.username === header.username;
     if (isOwner) return 'OWNER';
+    if (header.headerType?.status === FriendshipStatus.BLOCKED)
+      return 'BLOCKED';
     if (header.headerType?.status === FriendshipStatus.ACCEPTED)
       return 'FRIEND';
     if (header.headerType?.status === FriendshipStatus.PENDING) {
@@ -118,7 +120,17 @@ export default function UserLayout({
             </div>
 
             <div className="flex gap-2 pb-4">
-              <ProfileActions viewAsType={viewAsType} userId={header.id} />
+              <ProfileActions
+                viewAsType={viewAsType}
+                userId={header.id}
+                userInfo={{
+                  id: header.id,
+                  username: header.username,
+                  firstName: header.firstName,
+                  lastName: header.lastName,
+                  avatar: header.avatar?.url,
+                }}
+              />
             </div>
           </div>
         </div>
