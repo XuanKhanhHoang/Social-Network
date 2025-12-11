@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PostRepository } from 'src/domains/post/post.repository';
+import { ReportRepository } from 'src/domains/report/report.repository';
+import { ReportTargetType } from 'src/schemas/report.schema';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
 import { PaginatedResponse } from 'src/share/dto/pagination.dto';
 
@@ -20,6 +22,7 @@ export type PostListItem = {
     avatar?: any;
   };
   content: Record<string, any>;
+  media?: { url: string; mediaType: string; caption?: string }[];
   plain_text: string;
   visibility: string;
   status: string;
@@ -28,6 +31,7 @@ export type PostListItem = {
   sharesCount: number;
   createdAt: Date;
   deletedAt?: Date;
+  pendingReportsCount: number;
 };
 
 export type GetPostsOutput = PaginatedResponse<PostListItem>;
@@ -37,7 +41,10 @@ export class GetPostsService extends BaseUseCaseService<
   GetPostsInput,
   GetPostsOutput
 > {
-  constructor(private readonly postRepository: PostRepository) {
+  constructor(
+    private readonly postRepository: PostRepository,
+    private readonly reportRepository: ReportRepository,
+  ) {
     super();
   }
 
@@ -51,6 +58,12 @@ export class GetPostsService extends BaseUseCaseService<
       includeDeleted,
     });
 
+    const postIds = posts.map((p) => p._id.toString());
+    const pendingCountMap = await this.reportRepository.countPendingForTargets(
+      ReportTargetType.POST,
+      postIds,
+    );
+
     return {
       data: posts.map((post) => ({
         _id: post._id.toString(),
@@ -62,6 +75,11 @@ export class GetPostsService extends BaseUseCaseService<
           avatar: post.author.avatar,
         },
         content: post.content,
+        media: post.media?.map((m) => ({
+          url: m.url,
+          mediaType: m.mediaType,
+          caption: m.caption,
+        })),
         plain_text: post.plain_text,
         visibility: post.visibility,
         status: post.status,
@@ -70,6 +88,7 @@ export class GetPostsService extends BaseUseCaseService<
         sharesCount: post.sharesCount,
         createdAt: post.createdAt,
         deletedAt: post.deletedAt,
+        pendingReportsCount: pendingCountMap.get(post._id.toString()) || 0,
       })),
       pagination: {
         total,

@@ -567,7 +567,7 @@ export class PostRepository extends ReactableRepository<PostDocument> {
       this.model
         .find(filter)
         .select(
-          '_id author content plain_text visibility status reactionsCount commentsCount sharesCount createdAt deletedAt',
+          '_id author content media plain_text visibility status reactionsCount commentsCount sharesCount createdAt deletedAt',
         )
         .sort({ createdAt: -1 })
         .skip(skip)

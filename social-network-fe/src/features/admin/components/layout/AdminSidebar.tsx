@@ -8,7 +8,6 @@ import {
   Flag,
   Users,
   FileText,
-  MessageSquare,
   Settings,
   LogOut,
   PanelLeft,
@@ -48,12 +47,6 @@ const NAV_ITEMS = [
     label: 'Bài viết',
     icon: FileText,
     href: '/admin/posts',
-  },
-  {
-    id: 'comments',
-    label: 'Bình luận',
-    icon: MessageSquare,
-    href: '/admin/comments',
   },
 ];
 

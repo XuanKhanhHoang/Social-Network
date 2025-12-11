@@ -178,4 +178,31 @@ export class ReportRepository {
     await Promise.all(updatePromises);
     return resolvedReports.length;
   }
+
+  async countPendingForTargets(
+    targetType: ReportTargetType,
+    targetIds: string[],
+  ): Promise<Map<string, number>> {
+    const result = await this.reportModel.aggregate([
+      {
+        $match: {
+          targetType,
+          targetId: { $in: targetIds.map((id) => new Types.ObjectId(id)) },
+          status: ReportStatus.PENDING,
+        },
+      },
+      {
+        $group: {
+          _id: '$targetId',
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const countMap = new Map<string, number>();
+    result.forEach((item: { _id: Types.ObjectId; count: number }) => {
+      countMap.set(item._id.toString(), item.count);
+    });
+    return countMap;
+  }
 }
