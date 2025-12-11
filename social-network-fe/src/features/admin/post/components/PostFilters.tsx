@@ -30,6 +30,7 @@ export function PostFilters({
 }: PostFiltersProps) {
   const [searchValue, setSearchValue] = useState(initialSearchValue);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedSearch = useCallback(
     debounce((value: string) => {
       onSearch(value.trim());

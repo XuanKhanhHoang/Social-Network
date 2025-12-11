@@ -133,7 +133,7 @@ const AdminReportsPage = () => {
         data: { reason },
       },
       {
-        onSuccess: (result) => {
+        onSuccess: () => {
           toast.success('Đã khôi phục bài viết thành công');
           setReverseReport(null);
         },

@@ -42,7 +42,6 @@ export default function CommentItem({
   comment,
   postId,
   level = 0,
-  rootId,
 }: CommentItemProps) {
   const [showReplies, setShowReplies] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -64,7 +63,7 @@ export default function CommentItem({
       await deleteComment(comment.id);
       toast.success('Xóa bình luận thành công');
       setShowDeleteDialog(false);
-    } catch (error) {
+    } catch () {
       toast.error('Xóa bình luận thất bại');
     }
   };

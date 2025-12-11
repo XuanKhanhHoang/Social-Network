@@ -1,5 +1,3 @@
-import { PaginationMeta } from '@/types/api';
-
 export enum UserStatus {
   ACTIVE = 'active',
   LOCKED = 'locked',
@@ -16,7 +14,12 @@ export interface UserListItem {
   email: string;
   firstName: string;
   lastName: string;
-  avatar: any;
+  avatar: {
+    url: string;
+    width?: number;
+    height?: number;
+    mediaId?: string;
+  };
   role: UserRole;
   status: UserStatus;
   isVerified: boolean;
@@ -25,7 +28,12 @@ export interface UserListItem {
 }
 
 export interface UserDetail extends UserListItem {
-  coverPhoto: any;
+  coverPhoto: {
+    url: string;
+    width?: number;
+    height?: number;
+    mediaId?: string;
+  };
   bio: string;
   gender: string;
   birthDate: string;
@@ -48,7 +56,12 @@ export interface GetUsersParams {
 
 export interface GetUsersResponse {
   data: UserListItem[];
-  pagination: PaginationMeta;
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export interface UpdateUserDto {

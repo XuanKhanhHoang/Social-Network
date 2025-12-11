@@ -64,7 +64,7 @@ export function useReaction({
         lastSyncedReactionRef.current = targetReaction;
       }
     },
-    onError: (error, targetReaction) => {
+    onError: (error) => {
       if (isMountedRef.current) {
         const lastSynced = lastSyncedReactionRef.current;
         const countDiff = calculateCountChange(
@@ -85,6 +85,7 @@ export function useReaction({
     },
   });
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedSync = useCallback(
     debounce((reaction: ReactionType | null) => {
       if (!isMountedRef.current) return;
@@ -154,6 +155,7 @@ export function useReaction({
         }
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entityId, debouncedSync, reactionFn, unReactionFn]);
 
   useEffect(() => {

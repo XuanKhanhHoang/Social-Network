@@ -7,7 +7,6 @@ import {
   useAcceptFriendRequest,
   useCancelFriendRequest,
   useSendFriendRequest,
-  useUnfriend,
 } from '@/features/friendship/hooks/useFriendship';
 
 interface UserSearchCardProps {
@@ -22,9 +21,8 @@ export function UserSearchCard({ user }: UserSearchCardProps) {
     useCancelFriendRequest();
   const { mutate: acceptRequest, isPending: isAccepting } =
     useAcceptFriendRequest();
-  const { mutate: unfriend, isPending: isUnfriending } = useUnfriend();
 
-  const isLoading = isSending || isCanceling || isAccepting || isUnfriending;
+  const isLoading = isSending || isCanceling || isAccepting;
 
   const handleAction = () => {
     if (friendshipStatus === FriendshipStatus.ACCEPTED) {

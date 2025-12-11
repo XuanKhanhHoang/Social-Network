@@ -31,7 +31,6 @@ export type PostDetailProps = {
 export default function PostDetail({
   post,
   initialMediaIndex = 0,
-  isError,
   isPending,
 }: PostDetailProps) {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(initialMediaIndex);

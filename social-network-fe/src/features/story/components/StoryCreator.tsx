@@ -148,6 +148,7 @@ const StoryCreator: React.FC<CreateStoryModalProps> = ({ isOpen, onClose }) => {
                     onClick={() => fileInputRef.current?.click()}
                     className="bg-blue-600 hover:bg-blue-700 text-white rounded-full"
                   >
+                    {/* eslint-disable-next-line jsx-a11y/alt-text */}
                     <Image className="w-5 h-5 mr-2" />
                     Ảnh
                   </Button>
@@ -179,6 +180,7 @@ const StoryCreator: React.FC<CreateStoryModalProps> = ({ isOpen, onClose }) => {
               <div className="relative w-full h-full">
                 <div className="w-full h-full flex items-center justify-center bg-black">
                   {mediaType === 'image' ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={mediaPreview}
                       alt="Story preview"

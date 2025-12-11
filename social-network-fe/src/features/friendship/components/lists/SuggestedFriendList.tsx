@@ -16,14 +16,8 @@ export default function SuggestedFriendList({
   onSeeAll?: () => void;
 }) {
   const { ref, inView } = useInView();
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    status,
-    isFetching,
-  } = useSuggestedFriends();
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
+    useSuggestedFriends();
   const sendRequest = useSendFriendRequest();
 
   useEffect(() => {

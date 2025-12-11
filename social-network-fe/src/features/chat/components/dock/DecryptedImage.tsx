@@ -99,6 +99,7 @@ export const DecryptedImage = ({
   }
 
   return (
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       src={objectUrl}
       alt={alt || 'Encrypted content'}

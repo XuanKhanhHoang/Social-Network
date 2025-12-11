@@ -31,7 +31,6 @@ const AdminUsersPage = () => {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Read from URL params
   const statusFilter =
     (searchParams.get('status') as
       | UserStatus
@@ -41,7 +40,6 @@ const AdminUsersPage = () => {
   const search = searchParams.get('search') || '';
   const page = Number(searchParams.get('page')) || 1;
 
-  // Update URL params
   const updateParams = (updates: Record<string, string | number | null>) => {
     const params = new URLSearchParams(searchParams.toString());
     Object.entries(updates).forEach(([key, value]) => {

@@ -29,7 +29,7 @@ const EmojiPickerContext = createContext<EmojiPickerContextType | null>(null);
 
 export function EmojiPickerProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const [, setAnchorEl] = useState<HTMLElement | null>(null);
   const onSelectRef = useRef<(emoji: EmojiClickData) => void>(null);
 
   const { refs, floatingStyles, context } = useFloating({

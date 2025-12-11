@@ -79,6 +79,7 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
                 priority
               />
             ) : (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={data.url}
                 alt={data.imgId}

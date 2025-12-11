@@ -32,6 +32,7 @@ export const ChatInputArea = ({
     >
       {media && (
         <div className="mb-2 relative inline-block group">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={media.previewUrl}
             alt="Selected"
