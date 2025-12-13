@@ -63,7 +63,8 @@ export default function CommentItem({
       await deleteComment(comment.id);
       toast.success('Xóa bình luận thành công');
       setShowDeleteDialog(false);
-    } catch () {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (e) {
       toast.error('Xóa bình luận thất bại');
     }
   };
