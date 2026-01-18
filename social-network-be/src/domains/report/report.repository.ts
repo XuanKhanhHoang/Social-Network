@@ -205,4 +205,64 @@ export class ReportRepository {
     });
     return countMap;
   }
+
+  async setNotifyReporterAt(reportId: string, notifyAt: Date): Promise<void> {
+    await this.reportModel.updateOne(
+      { _id: new Types.ObjectId(reportId) },
+      { notifyReporterAt: notifyAt },
+    );
+  }
+
+  async findPendingReporterNotifications(): Promise<ReportDocument[]> {
+    return this.reportModel
+      .find({
+        notifyReporterAt: { $lte: new Date() },
+        reporterNotified: { $ne: true },
+        status: { $in: [ReportStatus.RESOLVED, ReportStatus.REJECTED] },
+      })
+      .lean();
+  }
+
+  async markReporterNotified(reportId: string): Promise<void> {
+    await this.reportModel.updateOne(
+      { _id: new Types.ObjectId(reportId) },
+      { reporterNotified: true },
+    );
+  }
+
+  async submitAppeal(reportId: string, reason: string): Promise<void> {
+    await this.reportModel.updateOne(
+      { _id: new Types.ObjectId(reportId) },
+      {
+        status: ReportStatus.APPEALED,
+        hasAppealed: true,
+        appealReason: reason,
+        appealedAt: new Date(),
+      },
+    );
+  }
+
+  async resolveAppeal(
+    reportId: string,
+    accepted: boolean,
+    reviewedBy: string,
+    adminNote?: string,
+  ): Promise<void> {
+    await this.reportModel.updateOne(
+      { _id: new Types.ObjectId(reportId) },
+      {
+        status: accepted ? ReportStatus.REJECTED : ReportStatus.RESOLVED,
+        reviewedBy: new Types.ObjectId(reviewedBy),
+        reviewedAt: new Date(),
+        ...(adminNote && { adminNote }),
+      },
+    );
+  }
+
+  async findAppealed(): Promise<ReportDocument[]> {
+    return this.reportModel
+      .find({ status: ReportStatus.APPEALED })
+      .sort({ appealedAt: -1 })
+      .lean();
+  }
 }

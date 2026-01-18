@@ -1,15 +1,30 @@
 'use client';
 
 import { UserSummaryDto } from '@/features/user/services/user.dto';
-import { createContext, useContext, useState, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useCallback,
+} from 'react';
 
-export type ChatSessionType = 'private' | 'search';
+export type ChatSessionType = 'private' | 'group' | 'search';
+
+export interface GroupData {
+  conversationId: string;
+  name: string;
+  avatar?: string;
+  createdBy: string;
+  owner?: string;
+}
 
 export interface ChatSession {
-  id: string; // This is the recipientId (userId)
+  id: string; // recipientId for private, conversationId for group
   conversationId?: string;
   type: ChatSessionType;
   data?: UserSummaryDto;
+  groupData?: GroupData;
   isMinimized?: boolean;
 }
 
@@ -18,6 +33,7 @@ interface ChatContextType {
   openSession: (session: {
     type: ChatSessionType;
     data?: UserSummaryDto;
+    groupData?: GroupData;
   }) => void;
   closeSession: (id: string) => void;
   minimizeSession: (id: string) => void;
@@ -28,58 +44,68 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
 export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
 
-  const openSession = ({
-    type,
-    data,
-  }: {
-    type: ChatSessionType;
-    data?: UserSummaryDto;
-  }) => {
-    let sessionId: string;
+  const openSession = useCallback(
+    ({
+      type,
+      data,
+      groupData,
+    }: {
+      type: ChatSessionType;
+      data?: UserSummaryDto;
+      groupData?: GroupData;
+    }) => {
+      let sessionId: string;
 
-    if (type === 'search') {
-      sessionId = 'search_contact';
-    } else if (type === 'private' && data) {
-      sessionId = data._id;
-    } else {
-      console.error('Invalid session data');
-      return;
-    }
-
-    setSessions((prev) => {
-      const existingSession = prev.find((s) => s.id === sessionId);
-
-      if (existingSession) {
-        return prev.map((s) =>
-          s.id === sessionId ? { ...s, isMinimized: false } : s
-        );
+      if (type === 'search') {
+        sessionId = 'search_contact';
+      } else if (type === 'private' && data) {
+        sessionId = data._id;
+      } else if (type === 'group' && groupData) {
+        sessionId = groupData.conversationId;
+      } else {
+        console.error('Invalid session data');
+        return;
       }
 
-      const newSession: ChatSession = {
-        id: sessionId,
-        type,
-        data,
-        isMinimized: false,
-      };
+      setSessions((prev) => {
+        const existingSession = prev.find((s) => s.id === sessionId);
 
-      let newSessions = [...prev, newSession];
-      if (newSessions.length > 3) {
-        newSessions = newSessions.slice(1);
-      }
+        if (existingSession) {
+          return prev.map((s) =>
+            s.id === sessionId ? { ...s, isMinimized: false } : s
+          );
+        }
 
-      return newSessions;
-    });
-  };
+        const newSession: ChatSession = {
+          id: sessionId,
+          conversationId:
+            type === 'group' ? groupData?.conversationId : undefined,
+          type,
+          data,
+          groupData,
+          isMinimized: false,
+        };
 
-  const closeSession = (id: string) => {
+        let newSessions = [...prev, newSession];
+        if (newSessions.length > 3) {
+          newSessions = newSessions.slice(1);
+        }
+
+        return newSessions;
+      });
+    },
+    []
+  );
+
+  const closeSession = useCallback((id: string) => {
     setSessions((prev) => prev.filter((s) => s.id !== id));
-  };
+  }, []);
 
-  const minimizeSession = (id: string) => {
+  const minimizeSession = useCallback((id: string) => {
     setSessions((prev) =>
       prev.map((s) => (s.id === id ? { ...s, isMinimized: !s.isMinimized } : s))
     );
-  };
+  }, []);
 
   return (
     <ChatContext.Provider

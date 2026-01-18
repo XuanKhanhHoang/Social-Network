@@ -34,6 +34,7 @@ export function ReportFilters({
         <SelectContent>
           <SelectItem value="all">Tất cả</SelectItem>
           <SelectItem value="pending">Chờ xử lý</SelectItem>
+          <SelectItem value="appealed">Đang kháng nghị</SelectItem>
           <SelectItem value="resolved">Vi phạm</SelectItem>
           <SelectItem value="rejected">Bỏ qua</SelectItem>
         </SelectContent>

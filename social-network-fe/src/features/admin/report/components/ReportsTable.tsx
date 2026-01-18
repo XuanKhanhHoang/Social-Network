@@ -19,6 +19,7 @@ import {
   Eye,
   Info,
   Undo2,
+  Scale,
 } from 'lucide-react';
 import { ReportDto, ReportStatus } from '../services/report.dto';
 
@@ -26,12 +27,14 @@ export const statusLabels: Record<ReportStatus, string> = {
   pending: 'Chờ xử lý',
   resolved: 'Vi phạm',
   rejected: 'Bỏ qua',
+  appealed: 'Đang kháng nghị',
 };
 
 export const statusColors: Record<ReportStatus, string> = {
   pending: 'bg-yellow-100 text-yellow-800',
   resolved: 'bg-red-100 text-red-800',
   rejected: 'bg-gray-100 text-gray-800',
+  appealed: 'bg-orange-100 text-orange-800',
 };
 
 export const formatExactTime = (dateStr: string) => {
@@ -53,6 +56,7 @@ interface ReportsTableProps {
   onReject: (report: ReportDto) => void;
   onViewDetail: (report: ReportDto) => void;
   onReverse?: (report: ReportDto) => void;
+  onResolveAppeal?: (report: ReportDto) => void;
 }
 
 export function ReportsTable({
@@ -64,6 +68,7 @@ export function ReportsTable({
   onReject,
   onViewDetail,
   onReverse,
+  onResolveAppeal,
 }: ReportsTableProps) {
   return (
     <Table>
@@ -147,6 +152,9 @@ export function ReportsTable({
                   {report.status === 'rejected' && (
                     <X className="h-3 w-3 mr-1" />
                   )}
+                  {report.status === 'appealed' && (
+                    <Scale className="h-3 w-3 mr-1" />
+                  )}
                   {statusLabels[report.status]}
                 </Badge>
               </TableCell>
@@ -211,6 +219,17 @@ export function ReportsTable({
                         Khôi phục
                       </Button>
                     )}
+                  {report.status === 'appealed' && onResolveAppeal && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-orange-600 border-orange-600 hover:bg-orange-50"
+                      onClick={() => onResolveAppeal(report)}
+                    >
+                      <Scale className="h-4 w-4 mr-1" />
+                      Xử lý kháng nghị
+                    </Button>
+                  )}
                   {report.status !== 'pending' && (
                     <Button
                       size="sm"

@@ -54,3 +54,22 @@ export const useReverseReport = () => {
     },
   });
 };
+
+export const useResolveAppeal = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      reportId,
+      accepted,
+      adminNote,
+    }: {
+      reportId: string;
+      accepted: boolean;
+      adminNote?: string;
+    }) => adminReportService.resolveAppeal(reportId, accepted, adminNote),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-reports'] });
+    },
+  });
+};

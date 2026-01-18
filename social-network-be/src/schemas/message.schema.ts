@@ -1,7 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { Document, Types } from 'mongoose';
-import { UserDocument } from './user.schema';
-import { ConversationDocument } from './conversation.schema';
+import { Document, Types } from 'mongoose';
 
 export enum MessageType {
   TEXT = 'text',
@@ -10,41 +8,42 @@ export enum MessageType {
 
 @Schema({ timestamps: true, collection: 'messages' })
 export class MessageDocument extends Document {
-  @Prop({
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Conversation',
-    required: true,
-    index: true,
-  })
-  conversationId: ConversationDocument;
+  @Prop({ type: Types.ObjectId, ref: 'Conversation', required: true, index: true })
+  conversationId: Types.ObjectId;
 
-  @Prop({
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-    index: true,
-  })
-  sender: UserDocument;
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true, index: true })
+  sender: Types.ObjectId;
 
   @Prop({ type: String, enum: MessageType, required: true })
   type: MessageType;
 
-  @Prop({})
-  content: string; // Encrypted Base64
-
-  @Prop({})
-  nonce: string; // Base64
+  // === 1-1 Text E2EE ===
+  @Prop({ type: String, default: null })
+  content: string;
 
   @Prop({ type: String, default: null })
-  mediaUrl: string; // Cloudinary Raw URL
+  nonce: string;
+
+  // === 1-1 & Group Media ===
+  @Prop({ type: String, default: null })
+  mediaUrl: string;
 
   @Prop({ type: String, default: null })
-  mediaNonce: string; // Base64 for media encryption
+  mediaNonce: string;
 
-  @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-    default: [],
-  })
+  // === Group Text E2EE (multi-encrypt) ===
+  @Prop({ type: Object, default: null })
+  encryptedContents: Record<string, string>; // { recipientId: encryptedText }
+
+  // === Group Media E2EE (envelope encryption) ===
+  @Prop({ type: Object, default: null })
+  encryptedFileKeys: Record<string, string>; // { recipientId: wrappedCEK }
+
+  @Prop({ type: String, default: null })
+  keyNonce: string; // Nonce để decrypt wrapped CEK
+
+  // === Common ===
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
   readBy: Types.ObjectId[];
 
   @Prop({ type: Boolean, default: false })

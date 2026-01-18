@@ -243,11 +243,43 @@ export class PostRepository extends ReactableRepository<PostDocument> {
 
     pipeline.push({ $limit: limit });
     pipeline.push(...this.getUserReactionStage(requestingUserId));
+
+    pipeline.push({
+      $addFields: {
+        _isSharedPost: {
+          $cond: {
+            if: { $ifNull: ['$parentPost', false] },
+            then: true,
+            else: false,
+          },
+        },
+      },
+    });
+
     pipeline.push(...this.getParentPostStage());
+
+    pipeline.push({
+      $match: {
+        $expr: {
+          $not: {
+            $and: [
+              { $eq: ['$_isSharedPost', true] },
+              {
+                $or: [
+                  { $eq: [{ $type: '$parentPost' }, 'missing'] },
+                  { $eq: ['$parentPost.isDeleted', true] },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    });
 
     pipeline.push({
       $project: {
         isFriend: 0,
+        _isSharedPost: 0,
       },
     });
 

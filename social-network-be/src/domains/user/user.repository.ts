@@ -171,7 +171,9 @@ export class UserRepository extends BaseRepository<UserDocument> {
 
     pipeline.push({
       $match: {
-        _id: { $nin: excludeIds.map((id) => new Types.ObjectId(id)) },
+        _id: {
+          $nin: excludeIds.map((id) => new Types.ObjectId(id)),
+        },
         isVerified: true,
         deletedAt: null,
       },

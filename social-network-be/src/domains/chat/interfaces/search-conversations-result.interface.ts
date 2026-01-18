@@ -3,13 +3,20 @@ import { MessageType } from 'src/schemas/message.schema';
 
 export interface SearchConversationsWithPaginationResults {
   _id: Types.ObjectId;
+  type?: 'private' | 'group';
+  name?: string;
+  avatar?: string;
+  createdBy?: Types.ObjectId;
   participants: {
-    _id: Types.ObjectId;
-    firstName: string;
-    lastName: string;
-    username: string;
-    avatar: any;
-    publicKey: string;
+    user: {
+      _id: Types.ObjectId;
+      firstName: string;
+      lastName: string;
+      username: string;
+      avatar: any;
+      publicKey: string;
+    };
+    joinedAt: Date;
   }[];
   lastMessage?: {
     _id: Types.ObjectId;
@@ -25,6 +32,10 @@ export interface SearchConversationsWithPaginationResults {
     nonce?: string;
     mediaUrl?: string;
     mediaNonce?: string;
+    // Group E2EE fields
+    encryptedContents?: Record<string, string>;
+    encryptedFileKeys?: Record<string, string>;
+    keyNonce?: string;
     readBy: Types.ObjectId[];
     createdAt: Date;
   };
@@ -33,3 +44,4 @@ export interface SearchConversationsWithPaginationResults {
   createdAt: Date;
   updatedAt: Date;
 }
+

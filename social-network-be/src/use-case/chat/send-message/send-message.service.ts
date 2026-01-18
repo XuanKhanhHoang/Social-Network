@@ -1,4 +1,10 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { MessageDocument, MessageType } from 'src/schemas/message.schema';
 import { AppGateway } from 'src/gateway/app.gateway';
 import { MediaUploadService } from 'src/domains/media-upload/media-upload.service';
@@ -6,7 +12,10 @@ import { SocketEvents } from 'src/share/constants/socket.constant';
 import { SendMessageDto } from 'src/api/chat/dto/send-message.dto';
 import { ChatRepository } from 'src/domains/chat/chat.repository';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
-import { UserMinimalModel } from 'src/domains/user/interfaces';
+import {
+  ConversationDocument,
+  ConversationType,
+} from 'src/schemas/conversation.schema';
 
 export type SendMessageInput = {
   senderId: string;
@@ -33,12 +42,23 @@ export class SendMessageService extends BaseUseCaseService<
 
   async execute(input: SendMessageInput): Promise<SendMessageOutput> {
     const { senderId, dto, file } = input;
-    const { receiverId, type, content, nonce, mediaNonce } = dto;
+    const {
+      receiverId,
+      conversationId,
+      type,
+      content,
+      nonce,
+      mediaNonce,
+      encryptedContents,
+      encryptedFileKeys,
+      keyNonce,
+    } = dto;
 
     if (type === MessageType.IMAGE && !file) {
       throw new BadRequestException('Image message requires a file');
     }
 
+    // Upload file if exists
     let mediaUrl: string | null = null;
     if (file) {
       try {
@@ -49,28 +69,66 @@ export class SendMessageService extends BaseUseCaseService<
       }
     }
 
-    let conversation = await this.chatRepository.findConversation([
-      senderId,
-      receiverId,
-    ]);
+    let conversation: ConversationDocument;
+    let isGroup = false;
 
-    if (!conversation) {
-      conversation = await this.chatRepository.createConversation([
+    // Find or create conversation
+    if (conversationId) {
+      // Group message
+      const foundConversation =
+        await this.chatRepository.findById(conversationId);
+      if (!foundConversation) {
+        throw new NotFoundException('Conversation not found');
+      }
+      const isMember = foundConversation.participants.some(
+        (p) => p.user.toString() === senderId,
+      );
+      if (!isMember) {
+        throw new ForbiddenException('Not a member of this conversation');
+      }
+      conversation = foundConversation;
+      isGroup = conversation.type === ConversationType.GROUP;
+    } else if (receiverId) {
+      // 1-1 message
+      let foundConversation = await this.chatRepository.findConversation([
         senderId,
         receiverId,
       ]);
+      if (!foundConversation) {
+        foundConversation = await this.chatRepository.createConversation([
+          senderId,
+          receiverId,
+        ]);
+      }
+      conversation = foundConversation;
+    } else {
+      throw new BadRequestException(
+        'Must provide either receiverId or conversationId',
+      );
     }
 
-    const message = await this.chatRepository.createMessage({
+    // Build message data
+    const messageData: any = {
       conversationId: conversation._id,
-      sender: senderId as any,
+      sender: senderId,
       type,
-      content,
       nonce,
+      mediaNonce,
       mediaUrl,
-      mediaNonce: mediaNonce,
-      readBy: [senderId as any],
-    });
+      readBy: [senderId],
+    };
+
+    if (isGroup) {
+      // Group E2EE fields
+      messageData.encryptedContents = encryptedContents;
+      messageData.encryptedFileKeys = encryptedFileKeys;
+      messageData.keyNonce = keyNonce;
+    } else {
+      // 1-1 E2EE fields
+      messageData.content = content;
+    }
+
+    const message = await this.chatRepository.createMessage(messageData);
 
     await this.chatRepository.updateConversation(conversation._id.toString(), {
       lastMessage: message,
@@ -79,13 +137,20 @@ export class SendMessageService extends BaseUseCaseService<
 
     await message.populate('sender', 'firstName lastName username avatar');
 
-    this.appGateway.emitToUser(
-      receiverId,
-      SocketEvents.NEW_MESSAGE,
-      message as Omit<MessageDocument, 'sender'> & {
-        sender: UserMinimalModel<string>;
-      },
-    );
+    // Broadcast to all participants except sender
+    conversation.participants.forEach((p) => {
+      const participantId = p.user.toString();
+      if (participantId !== senderId) {
+        this.appGateway.emitToUser(participantId, SocketEvents.NEW_MESSAGE, {
+          ...message.toObject(),
+          conversationType: conversation.type,
+          conversationName: conversation.name,
+          conversationAvatar: conversation.avatar,
+          conversationCreatedBy: conversation.createdBy?.toString(),
+          conversationOwner: conversation.owner?.toString(),
+        });
+      }
+    });
 
     return message;
   }

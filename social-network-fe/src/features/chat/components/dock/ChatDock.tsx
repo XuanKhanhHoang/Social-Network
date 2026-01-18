@@ -3,6 +3,7 @@
 import { useChatContext } from '../../context/ChatContext';
 import { MessageWindow } from './MessageWindow';
 import { SearchContactBox } from './SearchContactBox';
+import { GroupMessageWindow } from '../GroupMessageWindow';
 
 export const ChatDock = () => {
   const { sessions } = useChatContext();
@@ -15,6 +16,12 @@ export const ChatDock = () => {
         <div key={session.id} className="pointer-events-auto">
           {session.type === 'search' ? (
             <SearchContactBox />
+          ) : session.type === 'group' && session.groupData ? (
+             <GroupMessageWindow
+                sessionId={session.id}
+                groupData={session.groupData}
+                isMinimized={session.isMinimized}
+             />
           ) : (
             session.data && (
               <MessageWindow

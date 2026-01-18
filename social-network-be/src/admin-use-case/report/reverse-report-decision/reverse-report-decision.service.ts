@@ -8,6 +8,10 @@ import { PostRepository } from 'src/domains/post/post.repository';
 import { CommentRepository } from 'src/domains/comment/comment.repository';
 import { ReportStatus, ReportTargetType } from 'src/schemas/report.schema';
 import { BaseUseCaseService } from 'src/use-case/base.use-case.service';
+import { CreateNotificationService } from 'src/use-case/notification/create-notification/create-notification.service';
+import { NotificationType } from 'src/share/enums';
+
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 export type ReverseReportDecisionInput = {
   reportId: string;
@@ -31,6 +35,7 @@ export class ReverseReportDecisionService extends BaseUseCaseService<
     private readonly reportRepository: ReportRepository,
     private readonly postRepository: PostRepository,
     private readonly commentRepository: CommentRepository,
+    private readonly createNotificationService: CreateNotificationService,
   ) {
     super();
   }
@@ -51,11 +56,27 @@ export class ReverseReportDecisionService extends BaseUseCaseService<
       );
     }
 
+    if (existingReport.reviewedAt) {
+      const daysSinceReview = Date.now() - existingReport.reviewedAt.getTime();
+      if (daysSinceReview > THIRTY_DAYS_MS) {
+        throw new BadRequestException(
+          'The violation was dealt with 30 days ago and cannot be restored.',
+        );
+      }
+    }
+
     const { targetType, targetId } = existingReport;
 
     let targetRestored = false;
+    let authorId: string | null = null;
 
     if (targetType === ReportTargetType.POST) {
+      const post = await this.postRepository.findLeanedById<{
+        author: { _id: any };
+      }>(targetId.toString());
+      if (post) {
+        authorId = post.author._id.toString();
+      }
       targetRestored = await this.postRepository.restore(targetId.toString());
       if (!targetRestored) {
         throw new NotFoundException(
@@ -63,6 +84,12 @@ export class ReverseReportDecisionService extends BaseUseCaseService<
         );
       }
     } else if (targetType === ReportTargetType.COMMENT) {
+      const comment = await this.commentRepository.findById(
+        targetId.toString(),
+      );
+      if (comment) {
+        authorId = comment.author._id.toString();
+      }
       targetRestored = await this.commentRepository.restore(
         targetId.toString(),
       );
@@ -84,6 +111,20 @@ export class ReverseReportDecisionService extends BaseUseCaseService<
         adminId,
         reversalNote,
       );
+
+    if (authorId) {
+      await this.createNotificationService.execute({
+        receiver: authorId,
+        type: NotificationType.CONTENT_RESTORED,
+        relatedId: reportId,
+        relatedModel: 'Report',
+        message: 'Nội dung của bạn đã được khôi phục',
+        metadata: {
+          targetType,
+          targetId: targetId.toString(),
+        },
+      });
+    }
 
     return {
       success: true,

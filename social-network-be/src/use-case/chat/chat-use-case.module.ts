@@ -15,6 +15,14 @@ import { CleanupRecalledMessagesService } from './cleanup-recalled-messages/clea
 import { RecallMessageService } from './recall-message/recall-message.service';
 import { CheckUnreadMessagesService } from './check-unread-messages/check-unread-messages.service';
 import { SearchConversationsService } from './search-conversations/search-conversations.service';
+import { CreateGroupService } from './create-group/create-group.service';
+import { UpdateGroupService } from './update-group/update-group.service';
+import { AddGroupMemberService } from './add-group-member/add-group-member.service';
+import { KickGroupMemberService } from './kick-group-member/kick-group-member.service';
+import { LeaveGroupService } from './leave-group/leave-group.service';
+import { GetGroupMembersService } from './get-group-members/get-group-members.service';
+import { AssignGroupAdminService } from './assign-group-admin/assign-group-admin.service';
+import { DeleteGroupService } from './delete-group/delete-group.service';
 
 @Module({
   imports: [
@@ -36,6 +44,14 @@ import { SearchConversationsService } from './search-conversations/search-conver
     RecallMessageService,
     CheckUnreadMessagesService,
     SearchConversationsService,
+    CreateGroupService,
+    UpdateGroupService,
+    AddGroupMemberService,
+    KickGroupMemberService,
+    LeaveGroupService,
+    GetGroupMembersService,
+    AssignGroupAdminService,
+    DeleteGroupService,
   ],
   exports: [
     SendMessageService,
@@ -48,6 +64,14 @@ import { SearchConversationsService } from './search-conversations/search-conver
     RecallMessageService,
     CheckUnreadMessagesService,
     SearchConversationsService,
+    CreateGroupService,
+    UpdateGroupService,
+    AddGroupMemberService,
+    KickGroupMemberService,
+    LeaveGroupService,
+    GetGroupMembersService,
+    AssignGroupAdminService,
+    DeleteGroupService,
   ],
 })
 export class ChatUseCaseModule {}

@@ -13,6 +13,8 @@ export const chatKeys = {
   conversations: (search?: string) =>
     [...chatKeys.all, 'conversations', { search }] as const,
   unreadStatus: () => [...chatKeys.all, 'unread-status'] as const,
+  groupMembers: (conversationId: string) =>
+    [...chatKeys.all, 'group-members', conversationId] as const,
 };
 
 export function useSuggestedMessagingUsers({

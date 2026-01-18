@@ -91,11 +91,15 @@ export class RankingHelper {
     });
 
     conversations.forEach((conversation) => {
-      const friend = conversation.participants.find(
-        (p) => p._id && p._id.toString() !== currentUserId && p.firstName,
+      const participant = conversation.participants.find(
+        (p: any) =>
+          p.user?._id &&
+          p.user._id.toString() !== currentUserId &&
+          p.user.firstName,
       );
 
-      if (friend) {
+      if (participant) {
+        const friend = (participant as any).user;
         const id = friend._id.toString();
         const existing = usersMap.get(id);
 

@@ -3,7 +3,14 @@ import { formatDistanceToNow } from 'date-fns';
 import { Notification } from '../types';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { NotificationType } from '../const';
-import { MessageCircle, UserPlus, Reply, Bell } from 'lucide-react';
+import {
+  MessageCircle,
+  UserPlus,
+  Reply,
+  Bell,
+  Flag,
+  RefreshCw,
+} from 'lucide-react';
 import { ReactionType } from '@/lib/constants/enums';
 
 import ThumbsUpFillIcon from '@/assets/emoji/thumbs-up-fill-svgrepo-com.svg';
@@ -93,6 +100,10 @@ const getNotificationIcon = (notification: Notification) => {
       return <MessageCircle className="h-3 w-3 text-white" />;
     case NotificationType.COMMENT_REPLY_CREATED:
       return <Reply className="h-3 w-3 text-white" />;
+    case NotificationType.CONTENT_REMOVED_VIOLATION:
+      return <Flag className="h-3 w-3 text-white" />;
+    case NotificationType.CONTENT_RESTORED:
+      return <RefreshCw className="h-3 w-3 text-white" />;
     default:
       return <Bell className="h-3 w-3 text-white" />;
   }
@@ -110,6 +121,12 @@ const getNotificationColor = (notification: Notification) => {
     case NotificationType.POST_COMMENTED:
     case NotificationType.COMMENT_REPLY_CREATED:
       return 'bg-green-400';
+    case NotificationType.CONTENT_REMOVED_VIOLATION:
+      return 'bg-red-500';
+    case NotificationType.CONTENT_RESTORED:
+      return 'bg-emerald-500';
+    case NotificationType.REPORT_RESULT:
+      return 'bg-blue-500';
     default:
       return 'bg-primary';
   }
@@ -130,6 +147,12 @@ const getNotificationText = (notification: Notification) => {
       return getReactionText(metadata?.reactionType, 'comment');
     case NotificationType.COMMENT_REPLY_CREATED:
       return 'Đã trả lời bình luận của bạn';
+    case NotificationType.CONTENT_REMOVED_VIOLATION:
+      return notification.message || 'Nội dung của bạn đã bị gỡ do vi phạm';
+    case NotificationType.CONTENT_RESTORED:
+      return 'Nội dung của bạn đã được khôi phục';
+    case NotificationType.REPORT_RESULT:
+      return notification.message || 'Báo cáo của bạn đã được xử lý';
     default:
       return 'Có 1 thông báo mới';
   }

@@ -1,9 +1,9 @@
 import nacl from 'tweetnacl';
 import {
-  encodeBase64,
-  decodeBase64,
-  encodeUTF8,
-  decodeUTF8,
+    encodeBase64,
+    decodeBase64,
+    encodeUTF8,
+    decodeUTF8,
 } from 'tweetnacl-util';
 
 export const createIdentity = () => {
@@ -22,6 +22,7 @@ export const getSharedKey = (
   return nacl.box.before(theirBytes, mySecretKey);
 };
 
+// === 1-1 Text Encryption ===
 export const encryptText = (text: string, sharedKey: Uint8Array) => {
   const nonce = nacl.randomBytes(nacl.box.nonceLength);
   const msgBytes = decodeUTF8(text);
@@ -48,6 +49,7 @@ export const decryptText = (
   }
 };
 
+// === 1-1 File Encryption ===
 export const encryptFile = async (file: File, sharedKey: Uint8Array) => {
   const buffer = await file.arrayBuffer();
   const fileBytes = new Uint8Array(buffer);
@@ -80,6 +82,95 @@ export const decryptFile = (
   }
 };
 
+// === Group Text Encryption (Multi-Encrypt) ===
+export const encryptTextMulti = (
+  text: string,
+  recipients: { id: string; sharedKey: Uint8Array }[]
+) => {
+  const nonce = nacl.randomBytes(nacl.box.nonceLength);
+  const msgBytes = decodeUTF8(text);
+  const encryptedContents: Record<string, string> = {};
+
+  recipients.forEach(({ id, sharedKey }) => {
+    const encrypted = nacl.box.after(msgBytes, nonce, sharedKey);
+    encryptedContents[id] = encodeBase64(encrypted);
+  });
+
+  return { nonce: encodeBase64(nonce), encryptedContents };
+};
+
+export const decryptGroupText = (
+  nonceStr: string,
+  encryptedContents: Record<string, string>,
+  myId: string,
+  sharedKey: Uint8Array
+) => {
+  const myContent = encryptedContents[myId];
+  if (!myContent) return null;
+  return decryptText(nonceStr, myContent, sharedKey);
+};
+
+// === Group File Encryption (Envelope Encryption) ===
+export const encryptFileEnvelope = async (
+  file: File,
+  recipients: { id: string; sharedKey: Uint8Array }[]
+) => {
+  // Generate random CEK (Content Encryption Key)
+  const cek = nacl.randomBytes(nacl.secretbox.keyLength);
+  const buffer = await file.arrayBuffer();
+  const fileBytes = new Uint8Array(buffer);
+
+  // Encrypt file with CEK using secretbox
+  const mediaNonce = nacl.randomBytes(nacl.secretbox.nonceLength);
+  const encryptedFile = nacl.secretbox(fileBytes, mediaNonce, cek);
+
+  // Wrap CEK for each recipient
+  const keyNonce = nacl.randomBytes(nacl.box.nonceLength);
+  const encryptedFileKeys: Record<string, string> = {};
+
+  recipients.forEach(({ id, sharedKey }) => {
+    const wrappedKey = nacl.box.after(cek, keyNonce, sharedKey);
+    encryptedFileKeys[id] = encodeBase64(wrappedKey);
+  });
+
+  return {
+    blob: new Blob([encryptedFile as unknown as BlobPart]),
+    mediaNonce: encodeBase64(mediaNonce),
+    keyNonce: encodeBase64(keyNonce),
+    encryptedFileKeys,
+  };
+};
+
+export const decryptFileEnvelope = (
+  encryptedBuffer: ArrayBuffer,
+  mediaNonceStr: string,
+  keyNonceStr: string,
+  encryptedFileKeys: Record<string, string>,
+  myId: string,
+  sharedKey: Uint8Array
+) => {
+  try {
+    const myWrappedKey = encryptedFileKeys[myId];
+    if (!myWrappedKey) return null;
+
+    // Unwrap CEK
+    const keyNonce = decodeBase64(keyNonceStr);
+    const wrappedKeyBytes = decodeBase64(myWrappedKey);
+    const cek = nacl.box.open.after(wrappedKeyBytes, keyNonce, sharedKey);
+    if (!cek) return null;
+
+    // Decrypt file with CEK
+    const mediaNonce = decodeBase64(mediaNonceStr);
+    const ciphertext = new Uint8Array(encryptedBuffer);
+    const decrypted = nacl.secretbox.open(ciphertext, mediaNonce, cek);
+
+    return decrypted ? new Blob([decrypted as unknown as BlobPart]) : null;
+  } catch {
+    return null;
+  }
+};
+
+// === Key Vault (PIN-based encryption) ===
 const deriveKeyFromPin = async (pin: string, salt: Uint8Array) => {
   const enc = new TextEncoder();
   const keyMaterial = await window.crypto.subtle.importKey(
@@ -137,3 +228,4 @@ export const restoreKeyVault = async (
     return null;
   }
 };
+

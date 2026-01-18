@@ -24,6 +24,10 @@ import {
   ReverseReportDecisionService,
   ReverseReportDecisionOutput,
 } from 'src/admin-use-case/report/reverse-report-decision/reverse-report-decision.service';
+import {
+  ResolveAppealService,
+  ResolveAppealOutput,
+} from 'src/admin-use-case/report/resolve-appeal/resolve-appeal.service';
 import { GetReportsDto } from './dto/get-reports.dto';
 import {
   UpdateReportStatusDto,
@@ -44,6 +48,7 @@ export class AdminReportApiController {
     private readonly updateReportStatusService: UpdateReportStatusService,
     private readonly getReportTargetService: GetReportTargetService,
     private readonly reverseReportDecisionService: ReverseReportDecisionService,
+    private readonly resolveAppealService: ResolveAppealService,
   ) {}
 
   @Get('violations')
@@ -82,6 +87,20 @@ export class AdminReportApiController {
       reportId,
       adminId,
       reason: dto.reason,
+    });
+  }
+
+  @Post('violations/:reportId/resolve-appeal')
+  async resolveAppeal(
+    @Param('reportId') reportId: string,
+    @Body() dto: { accepted: boolean; adminNote?: string },
+    @GetUserId() adminId: string,
+  ): Promise<ResolveAppealOutput> {
+    return this.resolveAppealService.execute({
+      reportId,
+      adminId,
+      accepted: dto.accepted,
+      adminNote: dto.adminNote,
     });
   }
 }

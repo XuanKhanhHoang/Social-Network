@@ -50,4 +50,15 @@ export const adminReportService = {
       data
     );
   },
+
+  async resolveAppeal(
+    reportId: string,
+    accepted: boolean,
+    adminNote?: string
+  ): Promise<{ success: boolean; message: string; contentRestored: boolean }> {
+    return ApiClient.post(
+      `${ADMIN_REPORTS_PREFIX}/violations/${reportId}/resolve-appeal`,
+      { accepted, adminNote }
+    );
+  },
 };

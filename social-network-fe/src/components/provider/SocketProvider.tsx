@@ -216,24 +216,62 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
             if (data.sender._id === user.id) return;
 
             playSound();
+            const isGroup = data.conversationType === 'group';
+            const sessionId = isGroup ? conversationId : data.sender._id;
+
             let isOpen = false;
             sessionsRef.current.forEach((s) => {
-              if (s.id === data.sender._id) {
+              if (s.id === sessionId) {
                 isOpen = true;
-                if (s.isMinimized) s.isMinimized = false;
+                if (s.isMinimized) {
+                  // We can't update ref directly to render, but we can call openSession again or use a specialized method?
+                  // Actually openSession handles un-minimizing if already exists.
+                  openSession({
+                    type: isGroup ? 'group' : 'private',
+                    data: isGroup
+                      ? undefined
+                      : {
+                          _id: data.sender._id,
+                          firstName: data.sender.firstName,
+                          lastName: data.sender.lastName,
+                          username: data.sender.username,
+                          avatar: { url: data.sender.avatar?.url || '' },
+                        },
+                    groupData: isGroup
+                      ? {
+                          conversationId: conversationId,
+                          name: data.conversationName || 'Nhóm',
+                          avatar: data.conversationAvatar,
+                          createdBy: data.conversationCreatedBy || '',
+                          owner: data.conversationOwner,
+                        }
+                      : undefined,
+                  });
+                }
               }
             });
 
             if (!isOpen) {
               openSession({
-                type: 'private',
-                data: {
-                  _id: data.sender._id,
-                  firstName: data.sender.firstName,
-                  lastName: data.sender.lastName,
-                  username: data.sender.username,
-                  avatar: { url: data.sender.avatar?.url || '' },
-                },
+                type: isGroup ? 'group' : 'private',
+                data: isGroup
+                  ? undefined
+                  : {
+                      _id: data.sender._id,
+                      firstName: data.sender.firstName,
+                      lastName: data.sender.lastName,
+                      username: data.sender.username,
+                      avatar: { url: data.sender.avatar?.url || '' },
+                    },
+                groupData: isGroup
+                  ? {
+                      conversationId: conversationId,
+                      name: data.conversationName || 'Nhóm',
+                      avatar: data.conversationAvatar,
+                      createdBy: data.conversationCreatedBy || '',
+                      owner: data.conversationOwner,
+                    }
+                  : undefined,
               });
             }
           }
@@ -322,10 +360,83 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
               }
             );
 
-            // Invalidate Unread Status to re-check
             queryClient.invalidateQueries({
               queryKey: chatKeys.unreadStatus(),
             });
+          }
+        );
+
+        // Group Events
+        socketRef.current.on(SocketEvents.GROUP_CREATED, () => {
+          queryClient.invalidateQueries({ queryKey: chatKeys.conversations() });
+        });
+
+        socketRef.current.on(SocketEvents.GROUP_UPDATED, () => {
+          queryClient.invalidateQueries({ queryKey: chatKeys.conversations() });
+        });
+
+        socketRef.current.on(
+          SocketEvents.GROUP_MEMBER_ADDED,
+          (data: { conversationId: string }) => {
+            queryClient.invalidateQueries({
+              queryKey: chatKeys.groupMembers(data.conversationId),
+            });
+            queryClient.invalidateQueries({
+              queryKey: chatKeys.conversations(),
+            });
+          }
+        );
+
+        socketRef.current.on(
+          SocketEvents.GROUP_MEMBER_REMOVED,
+          (data: { conversationId: string }) => {
+            queryClient.invalidateQueries({
+              queryKey: chatKeys.groupMembers(data.conversationId),
+            });
+            queryClient.invalidateQueries({
+              queryKey: chatKeys.conversations(),
+            });
+          }
+        );
+
+        socketRef.current.on(
+          SocketEvents.GROUP_MEMBER_LEFT,
+          (data: { conversationId: string }) => {
+            queryClient.invalidateQueries({
+              queryKey: chatKeys.groupMembers(data.conversationId),
+            });
+            queryClient.invalidateQueries({
+              queryKey: chatKeys.conversations(),
+            });
+          }
+        );
+
+        socketRef.current.on(
+          SocketEvents.GROUP_OWNER_UPDATED,
+          (data: { conversationId: string; newOwnerId: string }) => {
+            queryClient.invalidateQueries({
+              queryKey: chatKeys.groupMembers(data.conversationId),
+            });
+            queryClient.invalidateQueries({
+              queryKey: chatKeys.conversations(),
+            });
+            toast.info('Quyền trưởng nhóm đã được thay đổi.');
+          }
+        );
+
+        socketRef.current.on(
+          SocketEvents.GROUP_DELETED,
+          (data: { conversationId: string }) => {
+            queryClient.invalidateQueries({
+              queryKey: chatKeys.conversations(),
+            });
+            // Close session if open
+            if (sessionsRef.current.some((s) => s.id === data.conversationId)) {
+              // We need closeSession here.
+              // Since we can't easily destructure it if not available, we rely on invalidation or toast.
+              // Or better, let's assume ChatDock handles invalid sessions or we just notify.
+              toast.info('Nhóm chat đã bị giải tán.');
+            }
           }
         );
 

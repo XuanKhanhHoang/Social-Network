@@ -11,6 +11,7 @@ export enum ReportStatus {
   PENDING = 'pending',
   RESOLVED = 'resolved',
   REJECTED = 'rejected',
+  APPEALED = 'appealed',
 }
 
 @Schema({ timestamps: true, collection: 'reports' })
@@ -48,6 +49,21 @@ export class ReportDocument extends Document {
 
   @Prop({ type: Date })
   reviewedAt?: Date;
+
+  @Prop({ type: Date, index: true })
+  notifyReporterAt?: Date;
+
+  @Prop({ type: Boolean, default: false })
+  reporterNotified: boolean;
+
+  @Prop({ type: Boolean, default: false })
+  hasAppealed: boolean;
+
+  @Prop({ type: String })
+  appealReason?: string;
+
+  @Prop({ type: Date })
+  appealedAt?: Date;
 
   createdAt: Date;
   updatedAt: Date;

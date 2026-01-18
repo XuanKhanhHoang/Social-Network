@@ -33,16 +33,13 @@ export class MarkMessageAsReadService extends BaseUseCaseService<
     const conversation = await this.chatRepository.findById(conversationId);
     if (!conversation) return;
 
-    conversation.participants.forEach((participantId) => {
-      if (participantId.toString() !== userId) {
-        this.appGateway.emitToUser(
-          participantId.toString(),
-          SocketEvents.MESSAGE_READ,
-          {
-            conversationId,
-            readerId: userId,
-          },
-        );
+    conversation.participants.forEach((p) => {
+      const participantId = p.user.toString();
+      if (participantId !== userId) {
+        this.appGateway.emitToUser(participantId, SocketEvents.MESSAGE_READ, {
+          conversationId,
+          readerId: userId,
+        });
       }
     });
   }

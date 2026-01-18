@@ -1,7 +1,7 @@
 import { JSONContent } from '@tiptap/react';
 
 export type ReportTargetType = 'post' | 'comment';
-export type ReportStatus = 'pending' | 'resolved' | 'rejected';
+export type ReportStatus = 'pending' | 'resolved' | 'rejected' | 'appealed';
 
 export interface ReportReporter {
   _id: string;
@@ -21,6 +21,9 @@ export interface ReportDto {
   adminNote?: string;
   reviewedBy?: string;
   reviewedAt?: string;
+  hasAppealed?: boolean;
+  appealReason?: string;
+  appealedAt?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -7,10 +7,18 @@ import { AppGateway } from 'src/gateway/app.gateway';
 import { UserRepository } from 'src/domains/user/user.repository';
 import { SocketEvents } from 'src/share/constants/socket.constant';
 
+const SYSTEM_SENDER = {
+  _id: '000000000000000000000000',
+  username: 'system',
+  firstName: 'thống',
+  lastName: 'Hệ',
+  avatar: '/logo.svg',
+};
+
 export interface CreateNotificationInput
   extends Omit<CreateNotificationData, 'sender'> {
-  sender: {
-    _id: string;
+  sender?: {
+    _id: string | null;
   };
 }
 export type CreateNotificationOutput = NotificationDocument;
@@ -33,21 +41,24 @@ export class CreateNotificationService extends BaseUseCaseService<
   async execute(
     input: CreateNotificationInput,
   ): Promise<CreateNotificationOutput> {
-    const sender = await this.userRepository.findByIdBasic(input.sender._id);
-    if (!sender) {
-      this.logger.warn(`Sender not found: ${input.sender._id}`);
-      return null;
+    let senderData = SYSTEM_SENDER;
+
+    if (input.sender?._id) {
+      const sender = await this.userRepository.findByIdBasic(input.sender._id);
+      if (sender) {
+        senderData = {
+          _id: sender._id as any,
+          username: sender.username,
+          firstName: sender.firstName,
+          lastName: sender.lastName,
+          avatar: sender.avatar?.url,
+        };
+      }
     }
 
     const notificationData: CreateNotificationData = {
       ...input,
-      sender: {
-        _id: sender._id,
-        username: sender.username,
-        firstName: sender.firstName,
-        lastName: sender.lastName,
-        avatar: sender.avatar?.url,
-      },
+      sender: senderData as any,
     };
 
     const notification =

@@ -27,6 +27,9 @@ export type ReportListItem = {
   adminNote?: string;
   reviewedBy?: string;
   reviewedAt?: Date;
+  hasAppealed?: boolean;
+  appealReason?: string;
+  appealedAt?: Date;
   createdAt: Date;
 };
 
@@ -68,6 +71,9 @@ export class GetReportsService extends BaseUseCaseService<
         adminNote: report.adminNote,
         reviewedBy: report.reviewedBy?.toString(),
         reviewedAt: report.reviewedAt,
+        hasAppealed: report.hasAppealed,
+        appealReason: report.appealReason,
+        appealedAt: report.appealedAt,
         createdAt: report.createdAt,
       })),
       pagination: {

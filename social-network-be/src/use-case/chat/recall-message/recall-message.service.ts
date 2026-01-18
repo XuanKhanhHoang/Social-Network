@@ -1,8 +1,8 @@
 import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  ForbiddenException,
+    Injectable,
+    Logger,
+    NotFoundException,
+    ForbiddenException,
 } from '@nestjs/common';
 import { ChatRepository } from 'src/domains/chat/chat.repository';
 import { AppGateway } from 'src/gateway/app.gateway';
@@ -46,6 +46,10 @@ export class RecallMessageService extends BaseUseCaseService<
     message.isRecovered = true;
     message.content = 'recalled';
     message.nonce = 'recalled';
+    // Clear group E2EE fields
+    message.encryptedContents = null;
+    message.encryptedFileKeys = null;
+    message.keyNonce = null;
 
     await message.save();
 

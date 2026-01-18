@@ -1,7 +1,7 @@
 import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
+    ForbiddenException,
+    Injectable,
+    NotFoundException,
 } from '@nestjs/common';
 import { MessageDocument } from 'src/schemas/message.schema';
 import { ChatRepository } from 'src/domains/chat/chat.repository';
@@ -26,18 +26,23 @@ export class GetMessagesService extends BaseUseCaseService<
   }
 
   async execute(input: GetMessagesInput): Promise<GetMessagesOutput> {
-    const { conversationId, cursor, limit = 20 } = input;
+    const { conversationId, currentUserId, cursor, limit = 20 } = input;
     const conversation = await this.chatRepository.findById(conversationId);
     if (!conversation) {
       throw new NotFoundException('Conversation not found');
     }
-    if (
-      conversation.participants.findIndex(
-        (participant) => participant._id.toString() === input.currentUserId,
-      ) === -1
-    ) {
+    const isMember = conversation.participants.some(
+      (p) => p.user.toString() === currentUserId,
+    );
+    if (!isMember) {
       throw new ForbiddenException('You are not a member of this conversation');
     }
-    return this.chatRepository.getMessages(conversationId, cursor, limit);
+    // Repository filters by joinedAt internally
+    return this.chatRepository.getMessages(
+      conversationId,
+      currentUserId,
+      cursor,
+      limit,
+    );
   }
 }

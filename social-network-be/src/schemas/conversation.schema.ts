@@ -1,21 +1,49 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { Document } from 'mongoose';
-import { UserDocument } from './user.schema';
+import { Document, Types } from 'mongoose';
+
+export enum ConversationType {
+  PRIVATE = 'private',
+  GROUP = 'group',
+}
+
+@Schema({ _id: false })
+export class ParticipantInfo {
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  user: Types.ObjectId;
+
+  @Prop({ type: Date, default: Date.now })
+  joinedAt: Date;
+}
+
+export const ParticipantInfoSchema =
+  SchemaFactory.createForClass(ParticipantInfo);
 
 @Schema({ timestamps: true, collection: 'conversations' })
 export class ConversationDocument extends Document {
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-    index: true,
+    type: String,
+    enum: ConversationType,
+    default: ConversationType.PRIVATE,
   })
-  participants: UserDocument[];
+  type: ConversationType;
 
-  @Prop({
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Message',
-    default: null,
-  })
-  lastMessage: mongoose.Types.ObjectId;
+  @Prop({ type: String, default: null, maxlength: 100 })
+  name: string;
+
+  @Prop({ type: String, default: null })
+  avatar: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'User', default: null })
+  createdBy: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'User', default: null })
+  owner: Types.ObjectId;
+
+  @Prop({ type: [ParticipantInfoSchema], index: true })
+  participants: ParticipantInfo[];
+
+  @Prop({ type: Types.ObjectId, ref: 'Message', default: null })
+  lastMessage: Types.ObjectId;
 
   @Prop({ type: Date, index: true, default: Date.now })
   lastInteractiveAt: Date;

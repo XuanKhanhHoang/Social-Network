@@ -5,7 +5,10 @@ import {
   BaseQueryOptions,
   BaseRepository,
 } from 'src/share/base-class/base-repository.service';
-import { ConversationDocument } from 'src/schemas/conversation.schema';
+import {
+  ConversationDocument,
+  ConversationType,
+} from 'src/schemas/conversation.schema';
 import { MessageDocument } from 'src/schemas/message.schema';
 import { SearchConversationsWithPaginationResults } from './interfaces/search-conversations-result.interface';
 
@@ -21,21 +24,117 @@ export class ChatRepository extends BaseRepository<ConversationDocument> {
   }
 
   async findConversation(
-    participants: string[],
+    participantIds: string[],
   ): Promise<ConversationDocument | null> {
     return this.conversationModel.findOne({
-      participants: { $all: participants },
+      type: ConversationType.PRIVATE,
+      'participants.user': {
+        $all: participantIds.map((id) => new Types.ObjectId(id)),
+      },
+      participants: { $size: 2 },
     });
   }
 
   async createConversation(
-    participants: string[],
+    participantIds: string[],
   ): Promise<ConversationDocument> {
+    const now = new Date();
+    const participants = participantIds.map((id) => ({
+      user: new Types.ObjectId(id),
+      joinedAt: now,
+    }));
     const conversation = new this.conversationModel({
+      type: ConversationType.PRIVATE,
       participants,
-      lastInteractiveAt: new Date(),
+      lastInteractiveAt: now,
     });
     return conversation.save();
+  }
+
+  async createGroupConversation(data: {
+    name: string;
+    avatar?: string;
+    createdBy: string;
+    participantIds: string[];
+  }): Promise<ConversationDocument> {
+    const now = new Date();
+    const participants = data.participantIds.map((id) => ({
+      user: new Types.ObjectId(id),
+      joinedAt: now,
+    }));
+    return new this.conversationModel({
+      type: ConversationType.GROUP,
+      name: data.name,
+      avatar: data.avatar,
+      createdBy: new Types.ObjectId(data.createdBy),
+      owner: new Types.ObjectId(data.createdBy),
+      participants,
+      lastInteractiveAt: now,
+    }).save();
+  }
+
+  async addGroupMembers(
+    conversationId: string,
+    memberIds: string[],
+  ): Promise<ConversationDocument | null> {
+    const now = new Date();
+    const newParticipants = memberIds.map((id) => ({
+      user: new Types.ObjectId(id),
+      joinedAt: now,
+    }));
+    return this.conversationModel.findByIdAndUpdate(
+      conversationId,
+      { $push: { participants: { $each: newParticipants } } },
+      { new: true },
+    );
+  }
+
+  async removeGroupMember(
+    conversationId: string,
+    userId: string,
+  ): Promise<ConversationDocument | null> {
+    return this.conversationModel.findByIdAndUpdate(
+      conversationId,
+      { $pull: { participants: { user: new Types.ObjectId(userId) } } },
+      { new: true },
+    );
+  }
+
+  async updateGroupInfo(
+    conversationId: string,
+    data: { name?: string; avatar?: string },
+  ): Promise<ConversationDocument | null> {
+    return this.conversationModel.findByIdAndUpdate(
+      conversationId,
+      { $set: data },
+      { new: true },
+    );
+  }
+
+  async updateGroupOwner(
+    conversationId: string,
+    newOwnerId: string,
+  ): Promise<ConversationDocument | null> {
+    return this.conversationModel.findByIdAndUpdate(
+      conversationId,
+      { owner: new Types.ObjectId(newOwnerId) },
+      { new: true },
+    );
+  }
+
+  async deleteConversation(
+    conversationId: string,
+  ): Promise<ConversationDocument | null> {
+    return this.conversationModel.findByIdAndDelete(conversationId);
+  }
+
+  async getGroupWithMembers(
+    conversationId: string,
+  ): Promise<ConversationDocument | null> {
+    return this.conversationModel.findById(conversationId).populate({
+      path: 'participants.user',
+      select: 'firstName lastName username avatar publicKey',
+    });
   }
 
   async createMessage(data: any): Promise<MessageDocument> {
@@ -64,16 +163,26 @@ export class ChatRepository extends BaseRepository<ConversationDocument> {
 
   async getMessages(
     conversationId: string,
+    userId: string,
     cursor?: string,
     limit: number = 20,
   ): Promise<{
     data: MessageDocument[];
     pagination: { nextCursor: string | null; hasMore: boolean };
   }> {
-    const query: any = { conversationId: new Types.ObjectId(conversationId) };
+    const conversation = await this.conversationModel.findById(conversationId);
+    const participant = conversation?.participants.find(
+      (p) => p.user.toString() === userId,
+    );
+    const joinedAt = participant?.joinedAt || new Date(0);
+
+    const query: any = {
+      conversationId: new Types.ObjectId(conversationId),
+      createdAt: { $gte: joinedAt },
+    };
 
     if (cursor) {
-      query.createdAt = { $lt: new Date(cursor) };
+      query.createdAt = { $gte: joinedAt, $lt: new Date(cursor) };
     }
 
     const messages = await this.messageModel
@@ -111,7 +220,7 @@ export class ChatRepository extends BaseRepository<ConversationDocument> {
     data: ConversationDocument[];
     pagination: { nextCursor: string | null; hasMore: boolean };
   }> {
-    const query: any = { participants: userId };
+    const query: any = { 'participants.user': new Types.ObjectId(userId) };
 
     if (cursor) {
       query.lastInteractiveAt = { $lt: new Date(cursor) };
@@ -122,7 +231,7 @@ export class ChatRepository extends BaseRepository<ConversationDocument> {
       .sort({ lastInteractiveAt: -1 })
       .limit(limit + 1)
       .populate({
-        path: 'participants',
+        path: 'participants.user',
         select: 'firstName lastName username avatar publicKey',
         match: { deletedAt: null },
       })
@@ -148,11 +257,11 @@ export class ChatRepository extends BaseRepository<ConversationDocument> {
     userId: string,
   ): Promise<ConversationDocument[]> {
     return this.conversationModel
-      .find({ participants: userId })
+      .find({ 'participants.user': new Types.ObjectId(userId) })
       .sort({ lastInteractiveAt: -1 })
       .limit(100)
       .populate({
-        path: 'participants',
+        path: 'participants.user',
         select: 'firstName lastName username avatar lastActiveAt',
         match: { deletedAt: null },
       })
@@ -165,9 +274,9 @@ export class ChatRepository extends BaseRepository<ConversationDocument> {
   ): Promise<ConversationDocument[]> {
     if (!keyword || !keyword.trim()) {
       return this.conversationModel
-        .find({ participants: userId })
+        .find({ 'participants.user': new Types.ObjectId(userId) })
         .populate(
-          'participants',
+          'participants.user',
           'firstName lastName username avatar lastActiveAt',
         )
         .sort({ updatedAt: -1 })
@@ -176,7 +285,7 @@ export class ChatRepository extends BaseRepository<ConversationDocument> {
     }
     const searchRegex = new RegExp(keyword, 'i');
     return this.conversationModel
-      .find({ participants: userId })
+      .find({ 'participants.user': new Types.ObjectId(userId) })
       .populate({
         path: 'participants',
         match: {
@@ -218,11 +327,11 @@ export class ChatRepository extends BaseRepository<ConversationDocument> {
     const userObjectId = new Types.ObjectId(userId);
 
     const pipeline: any[] = [
-      { $match: { participants: userObjectId } },
+      { $match: { 'participants.user': userObjectId } },
       {
         $lookup: {
           from: 'users',
-          localField: 'participants',
+          localField: 'participants.user',
           foreignField: '_id',
           as: 'participants',
           pipeline: [

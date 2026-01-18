@@ -11,6 +11,7 @@ import {
   useUpdateReportStatus,
   useReportTarget,
   useReverseReport,
+  useResolveAppeal,
 } from '@/features/admin/report/hooks/useReport';
 import {
   ReportDto,
@@ -24,6 +25,7 @@ import { ContentPreviewDialog } from '@/features/admin/report/components/Content
 import { ReportActionDialog } from '@/features/admin/report/components/ReportActionDialog';
 import { ReviewDetailDialog } from '@/features/admin/report/components/ReviewDetailDialog';
 import { ReverseReportDialog } from '@/features/admin/report/components/ReverseReportDialog';
+import { ResolveAppealDialog } from '@/features/admin/report/components/ResolveAppealDialog';
 
 const AdminReportsPage = () => {
   const searchParams = useSearchParams();
@@ -75,6 +77,8 @@ const AdminReportsPage = () => {
   const [reviewDetailReport, setReviewDetailReport] =
     useState<ReportDto | null>(null);
   const [reverseReport, setReverseReport] = useState<ReportDto | null>(null);
+  const [resolveAppealReport, setResolveAppealReport] =
+    useState<ReportDto | null>(null);
 
   const { data, isLoading } = useAdminReports({
     page,
@@ -85,6 +89,7 @@ const AdminReportsPage = () => {
 
   const updateMutation = useUpdateReportStatus();
   const reverseMutation = useReverseReport();
+  const resolveAppealMutation = useResolveAppeal();
   const { data: targetData, isLoading: isLoadingTarget } =
     useReportTarget(previewReportId);
 
@@ -150,6 +155,28 @@ const AdminReportsPage = () => {
     );
   };
 
+  const handleResolveAppeal = async (
+    reportId: string,
+    accepted: boolean,
+    adminNote?: string
+  ) => {
+    try {
+      await resolveAppealMutation.mutateAsync({
+        reportId,
+        accepted,
+        adminNote,
+      });
+      toast.success(
+        accepted
+          ? 'Đã chấp nhận kháng nghị và khôi phục nội dung'
+          : 'Đã từ chối kháng nghị'
+      );
+      setResolveAppealReport(null);
+    } catch (error) {
+      toast.error('Có lỗi xảy ra khi xử lý kháng nghị');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b px-6 py-4">
@@ -181,6 +208,7 @@ const AdminReportsPage = () => {
             onReject={(report) => openActionDialog(report, 'reject')}
             onViewDetail={setReviewDetailReport}
             onReverse={setReverseReport}
+            onResolveAppeal={setResolveAppealReport}
           />
 
           {data && (
@@ -224,6 +252,14 @@ const AdminReportsPage = () => {
         report={reverseReport}
         onConfirm={handleReverse}
         isPending={reverseMutation.isPending}
+      />
+
+      <ResolveAppealDialog
+        open={!!resolveAppealReport}
+        onOpenChange={(open) => !open && setResolveAppealReport(null)}
+        report={resolveAppealReport}
+        onResolve={handleResolveAppeal}
+        isLoading={resolveAppealMutation.isPending}
       />
     </div>
   );

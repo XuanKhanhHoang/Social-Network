@@ -56,7 +56,11 @@ export class ChatController {
     @Body() dto: SendMessageDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    if (dto.type === MessageType.TEXT && !dto.content) {
+    if (
+      dto.type === MessageType.TEXT &&
+      !dto.content &&
+      !dto.encryptedContents
+    ) {
       throw new BadRequestException('Content is required');
     }
     if (dto.type === MessageType.IMAGE && !file) {

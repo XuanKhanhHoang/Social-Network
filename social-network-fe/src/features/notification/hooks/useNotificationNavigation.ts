@@ -61,6 +61,19 @@ export const useNotificationNavigation = () => {
           }
           break;
 
+        case NotificationType.CONTENT_REMOVED_VIOLATION:
+        case NotificationType.CONTENT_RESTORED:
+          if (notification.relatedId) {
+            router.push(`/violation/${notification.relatedId}`);
+          }
+          break;
+
+        case NotificationType.REPORT_RESULT:
+          if (notification.relatedId) {
+            router.push(`/report-result/${notification.relatedId}`);
+          }
+          break;
+
         default:
           console.warn('Unhandled notification type:', notification.type);
           break;
