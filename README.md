@@ -57,13 +57,6 @@ docker-compose up -d --build
 
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:3001
-
-### Dừng dịch vụ
-
-```bash
-docker-compose down
-```
-
 ---
 
 ## 🔑 Lấy API Keys
@@ -80,52 +73,3 @@ docker-compose down
 2. Vào Dashboard → Lấy Cloud Name, API Key, API Secret
 
 ---
-
-## 💻 Chạy Development (Local)
-
-Nếu muốn chạy local mà không dùng Docker:
-
-### Backend
-
-```bash
-cd social-network-be
-cp .env.example .env
-# Sửa file .env với thông tin của bạn
-npm install
-npm run start:dev
-```
-
-### Frontend
-
-```bash
-cd social-network-fe
-cp .env.example .env
-npm install
-npm run dev
-```
-
-> ⚠️ **Lưu ý**: Chạy local cần MongoDB với Replica Set và Redis đang hoạt động.
-
----
-
-## 🐛 Troubleshooting
-
-### Kiểm tra containers
-
-```bash
-docker-compose ps
-docker-compose logs -f
-```
-
-### Restart services
-
-```bash
-docker-compose restart
-```
-
-### Xóa và build lại
-
-```bash
-docker-compose down -v
-docker-compose up -d --build
-```
