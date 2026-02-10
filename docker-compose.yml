@@ -34,16 +34,26 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - MONGODB_URI=mongodb://mongodb:27017/social-network?replicaSet=rs0
+      # JWT
       - JWT_SECRET=${JWT_SECRET}
+      - JWT_ACCESS_SECRET=${JWT_SECRET}
       - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
+      - JWT_ACCESS_EXPIRES_IN=${JWT_ACCESS_EXPIRES_IN:-15m}
+      - JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN:-7d}
+      # Cloudinary
       - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
       - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
       - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+      # Mail
       - MAIL_HOST=${MAIL_HOST}
+      - MAIL_PORT=${MAIL_PORT:-587}
       - MAIL_USER=${MAIL_USER}
-      - MAIL_PASS=${MAIL_PASS}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
       - MAIL_FROM=${MAIL_FROM}
+      # Other
       - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+      - PASSWORD_HASH_ROUND=${PASSWORD_HASH_ROUND:-10}
     depends_on:
       mongodb:
         condition: service_healthy
@@ -55,14 +65,14 @@ services:
       context: ./social-network-fe
       dockerfile: Dockerfile
       args:
-        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+        - NEXT_PUBLIC_BACKEND_API_URL=${NEXT_PUBLIC_BACKEND_API_URL:-http://localhost:3001/api/v1}
     container_name: social-network-frontend
     restart: always
     ports:
       - '${FRONTEND_PORT:-3000}:3000'
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://backend:3000}
+      - NEXT_PUBLIC_BACKEND_API_URL=${NEXT_PUBLIC_BACKEND_API_URL:-http://backend:3000/api/v1}
     depends_on:
       - backend
     networks:
