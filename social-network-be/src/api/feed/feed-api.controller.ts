@@ -2,7 +2,10 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { GetUserId } from 'src/share/decorators/user.decorator';
 import { GetHomeFeedService } from 'src/use-case/feed/get-home-feed/get-home-feed.service';
 import { GetHomeFeedDto } from './dto/get-home-feed.dto';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Feed')
+@ApiCookieAuth()
 @Controller('feed')
 export class FeedController {
   constructor(private readonly getHomeFeedService: GetHomeFeedService) {}

@@ -1,15 +1,15 @@
 import {
-  Controller,
-  Post,
-  Get,
-  Body,
-  UploadedFile,
-  UseInterceptors,
-  Param,
-  Query,
-  HttpCode,
-  HttpStatus,
-  BadRequestException,
+    Controller,
+    Post,
+    Get,
+    Body,
+    UploadedFile,
+    UseInterceptors,
+    Param,
+    Query,
+    HttpCode,
+    HttpStatus,
+    BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { SendMessageDto } from 'src/api/chat/dto/send-message.dto';
@@ -27,7 +27,10 @@ import { RecallMessageService } from 'src/use-case/chat/recall-message/recall-me
 import { MessageType } from 'src/schemas/message.schema';
 import { CheckUnreadMessagesService } from 'src/use-case/chat/check-unread-messages/check-unread-messages.service';
 import { SearchConversationsService } from 'src/use-case/chat/search-conversations/search-conversations.service';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Chat')
+@ApiCookieAuth()
 @Controller('chat')
 export class ChatController {
   constructor(

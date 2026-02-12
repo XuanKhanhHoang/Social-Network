@@ -1,23 +1,26 @@
 import { Controller, Post, Get, Param, Body } from '@nestjs/common';
 import {
-  SubmitReportService,
-  SubmitReportOutput,
+    SubmitReportService,
+    SubmitReportOutput,
 } from 'src/use-case/report/submit-report/submit-report.service';
 import {
-  GetReportByIdService,
-  GetReportByIdOutput,
+    GetReportByIdService,
+    GetReportByIdOutput,
 } from 'src/use-case/report/get-report-by-id/get-report-by-id.service';
 import {
-  GetReportResultService,
-  GetReportResultOutput,
+    GetReportResultService,
+    GetReportResultOutput,
 } from 'src/use-case/report/get-report-result/get-report-result.service';
 import {
-  SubmitAppealService,
-  SubmitAppealOutput,
+    SubmitAppealService,
+    SubmitAppealOutput,
 } from 'src/use-case/report/submit-appeal/submit-appeal.service';
 import { SubmitReportDto } from './dto/submit-report.dto';
 import { GetUserId } from 'src/share/decorators/user.decorator';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Reports')
+@ApiCookieAuth()
 @Controller('reports')
 export class ReportApiController {
   constructor(

@@ -2,17 +2,17 @@ import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
 import { AllowSemiPublic } from 'src/share/decorators/allow-semi-public.decorator';
 import { GetUserId } from 'src/share/decorators/user.decorator';
 import {
-  GetUserBioService,
-  GetUserFriendsPreviewService,
-  GetUserProfileService,
-  GetUserPhotosService,
-  GetUserHeaderService,
-  GetUserPostsService,
-  UpdateProfileService,
-  GetSuggestFriendsService,
-  GetMePreviewProfileService,
-  GetPublicKeyService,
-  SearchUserService,
+    GetUserBioService,
+    GetUserFriendsPreviewService,
+    GetUserProfileService,
+    GetUserPhotosService,
+    GetUserHeaderService,
+    GetUserPostsService,
+    UpdateProfileService,
+    GetSuggestFriendsService,
+    GetMePreviewProfileService,
+    GetPublicKeyService,
+    SearchUserService,
 } from 'src/use-case/user';
 import { GetUserPostsQueryDto } from './dto/get-user-post.dto';
 import { GetAccountService } from 'src/use-case/user/get-account/get-account.service';
@@ -21,6 +21,10 @@ import { CursorPaginationQueryDto } from 'src/share/dto/req/cursor-pagination-qu
 import { CursorPaginationWithSearchQueryDto } from 'src/share/dto/req/cursor-pagination-with-search-query.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { UpdateProfileDto } from './dto/update-user-profile';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
+
+@ApiTags('Users')
+@ApiCookieAuth()
 @Controller('users')
 export class UserApiController {
   constructor(

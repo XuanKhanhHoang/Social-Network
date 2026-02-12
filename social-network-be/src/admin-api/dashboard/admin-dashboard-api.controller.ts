@@ -1,17 +1,20 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import {
-  GetDashboardStatsService,
-  DashboardStatsOutput,
+    GetDashboardStatsService,
+    DashboardStatsOutput,
 } from 'src/admin-use-case/dashboard/get-stats/get-dashboard-stats.service';
 import {
-  GetUserGrowthChartService,
-  UserGrowthChartOutput,
-  ViewMode,
+    GetUserGrowthChartService,
+    UserGrowthChartOutput,
+    ViewMode,
 } from 'src/admin-use-case/dashboard/get-user-growth/get-user-growth-chart.service';
 import { RolesGuard } from 'src/others/guards/roles.guard';
 import { Roles } from 'src/share/decorators/roles.decorator';
 import { UserRole } from 'src/share/enums/user-role.enum';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Admin - Dashboard')
+@ApiCookieAuth()
 @Controller('admin/dashboard')
 @UseGuards(RolesGuard)
 @Roles(UserRole.ADMIN)

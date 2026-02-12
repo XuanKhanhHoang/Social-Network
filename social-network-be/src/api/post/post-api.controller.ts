@@ -1,14 +1,14 @@
 import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Patch,
-  Post,
-  Query,
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpStatus,
+    Param,
+    Patch,
+    Post,
+    Query,
 } from '@nestjs/common';
 import { ParseMongoIdPipe } from 'src/share/pipe/parse-mongo-id-pipe';
 import { GetUserId } from 'src/share/decorators/user.decorator';
@@ -19,7 +19,10 @@ import { SearchPostService } from 'src/use-case/post/search-post/search-post.ser
 import { DeletePostService } from 'src/use-case/post/delete-post/delete-post.service';
 import { CreatePostDto, UpdatePostDto } from './dto';
 import { CursorPaginationWithSearchQueryDto } from 'src/share/dto/req/cursor-pagination-with-search-query.dto';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Posts')
+@ApiCookieAuth()
 @Controller('posts')
 export class PostController {
   constructor(

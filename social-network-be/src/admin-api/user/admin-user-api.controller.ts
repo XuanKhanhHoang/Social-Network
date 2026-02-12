@@ -1,43 +1,46 @@
 import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Query,
-  UseGuards,
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Patch,
+    Query,
+    UseGuards,
 } from '@nestjs/common';
 import {
-  GetUsersService,
-  GetUsersOutput,
+    GetUsersService,
+    GetUsersOutput,
 } from 'src/admin-use-case/user/get-users/get-users.service';
 import { GetUsersDto } from './dto/get-users.dto';
 import { RolesGuard } from 'src/others/guards/roles.guard';
 import { Roles } from 'src/share/decorators/roles.decorator';
 import { UserRole } from 'src/share/enums/user-role.enum';
 import {
-  GetUserDetailService,
-  GetUserDetailOutput,
+    GetUserDetailService,
+    GetUserDetailOutput,
 } from 'src/admin-use-case/user/get-user-detail/get-user-detail.service';
 import {
-  UpdateUserService,
-  UpdateUserOutput,
+    UpdateUserService,
+    UpdateUserOutput,
 } from 'src/admin-use-case/user/update-user/update-user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import {
-  LockUserService,
-  LockUserOutput,
+    LockUserService,
+    LockUserOutput,
 } from 'src/admin-use-case/user/lock-user/lock-user.service';
 import {
-  DeleteUserService,
-  DeleteUserOutput,
+    DeleteUserService,
+    DeleteUserOutput,
 } from 'src/admin-use-case/user/delete-user/delete-user.service';
 import {
-  RestoreUserService,
-  RestoreUserOutput,
+    RestoreUserService,
+    RestoreUserOutput,
 } from 'src/admin-use-case/user/restore-user/restore-user.service';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Admin - Users')
+@ApiCookieAuth()
 @Controller('admin/users')
 @UseGuards(RolesGuard)
 @Roles(UserRole.ADMIN)

@@ -1,28 +1,31 @@
 import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Query,
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Post,
+    Query,
 } from '@nestjs/common';
 import { GetUserId } from 'src/share/decorators/user.decorator';
 import { CursorPaginationQueryDto } from 'src/share/dto/req/cursor-pagination-query.dto';
 import {
-  AcceptFriendRequestService,
-  SendFriendRequestService,
-  RemoveFriendService,
-  GetBlockedUsersService,
-  GetReceiveFriendRequestsService,
-  GetSentFriendRequestsService,
-  CancelFriendRequestService,
-  BlockUserService,
-  UnblockUserService,
+    AcceptFriendRequestService,
+    SendFriendRequestService,
+    RemoveFriendService,
+    GetBlockedUsersService,
+    GetReceiveFriendRequestsService,
+    GetSentFriendRequestsService,
+    CancelFriendRequestService,
+    BlockUserService,
+    UnblockUserService,
 } from 'src/use-case/friendship';
 import { AcceptFriendRequestDto, SendFriendRequestDto } from './dto';
 import { GetSuggestFriendsService } from 'src/use-case/user';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Friendships')
+@ApiCookieAuth()
 @Controller('friendships')
 export class FriendshipApiController {
   constructor(

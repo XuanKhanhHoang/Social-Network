@@ -1,11 +1,11 @@
 import {
-  Controller,
-  Post,
-  Patch,
-  Get,
-  Delete,
-  Body,
-  Param,
+    Controller,
+    Post,
+    Patch,
+    Get,
+    Delete,
+    Body,
+    Param,
 } from '@nestjs/common';
 import { GetUserId } from 'src/share/decorators/user.decorator';
 import { CreateGroupDto } from './dto/create-group.dto';
@@ -20,7 +20,10 @@ import { GetGroupMembersService } from 'src/use-case/chat/get-group-members/get-
 import { AssignGroupAdminService } from 'src/use-case/chat/assign-group-admin/assign-group-admin.service';
 import { DeleteGroupService } from 'src/use-case/chat/delete-group/delete-group.service';
 import { AssignGroupAdminDto } from './dto/assign-group-admin.dto';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Group Chat')
+@ApiCookieAuth()
 @Controller('chat/group')
 export class GroupChatController {
   constructor(

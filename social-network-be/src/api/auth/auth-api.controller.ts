@@ -1,13 +1,13 @@
 import {
-  Controller,
-  Post,
-  Body,
-  Res,
-  Get,
-  Param,
-  Req,
-  UnauthorizedException,
-  Patch,
+    Controller,
+    Post,
+    Body,
+    Res,
+    Get,
+    Param,
+    Req,
+    UnauthorizedException,
+    Patch,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { LoginService } from '../../use-case/auth/login/login.service';
@@ -22,7 +22,10 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { AllowPublic } from 'src/share/decorators/allow-public-req.decorator';
 import { HttpCode, HttpStatus } from '@nestjs/common';
 import { GetUserId } from 'src/share/decorators/user.decorator';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Auth')
+@ApiCookieAuth()
 @Controller('auth')
 export class AuthController {
   constructor(

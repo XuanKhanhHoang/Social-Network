@@ -1,11 +1,11 @@
 import {
-  Controller,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Patch,
-  Query,
+    Controller,
+    Get,
+    HttpCode,
+    HttpStatus,
+    Param,
+    Patch,
+    Query,
 } from '@nestjs/common';
 import { GetUserId } from 'src/share/decorators/user.decorator';
 import { ParseMongoIdPipe } from 'src/share/pipe/parse-mongo-id-pipe';
@@ -14,7 +14,10 @@ import { MarkReadNotificationService } from 'src/use-case/notification/mark-read
 
 import { CountUnreadNotificationsService } from 'src/use-case/notification/count-unread-notifications/count-unread-notifications.service';
 import { MarkReadAllNotificationService } from 'src/use-case/notification/mark-read-all-notification/mark-read-all-notification.service';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Notifications')
+@ApiCookieAuth()
 @Controller('notifications')
 export class NotificationController {
   constructor(

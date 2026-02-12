@@ -1,17 +1,20 @@
 import {
-  Body,
-  Controller,
-  Delete,
-  Param,
-  ParseEnumPipe,
-  Post,
+    Body,
+    Controller,
+    Delete,
+    Param,
+    ParseEnumPipe,
+    Post,
 } from '@nestjs/common';
 import { GetUserId } from 'src/share/decorators/user.decorator';
 import { ReactionTargetType } from 'src/share/enums';
 import { RemoveReactionService } from 'src/use-case/reaction/remove-reaction/remove-reaction.service';
 import { ToggleReactionService } from 'src/use-case/reaction/toggle-reaction/toggle-reaction.service';
 import { ToggleReactionDto } from './dto/toggle-reaction.dto';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Reactions')
+@ApiCookieAuth()
 @Controller('reaction-api')
 export class ReactionApiController {
   constructor(

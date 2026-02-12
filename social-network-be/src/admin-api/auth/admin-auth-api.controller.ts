@@ -1,27 +1,30 @@
 import {
-  Body,
-  Controller,
-  Post,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Res,
-  Req,
-  UnauthorizedException,
+    Body,
+    Controller,
+    Post,
+    Get,
+    HttpCode,
+    HttpStatus,
+    Res,
+    Req,
+    UnauthorizedException,
 } from '@nestjs/common';
 import {
-  AdminLoginService,
-  AdminLoginOutput,
+    AdminLoginService,
+    AdminLoginOutput,
 } from 'src/admin-use-case/auth/login/admin-login.service';
 import {
-  VerifyAdminService,
-  VerifyAdminOutput,
+    VerifyAdminService,
+    VerifyAdminOutput,
 } from 'src/admin-use-case/auth/verify/verify-admin.service';
 import { AdminLoginDto } from 'src/admin-api/auth/login/admin-login.dto';
 import { AllowPublic } from 'src/share/decorators/allow-public-req.decorator';
 import { GetUserId } from 'src/share/decorators/user.decorator';
 import { Response } from 'express';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Admin - Auth')
+@ApiCookieAuth()
 @Controller('admin/auth')
 export class AdminAuthApiController {
   constructor(

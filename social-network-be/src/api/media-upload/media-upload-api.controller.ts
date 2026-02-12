@@ -1,19 +1,22 @@
 import {
-  Controller,
-  Post,
-  UseInterceptors,
-  UploadedFile,
-  Param,
-  Delete,
-  BadRequestException,
+    Controller,
+    Post,
+    UseInterceptors,
+    UploadedFile,
+    Param,
+    Delete,
+    BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { GetUserId } from 'src/share/decorators/user.decorator';
 import {
-  DeleteTempFileService,
-  UploadToTempService,
+    DeleteTempFileService,
+    UploadToTempService,
 } from 'src/use-case/media-upload';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Media Upload')
+@ApiCookieAuth()
 @Controller('medias')
 export class MediaUploadApiController {
   constructor(

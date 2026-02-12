@@ -1,14 +1,14 @@
 import {
-  Body,
-  Controller,
-  DefaultValuePipe,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Patch,
-  Post,
-  Query,
+    Body,
+    Controller,
+    DefaultValuePipe,
+    Delete,
+    Get,
+    Param,
+    ParseIntPipe,
+    Patch,
+    Post,
+    Query,
 } from '@nestjs/common';
 import { CreateCommentDto, UpdateCommentDto } from './dto';
 import { ParseMongoIdPipe } from 'src/share/pipe/parse-mongo-id-pipe';
@@ -18,7 +18,10 @@ import { UpdateCommentService } from 'src/use-case/comment/update-comment/update
 import { GetPostCommentsService } from 'src/use-case/comment/get-post-comments/get-post-comments.service';
 import { GetReplyCommentsService } from 'src/use-case/comment/get-reply-comments/get-reply-comments.service';
 import { DeleteCommentService } from 'src/use-case/comment/delete-comment/delete-comment.service';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Comments')
+@ApiCookieAuth()
 @Controller('comments')
 export class CommentController {
   constructor(

@@ -1,30 +1,33 @@
 import {
-  Controller,
-  Get,
-  Delete,
-  Post,
-  Query,
-  Param,
-  UseGuards,
+    Controller,
+    Get,
+    Delete,
+    Post,
+    Query,
+    Param,
+    UseGuards,
 } from '@nestjs/common';
 import {
-  GetPostsService,
-  GetPostsOutput,
+    GetPostsService,
+    GetPostsOutput,
 } from 'src/admin-use-case/post/get-posts/get-posts.service';
 import {
-  AdminDeletePostService,
-  AdminDeletePostOutput,
+    AdminDeletePostService,
+    AdminDeletePostOutput,
 } from 'src/admin-use-case/post/admin-delete-post/admin-delete-post.service';
 import {
-  AdminRestorePostService,
-  AdminRestorePostOutput,
+    AdminRestorePostService,
+    AdminRestorePostOutput,
 } from 'src/admin-use-case/post/admin-restore-post/admin-restore-post.service';
 import { GetPostsDto } from './dto/get-posts.dto';
 import { RolesGuard } from 'src/others/guards/roles.guard';
 import { Roles } from 'src/share/decorators/roles.decorator';
 import { UserRole } from 'src/share/enums/user-role.enum';
 import { GetUserId } from 'src/share/decorators/user.decorator';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Admin - Posts')
+@ApiCookieAuth()
 @Controller('admin/posts')
 @UseGuards(RolesGuard)
 @Roles(UserRole.ADMIN)
