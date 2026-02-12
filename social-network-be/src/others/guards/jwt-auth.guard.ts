@@ -77,7 +77,9 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     } catch (error) {
       if (refreshToken) {
         try {
-          const payload = this.jwtService.verify(refreshToken);
+          const payload = this.jwtService.verify(refreshToken, {
+            secret: process.env.JWT_REFRESH_SECRET,
+          });
 
           const user = await this.userRepository.findById(payload._id, {
             projection: { _id: 1, role: 1, status: 1, deletedAt: 1 },
@@ -91,7 +93,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
           const newAccessToken = this.jwtService.sign(
             { _id: payload._id },
-            { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m' },
+            {
+              secret: process.env.JWT_ACCESS_SECRET,
+              expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
+            },
           );
 
           response.cookie('accessToken', newAccessToken, {
