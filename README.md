@@ -1,37 +1,37 @@
 <div align="center">
-  <h1>🚀 Full-Stack Social Network Application</h1>
+  <h1>Social Network Application</h1>
   
   <p>
-    A modern, feature-rich social networking platform built with <strong>Next.js</strong>, <strong>NestJS</strong>, <strong>MongoDB</strong>, and <strong>Docker</strong>.
+    A full-stack social networking platform built with <strong>Next.js</strong>, <strong>NestJS</strong>, <strong>MongoDB</strong>, and <strong>Docker</strong>.
   </p>
 
   <p>
-    <a href="#-features">Features</a> •
-    <a href="#-tech-stack">Tech Stack</a> •
-    <a href="#-getting-started">Getting Started</a> •
-    <a href="#-environment-variables">Environment Variables</a> •
-    <a href="#-api-keys-guide">API Keys Guide</a>
+    <a href="#features">Features</a> •
+    <a href="#tech-stack">Tech Stack</a> •
+    <a href="#getting-started">Getting Started</a> •
+    <a href="#environment-variables">Environment Variables</a> •
+    <a href="#api-keys-guide">API Keys Guide</a>
   </p>
 </div>
 
 ---
 
-## ✨ Features
+## Features
 
 - **User Authentication**: Secure JWT-based login, registration, and refresh tokens.
 - **Real-time Interactions**: Live chat and instant notifications powered by Socket.io.
 - **Media Management**: Seamless image and media uploads using Cloudinary integrations.
 - **Email Notifications**: Automated emails via Nodemailer (SMTP/Gmail).
 - **Responsive UI**: Next.js frontend delivering an optimal experience across all devices.
-- **Containerized Environment**: Fully Dockerized for a smooth and consistent development workflow.
+- **Containerization**: Dockerized environment for consistent development and deployment workflows.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
 - **Framework:** [Next.js](https://nextjs.org/)
-- **State Management & UI:** React setup with optimized rendering
+- **UI & State:** React
 - **Deployment:** Vercel (optional)
 
 ### Backend
@@ -39,14 +39,14 @@
 - **Database:** [MongoDB](https://www.mongodb.com/) (Mongoose)
 - **Real-time Engine:** [Socket.io](https://socket.io/)
 - **Authentication:** Passport.js, JWT, Bcrypt
-- **File Uploads:** Multer, Fluent-FFmpeg, Cloudinary
+- **File Handling:** Multer, Fluent-FFmpeg, Cloudinary
 
 ### DevOps
 - **Containerization:** [Docker](https://www.docker.com/) & Docker Compose
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 Follow these steps to get the project up and running on your local machine.
 
@@ -54,7 +54,7 @@ Follow these steps to get the project up and running on your local machine.
 
 Ensure you have the following installed:
 - [Git](https://git-scm.com/)
-- [Docker & Docker Compose](https://www.docker.com/)
+- [Docker](https://www.docker.com/) and Docker Compose
 - Node.js (if running locally outside Docker containers)
 
 ### 1. Clone the Repository
@@ -72,7 +72,7 @@ Create a new `.env` file based on the provided template:
 cp .env.example .env
 ```
 
-Open the `.env` file and populate it with your specific details (see the [Environment Variables](#-environment-variables) section below for details).
+Open the `.env` file and populate it with your specific details (see the [Environment Variables](#environment-variables) section below for details).
 
 ### 3. Build and Run via Docker
 
@@ -84,13 +84,13 @@ docker-compose up -d --build
 
 ### 4. Access the Application
 
-Once the containers are successfully running, you can access the services here:
-- **Frontend App:** [http://localhost:3000](http://localhost:3000)
+Once the containers are successfully running, you can access the services:
+- **Frontend:** [http://localhost:3000](http://localhost:3000)
 - **Backend API:** [http://localhost:3001](http://localhost:3001)
 
 ---
 
-## ⚙️ Environment Variables
+## Environment Variables
 
 Ensure the following variables are correctly configured in your `.env` file:
 
@@ -122,9 +122,9 @@ NEXT_PUBLIC_API_URL=http://localhost:3001
 
 ---
 
-## 🔑 API Keys Guide
+## API Keys Guide
 
-If you need help getting the required third-party API keys, follow these quick instructions:
+Instructions for obtaining the required third-party API keys:
 
 ### Gmail App Password (for `MAIL_PASS`)
 1. Go to your Google Account and enable [2-Step Verification](https://myaccount.google.com/security).
@@ -133,12 +133,12 @@ If you need help getting the required third-party API keys, follow these quick i
 4. Copy the 16-character string into your `.env` file.
 
 ### Cloudinary Credentials
-1. Register for a free account at [Cloudinary](https://cloudinary.com).
+1. Register for an account at [Cloudinary](https://cloudinary.com).
 2. Go to your Dashboard.
 3. Copy your `Cloud Name`, `API Key`, and `API Secret` into your `.env` file.
 
 ---
 
 <div align="center">
-  <i>Developed with ❤️ by <a href="https://github.com/XuanKhanhHoang">XuanKhanhHoang</a></i>
+  <i>Developed by <a href="https://github.com/XuanKhanhHoang">XuanKhanhHoang</a></i>
 </div>
